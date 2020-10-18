@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+    <head th:fragment="common_head(meta,title,links,script)">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE"></title>
+
+        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/4.5.1/css/bootstrap.min.css"
+            rel="stylesheet" media="screen" />
+        <script src="http://cdn.jsdelivr.net/webjars/jquery/3.5.1/jquery.min.js"></script>
+        <script src="http://cdn.jsdelivr.net/webjars/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <section layout:fragment="main-content">
+            <p>This is filled by the main content template.</p>
+        </section>
+    </body>
+</html>

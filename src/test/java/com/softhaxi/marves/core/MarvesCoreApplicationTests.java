@@ -1,10 +1,10 @@
-package com.softhaxi.marves.core.web;
+package com.softhaxi.marves.core;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MarvesCoreWebApplicationTests {
+class MarvesCoreApplicationTests {
 
 	@Test
 	void contextLoads() {

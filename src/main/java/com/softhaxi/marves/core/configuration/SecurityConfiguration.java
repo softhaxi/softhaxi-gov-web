@@ -40,6 +40,19 @@ public class SecurityConfiguration {
                 // this disables session creation on Spring Security
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth.ldapAuthentication().userDnPatterns("uid={0},ou=people").groupSearchBase("ou=groups").contextSource()
+                    .url("ldap://localhost:8389/dc=springframework,dc=org").and().passwordCompare()
+                    .passwordEncoder(new BCryptPasswordEncoder()).passwordAttribute("userPassword");
+        }
+
+        @Bean(name = "restAuthenticationManager")
+        @Override
+        public AuthenticationManager authenticationManagerBean() throws Exception {
+            return super.authenticationManagerBean();
+        }
         
     }
 
@@ -63,7 +76,7 @@ public class SecurityConfiguration {
                     .passwordEncoder(new BCryptPasswordEncoder()).passwordAttribute("userPassword");
         }
 
-        @Bean
+        @Bean(name = "webAuthenticationManager")
         @Override
         public AuthenticationManager authenticationManagerBean() throws Exception {
             return super.authenticationManagerBean();

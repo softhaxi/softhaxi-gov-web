@@ -1,5 +1,8 @@
 package com.softhaxi.marves.core.configuration;
 
+import com.softhaxi.marves.core.authentication.CustomAuthenticationProvider;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,6 +21,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+
+
+    @Autowired
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
     @Order(1)
     @Configuration
@@ -64,7 +71,7 @@ public class SecurityConfiguration {
         protected void configure(HttpSecurity http) throws Exception {
             http
             .authorizeRequests()
-            .antMatchers("/").permitAll()
+            .antMatchers("/", "/styles/*", "/login").permitAll()
             .anyRequest()
             .fullyAuthenticated().and().formLogin().loginPage("/");
         }
@@ -73,7 +80,8 @@ public class SecurityConfiguration {
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.ldapAuthentication().userDnPatterns("uid={0},ou=people").groupSearchBase("ou=groups").contextSource()
                     .url("ldap://localhost:8389/dc=springframework,dc=org").and().passwordCompare()
-                    .passwordEncoder(new BCryptPasswordEncoder()).passwordAttribute("userPassword");
+                  //  .passwordEncoder(new BCryptPasswordEncoder())
+                  .passwordAttribute("userPassword");
         }
 
         @Bean(name = "webAuthenticationManager")
@@ -81,5 +89,6 @@ public class SecurityConfiguration {
         public AuthenticationManager authenticationManagerBean() throws Exception {
             return super.authenticationManagerBean();
         }
+
     }
 }

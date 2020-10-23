@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <div layout:fragment="main-content">
+        <img class="mb-4" src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt=""
+            width="72" height="72">
+        <span th:text=${user.username}></span>
+    </div>
+    <div>
+        <a th:href="@{/logout}">Logout</a>
+    </div>
+</body>
+
+</html>

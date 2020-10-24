@@ -4,7 +4,6 @@ import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.Response;
 import com.softhaxi.marves.core.model.response.common.LoginResponse;
-import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 

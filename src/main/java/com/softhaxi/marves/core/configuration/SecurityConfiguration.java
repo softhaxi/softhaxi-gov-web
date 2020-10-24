@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import javax.transaction.Transactional;
+
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.web.RestfulAuthenticationEntryPoint;
@@ -133,6 +135,7 @@ public class SecurityConfiguration {
 
         LdapAuthoritiesPopulator populator = new DefaultLdapAuthoritiesPopulator(context, "ou=groups") {
 
+            @Transactional
             @Override
             protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
                 User userDao = userRepository.findByUsername(username).orElse(null);
@@ -179,6 +182,7 @@ public class SecurityConfiguration {
         @Qualifier("ldapAuthenticationProvider")
         private LdapAuthenticationProvider ldapAuthProvider;
 
+        @Transactional
         @Override
         public Authentication authenticate(Authentication authentication) throws AuthenticationException {
             User user = userRepository.findByUsername(authentication.getName())

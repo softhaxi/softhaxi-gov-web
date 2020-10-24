@@ -5,9 +5,13 @@ import java.util.Date;
 import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.access.UserRole;
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.master.Office;
+import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.access.UserRoleRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
+import com.softhaxi.marves.core.repository.master.OfficeRepository;
+import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +35,12 @@ public class InitialRunner implements CommandLineRunner {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private OfficeRepository officeRepository;
+
+    @Autowired
+    private SystemParameterRepository sysParamRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -69,6 +79,42 @@ public class InitialRunner implements CommandLineRunner {
             
             UserRole userRole = new UserRole(sUser, sadmin);
             userRoleRepository.save(userRole);
+        }
+
+        Role admin = roleRepository.findByName("ADMIN").orElse(null);
+        User aUser = userRepository.findByUsername("HUTASOIT").orElse(null);
+        if(aUser == null && sadmin != null) {
+            aUser = new User();
+            aUser.setUsername("HUTASOIT");
+            aUser.setEmail("ivohutasoit@gmail.com");
+            aUser.setPassword("password");
+            aUser.setIsLDAPUser(false);
+            //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
+            userRepository.save(aUser);
+            
+            UserRole userRole = new UserRole(aUser, admin);
+            userRoleRepository.save(userRole);
+        }
+
+        Office hOffice = officeRepository.findHeadOffice().orElse(new Office());
+        if(hOffice.getId() == null) {
+            hOffice.setCode("HO0001");
+            hOffice.setName("Kementerian Koordiantor Kemaritiman dan Investasi");
+            hOffice.setType("HO");
+            hOffice.setLatitude(-6.1237);
+            hOffice.setLatitude(183.513);
+            officeRepository.save(hOffice);
+        }
+
+        SystemParameter sysparam = sysParamRepository.findByCode("WFO_RADIUS_LIMIT").orElse(new SystemParameter());
+        if(sysparam.getId() == null) {
+            sysparam.setCode("WFO_RADIUS_LIMIT");
+            sysparam.setName("WFO Radius Limit in metre (m)");
+            sysparam.setValue("5");
+            sysparam.setDecription("Radius limit to indicate that clock in/out is from office");
+            sysparam.setIsEditable(true);
+            sysparam.setIsSystem(false);
+            sysParamRepository.save(sysparam);
         }
 
         logger.info("[InitialRunner][run] FInish at " + new Date(System.currentTimeMillis()));

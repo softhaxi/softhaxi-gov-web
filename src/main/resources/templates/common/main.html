@@ -1,22 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-
-<body>
-    <div layout:fragment="main-content">
-        <img class="mb-4" src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt=""
-            width="72" height="72">
-        <span th:text=${user.username}></span>
-    </div>
-    <div>
-        <a th:href="@{/logout}">Logout</a>
-    </div>
-</body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{layout/app}">
+	<head>
+        <title>[[#{app.name}]]</title>
+	</head>
+	<body class="text-center">
+		<div layout:fragment="main-content">
+            <img class="mb-4" src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt="" width="72" height="72">
+            <h1 class="h3 mb-3 font-weight-normal"><span th:text=${username}></span></h1>
+            <div class="row count-down">
+                <a th:href="@{/?logout}">Logout</a>
+            </div>
+            <p class="mt-5 mb-3 text-muted">Kementerian Koordinator Bidang Kemaritiman dan Investasi <br/>&copy; 2020</p>
+		</div>
+	</body>
+</html>
 
 </html>

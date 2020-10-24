@@ -1,16 +1,11 @@
 package com.softhaxi.marves.core.controller.common;
 
-import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.service.UserService;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 
 /**
  * Main controller
@@ -29,19 +24,29 @@ public class IndexController {
 	@Value("${coming.soon.end}")
 	private String comingSoonDate;
 
-	@Autowired
-	private UserService userService;
-
 	@GetMapping("/")
-	public String index(Model model) {
+	public String index(Model model, String error, String logout) {
 		if (comingSoonFlag.equals("Y")) {
 			model.addAttribute("date", comingSoonDate);
 			return "common/coming";
 		}
+		if (error != null)
+            model.addAttribute("errorMsg", "error.invalid.credential");
+
+        if (logout != null)
+            model.addAttribute("msg", "info.logout.success");
+
 		return "common/index";
 	}
 
-	@PostMapping("/login")
+	@GetMapping("/dashboard")
+	public String dashboard(Model model) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		model.addAttribute("username", auth.getName());
+		return "common/main";
+	}
+
+	/*@PostMapping("/login")
 	public String login(Model model, @ModelAttribute("user") User user) {
 		try {
 			User loginUser = userService.findUserByUsernameAndPassword(user.getUsername(), user.getPassword());
@@ -58,5 +63,5 @@ public class IndexController {
 	@PostMapping("/logout")
 	public String logout(Model model) {
 		return "common/index";
-	}
+	}*/
 }

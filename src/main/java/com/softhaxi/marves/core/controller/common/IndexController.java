@@ -1,5 +1,11 @@
 package com.softhaxi.marves.core.controller.common;
 
+import java.util.List;
+
+import com.softhaxi.marves.core.domain.logging.LocationLog;
+import com.softhaxi.marves.core.service.LocationLogService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +30,9 @@ public class IndexController {
 	@Value("${coming.soon.end}")
 	private String comingSoonDate;
 
+	@Autowired
+	private LocationLogService locationLogService;
+
 	@GetMapping("/")
 	public String index(Model model, String error, String logout) {
 		if (comingSoonFlag.equals("Y")) {
@@ -43,7 +52,9 @@ public class IndexController {
 	public String dashboard(Model model) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		model.addAttribute("username", auth.getName());
-		return "common/main";
+		List<LocationLog> locationLogList = locationLogService.findAllLocationLog();
+        model.addAttribute("locationLogs", locationLogList);
+		return "common/dashboard";
 	}
 
 	/*@PostMapping("/login")

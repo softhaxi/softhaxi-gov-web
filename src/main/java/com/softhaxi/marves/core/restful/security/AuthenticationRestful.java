@@ -1,8 +1,11 @@
 package com.softhaxi.marves.core.restful.security;
 
+import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.Response;
 import com.softhaxi.marves.core.model.response.common.LoginResponse;
+import com.softhaxi.marves.core.repository.account.UserRepository;
+import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 
 import org.slf4j.Logger;
@@ -37,17 +40,24 @@ public class AuthenticationRestful {
     @Autowired
     private AccessTokenUtil accessTokenUtil;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUserid(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
 
-            // final User userDetails = userService.loadUserByUsername(authenticationRequest.getUsername());
-            // final String token = jwtTokenUtil.generateToken(userDetails);
-
-            
-            LoginResponse loginResponse = new LoginResponse("bearer", accessTokenUtil.generateToken(request.getUserid()), null);
+            User user = userService.findByUsername(request.getUserid().trim()).orElse(null);
+            if (user == null) {
+                user = new User();
+                user.setUsername(request.getUserid().trim());   
+                user.setPassword(request.getPassword().trim());
+                user.setIsLDAPUser(true);
+                user = userService.saveMobileUser(user);
+            }
+            LoginResponse loginResponse = new LoginResponse("bearer", accessTokenUtil.generateToken(user.getId().toString()), null);
             Response<LoginResponse> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.toString(), loginResponse);
 
             return ResponseEntity.ok(response);

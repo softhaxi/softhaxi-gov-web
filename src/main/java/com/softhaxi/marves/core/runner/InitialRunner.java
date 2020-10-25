@@ -101,8 +101,8 @@ public class InitialRunner implements CommandLineRunner {
             hOffice.setCode("HO0001");
             hOffice.setName("Kementerian Koordiantor Kemaritiman dan Investasi");
             hOffice.setType("HO");
-            hOffice.setLatitude(-6.1237);
-            hOffice.setLatitude(183.513);
+            hOffice.setLatitude(-6.184843);
+            hOffice.setLongitude(106.822793);
             officeRepository.save(hOffice);
         }
 
@@ -117,7 +117,7 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(sysparam);
         }
 
-        logger.info("[InitialRunner][run] FInish at " + new Date(System.currentTimeMillis()));
+        logger.info("[InitialRunner][run] Finish at " + new Date(System.currentTimeMillis()));
     }
     
 }

@@ -1,9 +1,7 @@
 package com.softhaxi.marves.core.model.request;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * @author Raja Sihombing
@@ -20,9 +18,10 @@ public class AbsenceRequest implements Serializable {
     private Date dateTime;
     private double latitude;
     private double longitude;
-    private String payload;
+    private String code;
+    private String title;
     private boolean isMockLocation;
-    private String info;
+    private String description;
     //private MultipartFile photo;
 
     public AbsenceRequest() {
@@ -68,12 +67,20 @@ public class AbsenceRequest implements Serializable {
         this.longitude = longitude;
     }
 
-    public String getPayload() {
-        return this.payload;
+    public String getCode() {
+        return this.code;
     }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public boolean isIsMockLocation() {
@@ -88,21 +95,13 @@ public class AbsenceRequest implements Serializable {
         this.isMockLocation = isMockLocation;
     }
 
-    public String getInfo() {
-        return this.info;
+    public String getDescription() {
+        return this.description;
     }
 
-    public void setInfo(String info) {
-        this.info = info;
+    public void setDescription(String description) {
+        this.description = description;
     }
-
-    // public MultipartFile getPhoto() {
-    //     return photo;
-    // }
-
-    // public void setPhoto(MultipartFile photo) {
-    //     this.photo = photo;
-    // }
 
     public AbsenceRequest type(String type) {
         this.type = type;
@@ -114,7 +113,7 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
-    public AbsenceRequest dateTime(Timestamp dateTime) {
+    public AbsenceRequest dateTime(Date dateTime) {
         this.dateTime = dateTime;
         return this;
     }
@@ -129,8 +128,13 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
-    public AbsenceRequest payload(String payload) {
-        this.payload = payload;
+    public AbsenceRequest code(String code) {
+        this.code = code;
+        return this;
+    }
+
+    public AbsenceRequest title(String title) {
+        this.title = title;
         return this;
     }
 
@@ -139,30 +143,9 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
-    public AbsenceRequest info(String info) {
-        this.info = info;
+    public AbsenceRequest description(String description) {
+        this.description = description;
         return this;
-    }
-
-    // public AbsenceRequest photo(MultipartFile photo) {
-    //     this.photo = photo;
-    //     return this;
-    // }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof AbsenceRequest)) {
-            return false;
-        }
-        AbsenceRequest absenceRequest = (AbsenceRequest) o;
-        return Objects.equals(type, absenceRequest.type);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, action, dateTime, latitude, longitude, payload, isMockLocation, info);
     }
 
     @Override
@@ -173,10 +156,10 @@ public class AbsenceRequest implements Serializable {
             ", dateTime='" + getDateTime() + "'" +
             ", latitude='" + getLatitude() + "'" +
             ", longitude='" + getLongitude() + "'" +
-            ", payload='" + getPayload() + "'" +
+            ", code='" + getCode() + "'" +
+            ", title='" + getTitle() + "'" +
             ", isMockLocation='" + isIsMockLocation() + "'" +
-            ", info='" + getInfo() + "'" +
-            // ", photo='" + getPhoto() + "'" +
+            ", description='" + getDescription() + "'" +
             "}";
     }
 

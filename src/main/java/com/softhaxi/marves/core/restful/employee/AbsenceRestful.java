@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendence.Attendence;
 import com.softhaxi.marves.core.domain.attendence.DailyAttendence;
+import com.softhaxi.marves.core.domain.attendence.MeetingAttendence;
 import com.softhaxi.marves.core.model.request.AbsenceRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
@@ -40,64 +41,87 @@ public class AbsenceRestful {
     @Autowired
     private AbsenceUtil absenceUtil;
     
-    @GetMapping()
-    public ResponseEntity<String> getLast(
-        @RequestParam(value = "type", defaultValue = "daily") String type) {
-        return new ResponseEntity<>("Last attendence", HttpStatus.OK);
-    }
+    // @GetMapping()
+    // public ResponseEntity<String> getLast(
+    //     @RequestParam(value = "type", defaultValue = "daily") String type) {
+    //     return new ResponseEntity<>("Last attendence", HttpStatus.OK);
+    // }
 
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody() AbsenceRequest absence) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Attendence attendence = absenceService.getLastAbsence(user, absence.getType());
+        Attendence attendence = absenceService.getLastAbsence(user, absence.getType(), absence.getCode());
         if(attendence.getId() != null) {
-            if(absence.getAction().equals("CI")) {
-                if(absenceUtil.isSameDateAction(attendence.getDateTime(), ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault())))
-                    return new ResponseEntity<>(
-                        new ErrorResponse(
-                            HttpStatus.BAD_REQUEST.value(), 
-                            HttpStatus.BAD_REQUEST.getReasonPhrase(), 
-                            "Can not submit Daily Clock In twice in same day"
-                        ), HttpStatus.BAD_REQUEST);
-            }
-            if(attendence instanceof DailyAttendence && absence.getAction().equals("CO")) {
-                DailyAttendence daily = (DailyAttendence) attendence;
-                if(daily.getOutWork() != null) {
-                    return new ResponseEntity<>(
-                        new ErrorResponse(
-                            HttpStatus.BAD_REQUEST.value(), 
-                            HttpStatus.BAD_REQUEST.getReasonPhrase(), 
-                            "Can not submit Daily Clock Out before Clock In"
-                        ), HttpStatus.BAD_REQUEST);
+            if(attendence instanceof DailyAttendence) {
+                if(absence.getAction().equals("CI")) {
+                    if(absenceUtil.isSameDateAction(attendence.getDateTime(), ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault())))
+                        return new ResponseEntity<>(
+                            new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(), 
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(), 
+                                "Can not submit Daily Clock In twice in same day"
+                            ), HttpStatus.BAD_REQUEST);
+                    
+                    if(absence.getAction().equals("CO")) {
+                        DailyAttendence daily = (DailyAttendence) attendence;
+                        if(daily.getOutWork() != null) {
+                            return new ResponseEntity<>(
+                                new ErrorResponse(
+                                    HttpStatus.BAD_REQUEST.value(), 
+                                    HttpStatus.BAD_REQUEST.getReasonPhrase(), 
+                                    "Can not submit Daily Clock Out before Clock In"
+                                ), HttpStatus.BAD_REQUEST);
+                        }
+                        daily.setOutAction(absence.getAction().toUpperCase().trim());
+                        daily.setOutDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
+                        daily.setOutLatitude(absence.getLatitude());
+                        daily.setOutLongitude(absence.getLongitude());
+                        daily.setIsOutMockLocation(absence.getIsMockLocation());
+                        attendence = absenceService.save(daily);
+        
+                        return new ResponseEntity<>(
+                            new GeneralResponse(
+                                HttpStatus.OK.value(),
+                                HttpStatus.OK.getReasonPhrase(),
+                                Map.of("id", attendence.getId())
+                            ),
+                            HttpStatus.OK
+                        );
+                    }
                 }
-                daily.setOutAction(absence.getAction().toUpperCase().trim());
-                daily.setOutDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
-                daily.setOutLatitude(absence.getLatitude());
-                daily.setOutLongitude(absence.getLongitude());
-                daily.setIsOutMockLocation(absence.getIsMockLocation());
-                attendence = absenceService.save(daily);
-
+            } else if(attendence instanceof MeetingAttendence) {
                 return new ResponseEntity<>(
                     new GeneralResponse(
                         HttpStatus.OK.value(),
                         HttpStatus.OK.getReasonPhrase(),
-                        Map.of("id", attendence.getId())
+                        Map.of("id", attendence.getId(), "code", ((MeetingAttendence)attendence).getCode())
                     ),
                     HttpStatus.OK
                 );
-            }
+            } 
         } else {
-            if(absence.getType().equals("DAILY") && absence.getAction().equals("CI")) {
-                DailyAttendence daily = new DailyAttendence();
-                daily.setUser(user);
-                daily.setAction(absence.getAction().toUpperCase().trim());
-                daily.setDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
-                daily.setLatitude(absence.getLatitude());
-                daily.setLongitude(absence.getLongitude());
-                daily.setIsMockLocation(absence.getIsMockLocation());
-                attendence = absenceService.save(daily);
-
+            if(absence.getAction().equals("CI")) {
+                if(absence.getType().equalsIgnoreCase("DAILY")) {
+                    DailyAttendence daily = new DailyAttendence();
+                    daily.setUser(user);
+                    daily.setAction(absence.getAction().toUpperCase().trim());
+                    daily.setDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
+                    daily.setLatitude(absence.getLatitude());
+                    daily.setLongitude(absence.getLongitude());
+                    daily.setIsMockLocation(absence.getIsMockLocation());
+                    attendence = absenceService.save(daily);
+                } else if(absence.getType().equalsIgnoreCase("MEETING")) {
+                    MeetingAttendence meeting = new MeetingAttendence();
+                    meeting.setUser(user);
+                    meeting.setAction(absence.getAction().toUpperCase().trim());
+                    meeting.setDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
+                    meeting.setLatitude(absence.getLatitude());
+                    meeting.setLongitude(absence.getLongitude());
+                    meeting.setIsMockLocation(absence.getIsMockLocation());
+                    meeting.setCode(absence.getCode().trim());
+                    attendence = absenceService.save(meeting);
+                }
                 return new ResponseEntity<>(
                     new GeneralResponse(
                         HttpStatus.CREATED.value(),
@@ -107,6 +131,7 @@ public class AbsenceRestful {
                     HttpStatus.CREATED
                 );
             }
+            
             if(attendence instanceof DailyAttendence && absence.getAction().equals("CO")) {
                 return new ResponseEntity<>(
                         new ErrorResponse(
@@ -118,5 +143,21 @@ public class AbsenceRestful {
         }
 
         return new ResponseEntity<>("Success", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/meeting")
+    public ResponseEntity<?> meetingAttendence(@RequestParam(value="code", required = true) String code) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        Attendence attendence = absenceService.getLastAbsence(user, "MEETING", code);
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                attendence
+            ),
+            HttpStatus.OK
+        );
     }
 }

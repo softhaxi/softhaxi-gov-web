@@ -1,4 +1,4 @@
-package com.softhaxi.marves.core.restful;
+package com.softhaxi.marves.core.restful.employee;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -98,7 +98,8 @@ public class SecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable().authorizeRequests().antMatchers("/", "/styles/**", "/scripts/**").permitAll()
+            http.csrf().disable()
+                    .authorizeRequests().antMatchers("/", "/styles/**", "/scripts/**", "/asset/**").permitAll()
                     .anyRequest().fullyAuthenticated().and().formLogin().loginPage("/").permitAll()
                     .defaultSuccessUrl("/dashboard").and().logout().permitAll();
             http.csrf().disable();

@@ -3,7 +3,9 @@ package com.softhaxi.marves.core.restful.employee;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.UUID;
 
+import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendence.Attendence;
 import com.softhaxi.marves.core.domain.attendence.DailyAttendence;
 import com.softhaxi.marves.core.model.request.AbsenceRequest;
@@ -15,6 +17,8 @@ import com.softhaxi.marves.core.util.AbsenceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,7 +48,9 @@ public class AbsenceRestful {
 
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody() AbsenceRequest absence) {
-        Attendence attendence = absenceService.getLastAbsence(absence.getType());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        Attendence attendence = absenceService.getLastAbsence(user, absence.getType());
         if(attendence.getId() != null) {
             if(absence.getAction().equals("CI")) {
                 if(absenceUtil.isSameDateAction(attendence.getDateTime(), ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault())))
@@ -68,7 +74,7 @@ public class AbsenceRestful {
                 daily.setOutAction(absence.getAction().toUpperCase().trim());
                 daily.setOutDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
                 daily.setOutLatitude(absence.getLatitude());
-                daily.setOutLongitude(absence.getLatitude());
+                daily.setOutLongitude(absence.getLongitude());
                 daily.setIsOutMockLocation(absence.getIsMockLocation());
                 attendence = absenceService.save(daily);
 
@@ -84,10 +90,11 @@ public class AbsenceRestful {
         } else {
             if(absence.getType().equals("DAILY") && absence.getAction().equals("CI")) {
                 DailyAttendence daily = new DailyAttendence();
+                daily.setUser(user);
                 daily.setAction(absence.getAction().toUpperCase().trim());
                 daily.setDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
                 daily.setLatitude(absence.getLatitude());
-                daily.setLongitude(absence.getLatitude());
+                daily.setLongitude(absence.getLongitude());
                 daily.setIsMockLocation(absence.getIsMockLocation());
                 attendence = absenceService.save(daily);
 

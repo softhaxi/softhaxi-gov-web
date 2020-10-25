@@ -1,9 +1,11 @@
 package com.softhaxi.marves.core.controller.common;
 
 import java.util.List;
+import java.util.Map;
 
 import com.softhaxi.marves.core.domain.logging.LocationLog;
-import com.softhaxi.marves.core.service.LocationLogService;
+import com.softhaxi.marves.core.service.logging.LocationLogService;
+import com.softhaxi.marves.core.util.ChartUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,8 +54,13 @@ public class IndexController {
 	public String dashboard(Model model) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		model.addAttribute("username", auth.getName());
+
 		List<LocationLog> locationLogList = locationLogService.findAllLocationLog();
-        model.addAttribute("locationLogs", locationLogList);
+		model.addAttribute("locationLogs", locationLogList);
+		
+		List<List<Map<Object, Object>>>  dailyAttendences=ChartUtil.getCanvasjsDataList();
+		model.addAttribute("dataPointsList", dailyAttendences);
+		System.out.println(dailyAttendences);
 		return "common/dashboard";
 	}
 

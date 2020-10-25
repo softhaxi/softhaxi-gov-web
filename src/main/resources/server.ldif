@@ -64,6 +64,26 @@ sn: Smeth
 uid: joe
 userPassword: joespassword
 
+dn: uid=agus.supriadi,ou=otherpeople,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Agus Supriadi
+sn: Supriadi
+uid: agus.supriadi
+userPassword: password
+
+dn: uid=bambang.ari,ou=otherpeople,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Bambang Ari
+sn: Ari
+uid: bambang.ari
+userPassword: password
+
 dn: cn=mouse\, jerry,ou=people,dc=springframework,dc=org
 objectclass: top
 objectclass: person

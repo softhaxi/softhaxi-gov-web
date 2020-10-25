@@ -12,23 +12,23 @@ public class GeneralResponse extends RestfulResponse {
      *
      */
     private static final long serialVersionUID = -6871275781582319591L;
-    protected Map<String, Object> data;
+    protected Object data;
 
 
     public GeneralResponse() {
     }
 
-    public GeneralResponse(int code, String status, Map<String, Object> data) {
+    public GeneralResponse(int code, String status, Object data) {
         super(code, status);
         this.data = data;
     }
 
 
-    public GeneralResponse(Map<String,Object> data) {
+    public GeneralResponse(Object data) {
         this.data = data;
     }
 
-    public Map<String,Object> getData() {
+    public Object getData() {
         return this.data;
     }
 

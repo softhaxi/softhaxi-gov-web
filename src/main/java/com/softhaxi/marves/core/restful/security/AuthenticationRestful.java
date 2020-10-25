@@ -1,9 +1,11 @@
 package com.softhaxi.marves.core.restful.security;
 
+import java.util.Map;
+
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.model.request.LoginRequest;
-import com.softhaxi.marves.core.model.response.Response;
-import com.softhaxi.marves.core.model.response.common.LoginResponse;
+import com.softhaxi.marves.core.model.response.ErrorResponse;
+import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 
@@ -56,16 +58,27 @@ public class AuthenticationRestful {
                 user.setIsLDAPUser(true);
                 user = userService.saveMobileUser(user);
             }
-            LoginResponse loginResponse = new LoginResponse("bearer", accessTokenUtil.generateToken(user.getId().toString()), null);
-            Response<LoginResponse> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.toString(), loginResponse);
 
-            return ResponseEntity.ok(response);
+            return new ResponseEntity<>(
+                new GeneralResponse(
+                HttpStatus.OK.value(), 
+                HttpStatus.OK.getReasonPhrase(), 
+                Map.of("type", "bearer", "accessToken", accessTokenUtil.generateToken(user.getId().toString())))
+                , HttpStatus.OK);
         } catch(DisabledException e) {
             logger.error(e.getMessage(), e);
-            return new ResponseEntity<>("Invalid userid and password", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "Invalid userid and password"
+                ), HttpStatus.BAD_REQUEST);
         } catch(BadCredentialsException e) {
             logger.error(e.getMessage(), e);
-            return new ResponseEntity<>("Invalid userid and password", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "Invalid userid and password"
+                ), HttpStatus.BAD_REQUEST);
         }
     }
 }

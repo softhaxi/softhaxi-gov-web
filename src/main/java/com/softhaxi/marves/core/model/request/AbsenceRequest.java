@@ -5,10 +5,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import org.springframework.web.multipart.MultipartFile;
-
 /**
  * @author Raja Sihombing
  * @since 1

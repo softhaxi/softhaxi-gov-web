@@ -1,11 +1,7 @@
 package com.softhaxi.marves.core.restful.employee;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.time.OffsetTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import com.softhaxi.marves.core.domain.attendence.Attendence;
@@ -51,7 +47,7 @@ public class AbsenceRestful {
         Attendence attendence = absenceService.getLastAbsence(absence.getType());
         if(attendence.getId() != null) {
             if(absence.getAction().equals("CI")) {
-                if(absenceUtil.isSameDateAction(Date.from(attendence.getDateTime().toInstant()), absence.getDateTime()))
+                if(absenceUtil.isSameDateAction(attendence.getDateTime(), ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault())))
                     return new ResponseEntity<>(
                         new ErrorResponse(
                             HttpStatus.BAD_REQUEST.value(), 

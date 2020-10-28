@@ -38,6 +38,7 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 
 /**
@@ -74,7 +75,7 @@ public class SecurityConfiguration {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.ldapAuthentication().userDnPatterns("uid={0},ou=people", "uid={0},ou=otherpeople")
-                    .groupSearchBase("ou=groups").contextSource().url("ldap://localhost:8389/dc=springframework,dc=org")
+                    .groupSearchBase("ou=groups").contextSource().url("ldap://localhost:8089/dc=springframework,dc=org")
                     .and().passwordCompare()
                     // .passwordEncoder(new BCryptPasswordEncoder())
                     .passwordAttribute("userPassword");
@@ -99,9 +100,10 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable()
-                    .authorizeRequests().antMatchers("/", "/styles/**", "/scripts/**", "/asset/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**").permitAll()
                     .anyRequest().fullyAuthenticated().and().formLogin().loginPage("/").permitAll()
-                    .defaultSuccessUrl("/dashboard").and().logout().permitAll();
+                    .defaultSuccessUrl("/dashboard").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/?logout")
+                    .permitAll();
             http.csrf().disable();
         }
 
@@ -129,7 +131,7 @@ public class SecurityConfiguration {
     @Bean("ldapAuthenticationProvider")
     public LdapAuthenticationProvider ldapAuthenticationProvider() {
         LdapContextSource context = new LdapContextSource();
-        context.setUrls(new String[] { "ldap://localhost:8389" });
+        context.setUrls(new String[] { "ldap://localhost:8089" });
         context.setBase("dc=springframework,dc=org");
         context.setBaseEnvironmentProperties(Collections.unmodifiableMap(new HashMap<>()));
         context.afterPropertiesSet();

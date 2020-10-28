@@ -3,11 +3,11 @@
 var data = [{
     label: 'WFO',
     backgroundColor: '#ffc107',
-    data: [0, 4, 10, 5, 7, 9, 0]
+    data: data1
 }, {
     label: 'WFH',
     backgroundColor: '#17a2b8',
-    data: [0, 7, 1, 7, 8, 5, 7]
+    data: data2
 }];
 
 var options = {
@@ -55,7 +55,8 @@ var options = {
     yAxes: [{
       stacked: true,
       ticks: {
-          beginAtZero: false,
+          beginAtZero: true,
+          max: 20,
           callback: function (value) {
               valuek = value;
               return valuek;
@@ -77,15 +78,7 @@ var options = {
   var myChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-      ],
+      labels: labels,
       datasets: data
     },
     options: options

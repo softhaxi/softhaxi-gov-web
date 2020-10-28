@@ -1,6 +1,9 @@
 package com.softhaxi.marves.core.controller.common;
 
+import java.util.List;
+
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
+import com.softhaxi.marves.core.service.employee.AbsenceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,12 +34,16 @@ public class IndexController {
 	@Autowired
 	private ActivityLogRepository activityLogRepo;
 
+	@Autowired
+	private AbsenceService absenceService;
+
 	@GetMapping("/")
 	public String index(Model model, String error, String logout) {
 		if (comingSoonFlag.equals("Y")) {
 			model.addAttribute("date", comingSoonDate);
 			return "common/coming";
 		}
+
 		if (error != null)
             model.addAttribute("errorMsg", "error.invalid.credential");
 
@@ -51,7 +58,10 @@ public class IndexController {
 		model.addAttribute("latestUpdated", 
 			activityLogRepo.findAll(PageRequest.of(0, 5, 
 				Sort.by(Sort.Direction.DESC, "actionTime"))));
-
+		List<?> weekly = absenceService.getDailyAbsenceCountWeekly();
+		model.addAttribute("weeklyDate", weekly.get(0));
+		model.addAttribute("weeklyWFO", weekly.get(1));
+		model.addAttribute("weeklyWFH", weekly.get(2));
 		return "common/dashboard";
 	}
 }

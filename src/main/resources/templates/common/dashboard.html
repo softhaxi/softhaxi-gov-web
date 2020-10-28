@@ -36,7 +36,7 @@
               </div>
               <div class="col-md-6">
                 <div class="bg-white rounded shadow-sm">
-                  <h6 class="pt-3 pb-2 px-3">Recent updates</h6>
+                  <h6 class="pt-3 pb-2 px-3">Location Monitor</h6>
                   <div id="map" class="rounded-bottom" style="height: 300px; z-index: 999;"></div>
                 </div>
               </div>
@@ -44,27 +44,26 @@
             <div class="my-2 p-3 bg-white rounded shadow-sm">
                 <h6 class="border-bottom border-gray pb-2 mb-0">Recent updates</h6>
                 <div th:each="row : ${latestUpdated}" class="media text-muted pt-3">
-                  <!-- <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-                  <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                    <strong class="d-block text-gray-dark" th:text="${'@' + row.user.username}">@username</strong>
-                    <span th:text="${row.actionName}" th:remove="tag"></span> <span th:text="${row.description}" th:remove="tag"></span> 
-                    <br/><span th:text="${row.actionTime}"></span>
-                  </p> -->
-
                   <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
                   <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                     <div class="d-flex justify-content-between align-items-center w-100">
-                      <a th:href="@{'/activity?id=' + ${row.id} }"><strong class="text-gray-dark" th:text="${'@' + row.user.username}">Full Name</strong></a>
+                      <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${'@' + row.user.username}">Full Name</strong></a>
                       <span th:text="${row.actionTime}">Follow</span>
                     </div>
                     <span class="d-block" th:text="${row.actionName + ' ' + row.description}">@username</span>
                   </div>
                 </div>
                 <small class="d-block text-right mt-3">
-                  <a href="#">All updates</a>
+                  <a th:href="@{'/activity}">All updates</a>
                 </small>
               </div>
-            
+            <script th:inline="javascript">
+              /*<![CDATA[*/
+              var labels = /*[[${weeklyDate}]]*/ ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ];
+              var data1 =  /*[[${weeklyWFO}]]*/ [0, 4, 10, 5, 7, 9, 0];
+              var data2 = /*[[${weeklyWFH}]]*/ [0, 7, 1, 7, 8, 5, 7];
+              /*]]>*/
+            </script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"
                 th:src="@{/webjars/chartjs/2.9.3/Chart.min.js}"></script>

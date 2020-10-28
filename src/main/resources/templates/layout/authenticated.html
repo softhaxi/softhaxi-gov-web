@@ -2,75 +2,84 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/app}">
 
-<head>
-    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE"></title>
-</head>
+    <head th:fragment="common_head(meta,title,links,script)">
+        <meta name="theme-color" content="#563d7c">
+        <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE"></title>
+        <link th:href="@{/styles/main.css}" rel="stylesheet" />
+    </head>
 
-<body>
-    <div layout:fragment="main-content">
-        <header>
-            <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
-                <a class="navbar-brand" href="#"><img
-                        src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt=""
-                        width="24" height="24"></a>
-                <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    <body>
+        <div layout:fragment="main-content">
+            <header>
+                <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark flex-md-nowrap shadow">
+                    <a class="navbar-brand mt-n1 mr-0 px-3" th:href="@{/dashboard}"><img
+                            src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt=""
+                            width="32" height="32"></a>
+                    <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-                <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-                    <ul class="navbar-nav mr-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#">Dashboard <span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Notifications</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Switch account</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
-                            <div class="dropdown-menu" aria-labelledby="dropdown01">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
-                        </li>
-                    </ul>
-                    <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                    </form>
-                </div>
-            </nav>
-
-            <div class="nav-scroller bg-white box-shadow">
-                <nav class="nav nav-underline">
-                    <a class="nav-link active" href="#">Dashboard</a>
-                    <a class="nav-link" href="#">
-                        Friends
-                        <span class="badge badge-pill bg-light align-text-bottom">27</span>
-                    </a>
-                    <a class="nav-link" href="#">Explore</a>
-                    <a class="nav-link" href="#">Suggestions</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
+                    <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item active">
+                                <a class="nav-link" th:href="@{/dashboard}">Dashboard <span class="sr-only">(current)</span></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/employement}">Employment</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="@{/letter}">Letter</a>
+                            </li>
+                            <!-- <li class="nav-item">
+                                <a class="nav-link" th:href="@{/employement}">Open Ticket</a>
+                            </li> -->
+                        </ul>
+                        <!-- <form class="form-inline ml-2 mr-3 my-lg-0">
+                            <input class="form-control form-control-sm mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                        </form> -->
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown mr-3">
+                                <a class="nav-link dropdown-toggle" th:href="@{'/settings'}" id="dropdown01"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
+                                <div class="dropdown-menu dropdown-menu-md-right" aria-labelledby="dropdown01">
+                                    <a class="dropdown-item" href="#">Office Master</a>
+                                    <a class="dropdown-item" href="#">System Parameter</a>
+                                </div>
+                            </li>
+                            <li class="nav-item text-nowrap">
+                                <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
+                            </li>
+                        </ul>
+                    </div>
                 </nav>
-            </div>
-        </header>
-        <section layout:fragment="content" class="container">
-            <p>This is filled by the main content template.</p>
-        </section>
-    </div>
 
+                <section layout:fragment="second-navbar">
+                    This is second navbar
+                </section>
+                
+            </header>
+            <section layout:fragment="content" role="main" class="container">
+                <p>This is filled by the main content template.</p>
+            </section>
 
-</body>
+            <footer class="my-3 footer container">
+                <div class="col-12 col-md text-center">
+                    <div class="text-muted">Kementerian Koordinator Bidang Kemaritiman dan Investasi &copy; 2020</div>
+                </div>
+            </footer>
+
+            <script th:inline="javascript">
+                $(function () {
+                    'use strict'
+    
+                    $('[data-toggle="offcanvas"]').on('click', function () {
+                        $('.offcanvas-collapse').toggleClass('open')
+                    })
+                })
+            </script>
+        </div>
+
+    </body>
 
 </html>

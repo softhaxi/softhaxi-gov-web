@@ -1,16 +1,11 @@
 package com.softhaxi.marves.core.controller.common;
 
-import java.util.List;
-import java.util.Map;
-
-import com.softhaxi.marves.core.domain.logging.LocationLog;
-import com.softhaxi.marves.core.service.logging.LocationLogService;
-import com.softhaxi.marves.core.util.ChartUtil;
+import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Main controller
  * 
  * https://www.appsdeveloperblog.com/reading-application-properties-spring-boot/
+ * https://jsfiddle.net/kingBethal/2apo3e6x/9/
  * 
  * @author Raja Sihombing
  * @since 1
@@ -33,7 +29,7 @@ public class IndexController {
 	private String comingSoonDate;
 
 	@Autowired
-	private LocationLogService locationLogService;
+	private ActivityLogRepository activityLogRepo;
 
 	@GetMapping("/")
 	public String index(Model model, String error, String logout) {
@@ -52,34 +48,10 @@ public class IndexController {
 
 	@GetMapping("/dashboard")
 	public String dashboard(Model model) {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		model.addAttribute("username", auth.getName());
+		model.addAttribute("latestUpdated", 
+			activityLogRepo.findAll(PageRequest.of(0, 5, 
+				Sort.by(Sort.Direction.DESC, "actionTime"))));
 
-		List<LocationLog> locationLogList = locationLogService.findAllLocationLog();
-		model.addAttribute("locationLogs", locationLogList);
-		
-		List<List<Map<Object, Object>>>  dailyAttendences=ChartUtil.getCanvasjsDataList();
-		model.addAttribute("dataPointsList", dailyAttendences);
-		System.out.println(dailyAttendences);
 		return "common/dashboard";
 	}
-
-	/*@PostMapping("/login")
-	public String login(Model model, @ModelAttribute("user") User user) {
-		try {
-			User loginUser = userService.findUserByUsernameAndPassword(user.getUsername(), user.getPassword());
-			model.addAttribute("user", loginUser);
-			return "common/main";
-		} catch (UsernameNotFoundException unfe) {
-			System.out.println(unfe.getMessage());
-			model.addAttribute("errorMessage", "Invalid Username/Password");
-			return "common/index";
-		}
-
-	}
-
-	@PostMapping("/logout")
-	public String logout(Model model) {
-		return "common/index";
-	}*/
 }

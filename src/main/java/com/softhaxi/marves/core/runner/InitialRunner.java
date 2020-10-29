@@ -67,12 +67,12 @@ public class InitialRunner implements CommandLineRunner {
         }
 
         Role sadmin = roleRepository.findByName("SADMIN").orElse(null);
-        User sUser = userRepository.findByUsername("SADMIN").orElse(null);
+        User sUser = userRepository.findByUsername("MCORE.SADMIN").orElse(null);
         if(sUser == null && sadmin != null) {
             sUser = new User();
-            sUser.setUsername("SADMIN");
-            sUser.setEmail("marvescore@gmail.com");
-            sUser.setPassword("MarvesCore123$.");
+            sUser.setUsername("MCORE.SADMIN");
+            sUser.setEmail("mcore.sadmin@maritim.go.id");
+            sUser.setPassword("password");
             sUser.setIsLDAPUser(false);
             //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
             userRepository.save(sUser);
@@ -82,11 +82,11 @@ public class InitialRunner implements CommandLineRunner {
         }
 
         Role admin = roleRepository.findByName("ADMIN").orElse(null);
-        User aUser = userRepository.findByUsername("HUTASOIT").orElse(null);
+        User aUser = userRepository.findByUsername("MCORE.ADMIN").orElse(null);
         if(aUser == null && sadmin != null) {
             aUser = new User();
-            aUser.setUsername("HUTASOIT");
-            aUser.setEmail("ivohutasoit@gmail.com");
+            aUser.setUsername("MCORE.ADMIN");
+            aUser.setEmail("mcore.admin@maritim.com");
             aUser.setPassword("password");
             aUser.setIsLDAPUser(false);
             //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
@@ -106,15 +106,59 @@ public class InitialRunner implements CommandLineRunner {
             officeRepository.save(hOffice);
         }
 
-        SystemParameter sysparam = sysParamRepository.findByCode("WFO_RADIUS_LIMIT").orElse(new SystemParameter());
-        if(sysparam.getId() == null) {
-            sysparam.setCode("WFO_RADIUS_LIMIT");
-            sysparam.setName("WFO Radius Limit in metre (m)");
-            sysparam.setValue("5");
-            sysparam.setDecription("Radius limit to indicate that clock in/out is from office");
-            sysparam.setIsEditable(true);
-            sysparam.setIsSystem(false);
-            sysParamRepository.save(sysparam);
+        SystemParameter radiusLimit = sysParamRepository.findByCode("WFO_RADIUS_LIMIT").orElse(new SystemParameter());
+        if(radiusLimit.getId() == null) {
+            radiusLimit.setCode("WFO_RADIUS_LIMIT");
+            radiusLimit.setName("WFO Radius Limit in metre (m)");
+            radiusLimit.setValue("5");
+            radiusLimit.setDecription("Radius limit to indicate that clock in/out is from office");
+            radiusLimit.setIsEditable(true);
+            radiusLimit.setIsSystem(false);
+            sysParamRepository.save(radiusLimit);
+        }
+
+        SystemParameter houseKeep = sysParamRepository.findByCode("HOUSE_KEEPING_DAYS").orElse(new SystemParameter());
+        if(houseKeep.getId() == null) {
+            houseKeep.setCode("HOUSE_KEEPING_DAYS");
+            houseKeep.setName("Number of house keeping log tables in days");
+            houseKeep.setValue("180");
+            houseKeep.setDecription("Keep record in master table only for specific days otherwise save to archive table");
+            houseKeep.setIsEditable(true);
+            houseKeep.setIsSystem(false);
+            sysParamRepository.save(houseKeep);
+        }
+
+        SystemParameter excludeHouseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEPING").orElse(new SystemParameter());
+        if(excludeHouseKeep.getId() == null) {
+            excludeHouseKeep.setCode("EXCLUDE_HOUSE_KEEPING");
+            excludeHouseKeep.setName("Exclude log tables for house keeping process");
+            excludeHouseKeep.setValue("N/A");
+            excludeHouseKeep.setDecription("List of exclude log tables for house keeping process");
+            excludeHouseKeep.setIsEditable(true);
+            excludeHouseKeep.setIsSystem(false);
+            sysParamRepository.save(excludeHouseKeep);
+        }
+
+        SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVES_HR_API_URL").orElse(new SystemParameter());
+        if(marvesHRAPI.getId() == null) {
+            marvesHRAPI.setCode("MARVES_HR_API_URL");
+            marvesHRAPI.setName("Marves HR Web Service URL");
+            marvesHRAPI.setValue("https://marveshr.maritim.go.id/webservice/");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            marvesHRAPI.setIsEditable(true);
+            marvesHRAPI.setIsSystem(false);
+            sysParamRepository.save(marvesHRAPI);
+        }
+
+        SystemParameter marvesLetterAPI = sysParamRepository.findByCode("MARVES_LETTER_API_URL").orElse(new SystemParameter());
+        if(marvesLetterAPI.getId() == null) {
+            marvesLetterAPI.setCode("MARVES_LETTER_API_URL");
+            marvesLetterAPI.setName("Marves Persuratan Web Service URL");
+            marvesLetterAPI.setValue("https://persuratan.maritim.go.id/webservice/");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            marvesLetterAPI.setIsEditable(true);
+            marvesLetterAPI.setIsSystem(false);
+            sysParamRepository.save(marvesLetterAPI);
         }
 
         logger.info("[InitialRunner][run] Finish at " + new Date(System.currentTimeMillis()));

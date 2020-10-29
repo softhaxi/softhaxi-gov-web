@@ -40,9 +40,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Ben Alex
-sn: Alex
+sn: 1023901234567
 uid: ben
 userPassword: benspassword
+mail: ben@core.go.id
 
 dn: uid=bob,ou=people,dc=springframework,dc=org
 objectclass: top
@@ -50,9 +51,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Bob Hamilton
-sn: Hamilton
+sn: 1023901234568
 uid: bob
 userPassword: bobspassword
+mail: bob@core.go.id
 
 dn: uid=joe,ou=otherpeople,dc=springframework,dc=org
 objectclass: top
@@ -60,9 +62,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Joe Smeth
-sn: Smeth
+sn: 1023901234569
 uid: joe
 userPassword: joespassword
+mail: joe@core.go.id
 
 dn: uid=agus.supriadi,ou=otherpeople,dc=springframework,dc=org
 objectclass: top
@@ -70,9 +73,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Agus Supriadi
-sn: Supriadi
+sn: 1023901234570
 uid: agus.supriadi
 userPassword: password
+mail: agus.supriadi@core.go.id
 
 dn: uid=bambang.ari,ou=otherpeople,dc=springframework,dc=org
 objectclass: top
@@ -80,9 +84,32 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Bambang Ari
-sn: Ari
+sn: 1023901234571
 uid: bambang.ari
 userPassword: password
+mail: bambang.ari@core.go.id
+
+dn: uid=candra.sari,ou=otherpeople,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Candra Sari
+sn: 1023901234572
+uid: candra.sari
+userPassword: password
+mail: candra.sari@core.go.id
+
+dn: uid=dede.gumilar,ou=otherpeople,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Dede Gumilar
+sn: 1023901234573
+uid: dede.gumilar
+userPassword: password
+mail: dede.gumilar@core.go.id
 
 dn: cn=mouse\, jerry,ou=people,dc=springframework,dc=org
 objectclass: top
@@ -90,9 +117,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Mouse, Jerry
-sn: Mouse
+sn: 1023901234574
 uid: jerry
 userPassword: jerryspassword
+mail: jerry@core.go.id
 
 dn: cn=slash/guy,ou=people,dc=springframework,dc=org
 objectclass: top
@@ -100,9 +128,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: slash/guy
-sn: Slash
+sn: 1023901234575
 uid: slashguy
 userPassword: slashguyspassword
+mail: slashguy@core.go.id
 
 dn: cn=quote\"guy,ou=\"quoted people\",dc=springframework,dc=org
 objectclass: top
@@ -110,9 +139,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: quote\"guy
-sn: Quote
+sn: 1023901234576
 uid: quoteguy
 userPassword: quoteguyspassword
+mail: quote@core.go.id
 
 dn: uid=space cadet,ou=space cadets,dc=springframework,dc=org
 objectclass: top
@@ -120,11 +150,10 @@ objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
 cn: Space Cadet
-sn: Cadet
+sn: 1023901234577
 uid: space cadet
 userPassword: spacecadetspassword
-
-
+mail: space.cadet@core.go.id
 
 dn: cn=developers,ou=groups,dc=springframework,dc=org
 objectclass: top

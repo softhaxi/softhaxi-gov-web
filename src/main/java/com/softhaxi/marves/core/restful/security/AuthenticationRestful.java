@@ -1,12 +1,17 @@
 package com.softhaxi.marves.core.restful.security;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
+import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.employee.Employee;
+import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.service.account.UserService;
+import com.softhaxi.marves.core.service.logging.LoggerService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 
 import org.slf4j.Logger;
@@ -41,29 +46,60 @@ public class AuthenticationRestful {
     @Autowired
     private AccessTokenUtil accessTokenUtil;
 
+
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private LoggerService loggerService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        User user = null;
+        String description = "login.mobile";
         try {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
 
-            User user = userService.findByUsername(request.getUserid().trim()).orElse(null);
+            user = userService.findByUsername(request.getUserid().trim()).orElse(null);
             if (user == null) {
-                user = new User();
-                user.setUsername(request.getUserid().trim());   
-                user.setPassword(request.getPassword().trim());
+                user = new User()
+                    .username(request.getUserid().trim().toUpperCase());   
+                // user.setPassword(request.getPassword().trim());
                 user.setIsLDAPUser(true);
+
+                Map<?, ?> userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
+                Employee employee = null;
+                Profile profile = null;
+                if(userLdap != null) {
+                    logger.debug("[login] User ldap..." + userLdap.toString());
+                    user.setEmail(userLdap.get("email").toString());
+                    profile = new Profile().fullName(userLdap.get("fullName").toString())
+                        .primaryEmail(userLdap.get("email").toString());;
+                    employee = new Employee().employeeNo(userLdap.get("employeeNo").toString());
+                
+                }
+                user.setProfile(profile);
+                user.setEmployee(employee);
                 user = userService.saveMobileUser(user);
+                description = "first.time.login.mobile";
             }
+
+            loggerService.saveAsyncActivityLog(
+                new ActivityLog().user(user)
+                    .actionTime(ZonedDateTime.now())
+                    .actionName("log.in")
+                    .description(description)
+                    .uri("/user")
+                    .referenceId(user.getId().toString())
+                    .deepLink(String.format("core://marves.dev/user?id=%s", user.getId().toString()))
+            );
 
             return new ResponseEntity<>(
                 new GeneralResponse(
                 HttpStatus.OK.value(), 
                 HttpStatus.OK.getReasonPhrase(), 
-                Map.of("type", "bearer", "accessToken", accessTokenUtil.generateToken(user.getId().toString())))
+                Map.of("type", "Bearer", "accessToken", accessTokenUtil.generateToken(user.getId().toString())))
                 , HttpStatus.OK);
         } catch(DisabledException e) {
             logger.error(e.getMessage(), e);

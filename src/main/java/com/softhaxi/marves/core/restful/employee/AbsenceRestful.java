@@ -62,6 +62,25 @@ public class AbsenceRestful {
                                 HttpStatus.BAD_REQUEST.getReasonPhrase(), 
                                 "Can not submit Daily Clock In twice in same day"
                             ), HttpStatus.BAD_REQUEST);
+                    else {
+                        DailyAttendence daily = new DailyAttendence();
+                        daily.setUser(user);
+                        daily.setAction(absence.getAction().toUpperCase().trim());
+                        daily.setDateTime(ZonedDateTime.ofInstant(absence.getDateTime().toInstant(), ZoneId.systemDefault()));
+                        daily.setLatitude(absence.getLatitude());
+                        daily.setLongitude(absence.getLongitude());
+                        daily.setIsMockLocation(absence.getIsMockLocation());
+                        attendence = absenceService.save(daily);
+
+                        return new ResponseEntity<>(
+                            new GeneralResponse(
+                                HttpStatus.CREATED.value(),
+                                HttpStatus.CREATED.getReasonPhrase(),
+                                attendence
+                            ),
+                            HttpStatus.CREATED
+                        );
+                    }
                 }
                 if(absence.getAction().equals("CO")) {
                     DailyAttendence daily = (DailyAttendence) attendence;

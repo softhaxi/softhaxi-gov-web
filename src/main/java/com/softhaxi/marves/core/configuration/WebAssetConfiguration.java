@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
 @Configuration
-public class WebConfiguration implements WebMvcConfigurer {
+public class WebAssetConfiguration implements WebMvcConfigurer {
 
     @Value("${app.photo.path}")
     private String photoPath;

@@ -11,11 +11,11 @@
             <div layout:fragment="second-navbar" class="nav-scroller bg-white box-shadow">
                 <nav class="nav nav-underline">
                     <a class="nav-link active" href="#">Dashboard</a>
-                    <a class="nav-link" href="#">Report</a>
-                    <a class="nav-link" href="#">Covid Tracker</a><a class="nav-link" href="#">
+                    <a class="nav-link" href="#">
                       Open Ticket
                       <span class="badge badge-pill bg-light align-text-bottom">0</span>
                     </a>
+                    <a class="nav-link" href="#">Covid Tracker</a>
                     <!-- <a class="nav-link" href="#">Link</a>
                     <a class="nav-link" href="#">Link</a>
                     <a class="nav-link" href="#">Link</a>
@@ -47,7 +47,7 @@
                   <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
                   <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                     <div class="d-flex justify-content-between align-items-center w-100">
-                      <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${'@' + row.user.username}">Full Name</strong></a>
+                      <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${row.user.profile.fullName}">Full Name</strong></a>
                       <span th:text="${row.actionTime}">Follow</span>
                     </div>
                     <span class="d-block" th:text="${row.actionName + ' ' + row.description}">@username</span>

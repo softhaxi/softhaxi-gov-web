@@ -16,6 +16,7 @@ import com.softhaxi.marves.core.web.filter.RestfulRequestFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -35,6 +36,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
+import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -49,12 +51,30 @@ import org.springframework.stereotype.Component;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+    @Value("${app.ldap.host}")
+    private String ldapHost;
+
+    @Value("${app.ldap.port}")
+    private String ldapPort;
+
+    @Value("${app.ldap.base-dn}")
+    private String baseDN;
+
     @Autowired
-    private UserRepository userRepository; 
+    private UserRepository userRepository;
 
     @Order(1)
     @Configuration
     public static class RestfulSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+        @Value("${app.ldap.host}")
+        private String ldapHost;
+
+        @Value("${app.ldap.port}")
+        private String ldapPort;
+
+        @Value("${app.ldap.base-dn}")
+        private String baseDN;
 
         @Autowired
         private RestfulAuthenticationEntryPoint authenticationEntryPoint;
@@ -65,7 +85,8 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.antMatcher("/api/**").cors().and().csrf().disable().authorizeRequests()
-                    .antMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/resetpassword")
+                    .antMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/resetpassword",
+                            "/api/v1/upload")
                     .permitAll().anyRequest().authenticated().and().exceptionHandling()
                     .authenticationEntryPoint(authenticationEntryPoint).and().sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
@@ -74,8 +95,13 @@ public class SecurityConfiguration {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.ldapAuthentication().userDnPatterns("uid={0},ou=people", "uid={0},ou=otherpeople")
-                    .groupSearchBase("ou=groups").contextSource().url("ldap://localhost:8089/dc=springframework,dc=org")
+            auth.ldapAuthentication()
+                    .userDnPatterns("uid={0},ou=people", "uid={0},ou=otherpeople")
+                    //.userDnPatterns("uid={0}")
+                    .userSearchFilter("(|(uid={0})(mail={0}))")
+                    .groupSearchBase("ou=groups")
+                    .contextSource()
+                    .url(String.format("ldap://%s:%s/%s", ldapHost, ldapPort, baseDN))
                     .and().passwordCompare()
                     // .passwordEncoder(new BCryptPasswordEncoder())
                     .passwordAttribute("userPassword");
@@ -131,17 +157,19 @@ public class SecurityConfiguration {
     @Bean("ldapAuthenticationProvider")
     public LdapAuthenticationProvider ldapAuthenticationProvider() {
         LdapContextSource context = new LdapContextSource();
-        context.setUrls(new String[] { "ldap://localhost:8089" });
-        context.setBase("dc=springframework,dc=org");
+        context.setUrls(new String[] { String.format("ldap://%s:%s", ldapHost, ldapPort) });
+        context.setBase(baseDN);
         context.setBaseEnvironmentProperties(Collections.unmodifiableMap(new HashMap<>()));
         context.afterPropertiesSet();
 
         LdapAuthoritiesPopulator populator = new DefaultLdapAuthoritiesPopulator(context, "ou=groups") {
-
+            
             @Transactional
             @Override
             protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
-                User userDao = userRepository.findByUsername(username).orElse(null);
+                User userDao = userRepository
+                    .findByUsernameOrEmailIgnoreCase(username)
+                    .orElse(null);
                 Set<GrantedAuthority> credentials = null;
                 if(userDao != null) {
                     credentials = new HashSet<>();
@@ -165,11 +193,11 @@ public class SecurityConfiguration {
                 return super.getAdditionalRoles(user, username);
             }
         };
-
         BindAuthenticator authenticator = new BindAuthenticator(context);
-        authenticator.setUserDnPatterns(new String[] { "uid={0},ou=people", "uid={0},ou=otherpeople" });
+        //authenticator.setUserDnPatterns(new String[] { "uid={0},ou=people" });
         // authenticator.setUserSearch(new FilterBasedLdapUserSearch("",
         // "uid={0},ou=people", context));
+        authenticator.setUserSearch(new FilterBasedLdapUserSearch("", "(|(uid={0})(mail={0}))", context));
         authenticator.afterPropertiesSet();
 
         return new LdapAuthenticationProvider(authenticator, populator);
@@ -188,8 +216,9 @@ public class SecurityConfiguration {
         @Transactional
         @Override
         public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-            User user = userRepository.findByUsername(authentication.getName())
-                    .orElseThrow(() -> new UsernameNotFoundException("error.invalid.credential"));
+            User user = userRepository
+                .findByUsernameOrEmailIgnoreCase(authentication.getName().trim())
+                .orElseThrow(() -> new UsernameNotFoundException("error.invalid.credential"));
 
             var isMobileUser = false;
             for(var userRole : user.getRoles()) {

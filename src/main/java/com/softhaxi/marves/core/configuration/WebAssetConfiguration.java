@@ -9,13 +9,15 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 @Configuration
 public class WebAssetConfiguration implements WebMvcConfigurer {
 
-    @Value("${app.photo.path}")
-    private String photoPath;
+    @Value("${app.upload.path}")
+    private String uploadPath;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        if(!uploadPath.endsWith("/"))
+            uploadPath += "/";
         registry.addResourceHandler("/asset/**")
-            .addResourceLocations(String.format("file:%s", photoPath))
+            .addResourceLocations(String.format("file:%s", uploadPath))
             .setCachePeriod(3600)
             .resourceChain(true)
             .addResolver(new PathResourceResolver());

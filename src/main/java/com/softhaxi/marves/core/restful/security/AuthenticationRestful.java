@@ -5,13 +5,13 @@ import java.util.Map;
 
 import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.domain.employee.Employee;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.service.logging.LoggerService;
+import com.softhaxi.marves.core.service.message.ChatService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 
 import org.slf4j.Logger;
@@ -53,6 +53,9 @@ public class AuthenticationRestful {
     @Autowired
     private LoggerService loggerService;
 
+    @Autowired
+    private ChatService chatService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         User user = null;
@@ -63,24 +66,22 @@ public class AuthenticationRestful {
 
             user = userService.findByUsername(request.getUserid().trim()).orElse(null);
             if (user == null) {
-                user = new User()
-                    .username(request.getUserid().trim().toUpperCase());   
-                // user.setPassword(request.getPassword().trim());
-                user.setIsLDAPUser(true);
-
                 Map<?, ?> userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
-                Employee employee = null;
+                //Employee employee = null;
                 Profile profile = null;
+                user = new User();
                 if(userLdap != null) {
                     logger.debug("[login] User ldap..." + userLdap.toString());
+                    user.setUsername(userLdap.get("username").toString().trim().toUpperCase());  
+                    user.setIsLDAPUser(true);
                     user.setEmail(userLdap.get("email").toString());
                     profile = new Profile().fullName(userLdap.get("fullName").toString())
                         .primaryEmail(userLdap.get("email").toString());;
-                    employee = new Employee().employeeNo(userLdap.get("employeeNo").toString());
+                    //employee = new Employee().employeeNo(userLdap.get("employeeNo").toString());
                 
                 }
                 user.setProfile(profile);
-                user.setEmployee(employee);
+                //user.setEmployee(employee);
                 user = userService.saveMobileUser(user);
                 description = "first.time.login.mobile";
             }
@@ -91,9 +92,11 @@ public class AuthenticationRestful {
                     .actionName("log.in")
                     .description(description)
                     .uri("/user")
+                    .deepLink("core://marves.dev/user")
                     .referenceId(user.getId().toString())
-                    .deepLink(String.format("core://marves.dev/user?id=%s", user.getId().toString()))
             );
+
+            chatService.sendWelcomeMessage(user);
 
             return new ResponseEntity<>(
                 new GeneralResponse(

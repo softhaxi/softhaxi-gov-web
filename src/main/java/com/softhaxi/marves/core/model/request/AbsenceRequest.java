@@ -18,13 +18,35 @@ public class AbsenceRequest implements Serializable {
     private Date dateTime;
     private double latitude;
     private double longitude;
-    private String code;
-    private String title;
     private boolean isMockLocation;
+    private String code;
+    private String referenceId;
+    private String location;
+    private String organizer;
+    private String title;
     private String description;
-    //private MultipartFile photo;
+    private String startTime;
+    private String endTime;
+
 
     public AbsenceRequest() {
+    }
+
+    public AbsenceRequest(String type, String action, Date dateTime, double latitude, double longitude, boolean isMockLocation, String code, String referenceId, String location, String organizer, String title, String description, String startTime, String endTime) {
+        this.type = type;
+        this.action = action;
+        this.dateTime = dateTime;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.isMockLocation = isMockLocation;
+        this.code = code;
+        this.referenceId = referenceId;
+        this.location = location;
+        this.organizer = organizer;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     public String getType() {
@@ -67,22 +89,6 @@ public class AbsenceRequest implements Serializable {
         this.longitude = longitude;
     }
 
-    public String getCode() {
-        return this.code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public boolean isIsMockLocation() {
         return this.isMockLocation;
     }
@@ -95,12 +101,68 @@ public class AbsenceRequest implements Serializable {
         this.isMockLocation = isMockLocation;
     }
 
+    public String getCode() {
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getReferenceId() {
+        return this.referenceId;
+    }
+
+    public void setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
+    }
+
+    public String getLocation() {
+        return this.location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getOrganizer() {
+        return this.organizer;
+    }
+
+    public void setOrganizer(String organizer) {
+        this.organizer = organizer;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getDescription() {
         return this.description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStartTime() {
+        return this.startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return this.endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
     public AbsenceRequest type(String type) {
@@ -128,8 +190,28 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
+    public AbsenceRequest isMockLocation(boolean isMockLocation) {
+        this.isMockLocation = isMockLocation;
+        return this;
+    }
+
     public AbsenceRequest code(String code) {
         this.code = code;
+        return this;
+    }
+
+    public AbsenceRequest referenceId(String referenceId) {
+        this.referenceId = referenceId;
+        return this;
+    }
+
+    public AbsenceRequest location(String location) {
+        this.location = location;
+        return this;
+    }
+
+    public AbsenceRequest organizer(String organizer) {
+        this.organizer = organizer;
         return this;
     }
 
@@ -138,13 +220,13 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
-    public AbsenceRequest isMockLocation(boolean isMockLocation) {
-        this.isMockLocation = isMockLocation;
+    public AbsenceRequest description(String description) {
+        this.description = description;
         return this;
     }
 
-    public AbsenceRequest description(String description) {
-        this.description = description;
+    public AbsenceRequest startTime(String startTime) {
+        this.startTime = startTime;
         return this;
     }
 
@@ -156,10 +238,15 @@ public class AbsenceRequest implements Serializable {
             ", dateTime='" + getDateTime() + "'" +
             ", latitude='" + getLatitude() + "'" +
             ", longitude='" + getLongitude() + "'" +
-            ", code='" + getCode() + "'" +
-            ", title='" + getTitle() + "'" +
             ", isMockLocation='" + isIsMockLocation() + "'" +
+            ", code='" + getCode() + "'" +
+            ", referenceId='" + getReferenceId() + "'" +
+            ", location='" + getLocation() + "'" +
+            ", organizer='" + getOrganizer() + "'" +
+            ", title='" + getTitle() + "'" +
             ", description='" + getDescription() + "'" +
+            ", startTime='" + getStartTime() + "'" +
+            ", endTime='" + getEndTime() + "'" +
             "}";
     }
 

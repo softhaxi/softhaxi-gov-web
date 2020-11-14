@@ -12,26 +12,26 @@ public class ErrorResponse extends RestfulResponse {
      *
      */
     private static final long serialVersionUID = -2106425652429431828L;
-    protected String error;
+    protected Object error;
 
 
     public ErrorResponse() {
     }
 
-    public ErrorResponse(int code, String status, String error) {
+    public ErrorResponse(int code, String status, Object error) {
         super(code, status);
         this.error = error;
     }
 
-    public String getError() {
+    public Object getError() {
         return this.error;
     }
 
-    public void setError(String error) {
+    public void setError(Object error) {
         this.error = error;
     }
 
-    public ErrorResponse error(String error) {
+    public ErrorResponse error(Object error) {
         this.error = error;
         return this;
     }

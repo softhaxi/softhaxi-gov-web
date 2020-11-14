@@ -56,7 +56,8 @@ var options = {
       stacked: true,
       ticks: {
           beginAtZero: true,
-          max: 20,
+          //max: 20,
+          precision: 0,
           callback: function (value) {
               valuek = value;
               return valuek;

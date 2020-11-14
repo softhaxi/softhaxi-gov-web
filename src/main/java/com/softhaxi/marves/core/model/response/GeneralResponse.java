@@ -12,6 +12,7 @@ public class GeneralResponse extends RestfulResponse {
      *
      */
     private static final long serialVersionUID = -6871275781582319591L;
+    protected boolean isError;
     protected Object data;
 
 

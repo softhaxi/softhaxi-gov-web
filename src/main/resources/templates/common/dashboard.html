@@ -50,7 +50,7 @@
                       <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${row.user.profile.fullName}">Full Name</strong></a>
                       <span th:text="${row.actionTime}">Follow</span>
                     </div>
-                    <span class="d-block" th:text="${row.actionName + ' ' + row.description}">@username</span>
+                    <span class="d-block" th:text="#{${row.actionName}} + ' ' + ${row.description.toUpperCase()}">@username</span>
                   </div>
                 </div>
                 <small class="d-block text-right mt-3">

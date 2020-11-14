@@ -1,10 +1,15 @@
 package com.softhaxi.marves.core.configuration;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -19,11 +24,21 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
  */
 @Configuration
 public class I18nConfiguration implements WebMvcConfigurer {
+
+    private final static Logger logger = LoggerFactory.getLogger(I18nConfiguration.class);
+
+    @Value("${app.i18n.messages}")
+    private String i18nMessages;
+
     @Bean
-    public ResourceBundleMessageSource messageSource() {
-        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
-        source.setBasename("i18n/messages");
+    public MessageSource messageSource() {
+        logger.info("[messageSource] Path...." + String.format("file:%s", i18nMessages));
+        ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
+        source.setBasenames("classpath:i18n/messages",
+            String.format("file:%s", i18nMessages));
+        source.setCacheSeconds(600);
         source.setUseCodeAsDefaultMessage(true);
+        source.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return source;
     }
     

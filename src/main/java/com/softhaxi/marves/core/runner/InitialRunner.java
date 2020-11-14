@@ -86,9 +86,9 @@ public class InitialRunner implements CommandLineRunner {
         if(aUser == null && sadmin != null) {
             aUser = new User();
             aUser.setUsername("MCORE.ADMIN");
-            aUser.setEmail("mcore.admin@maritim.com");
-            aUser.setPassword("password");
-            aUser.setIsLDAPUser(false);
+            aUser.setEmail("mcore.admin@maritim.go.id");
+            // aUser.setPassword("password");
+            aUser.setIsLDAPUser(true);
             //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
             userRepository.save(aUser);
             
@@ -117,10 +117,10 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(radiusLimit);
         }
 
-        SystemParameter houseKeep = sysParamRepository.findByCode("HOUSE_KEEPING_DAYS").orElse(new SystemParameter());
+        SystemParameter houseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEP").orElse(new SystemParameter());
         if(houseKeep.getId() == null) {
-            houseKeep.setCode("HOUSE_KEEPING_DAYS");
-            houseKeep.setName("Number of house keeping log tables in days");
+            houseKeep.setCode("HOUSE_KEEP_DAYS");
+            houseKeep.setName("House keeping days");
             houseKeep.setValue("180");
             houseKeep.setDecription("Keep record in master table only for specific days otherwise save to archive table");
             houseKeep.setIsEditable(true);
@@ -128,10 +128,10 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(houseKeep);
         }
 
-        SystemParameter excludeHouseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEPING").orElse(new SystemParameter());
+        SystemParameter excludeHouseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEP").orElse(new SystemParameter());
         if(excludeHouseKeep.getId() == null) {
-            excludeHouseKeep.setCode("EXCLUDE_HOUSE_KEEPING");
-            excludeHouseKeep.setName("Exclude log tables for house keeping process");
+            excludeHouseKeep.setCode("EXCLUDE_HOUSE_KEEP");
+            excludeHouseKeep.setName("Exclude log tables");
             excludeHouseKeep.setValue("N/A");
             excludeHouseKeep.setDecription("List of exclude log tables for house keeping process");
             excludeHouseKeep.setIsEditable(true);
@@ -141,24 +141,35 @@ public class InitialRunner implements CommandLineRunner {
 
         SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVES_HR_API_URL").orElse(new SystemParameter());
         if(marvesHRAPI.getId() == null) {
-            marvesHRAPI.setCode("MARVES_HR_API_URL");
-            marvesHRAPI.setName("Marves HR Web Service URL");
-            marvesHRAPI.setValue("https://marveshr.maritim.go.id/webservice/");
+            marvesHRAPI.setCode("MARVESHR_API_URL");
+            marvesHRAPI.setName("Marves HR Restful Service");
+            marvesHRAPI.setValue("https://marveshr.maritim.go.id/webservice");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
             marvesHRAPI.setIsEditable(true);
             marvesHRAPI.setIsSystem(false);
             sysParamRepository.save(marvesHRAPI);
         }
 
-        SystemParameter marvesLetterAPI = sysParamRepository.findByCode("MARVES_LETTER_API_URL").orElse(new SystemParameter());
+        SystemParameter marvesLetterAPI = sysParamRepository.findByCode("MARVESLETTER_API_URL").orElse(new SystemParameter());
         if(marvesLetterAPI.getId() == null) {
-            marvesLetterAPI.setCode("MARVES_LETTER_API_URL");
-            marvesLetterAPI.setName("Marves Persuratan Web Service URL");
-            marvesLetterAPI.setValue("https://persuratan.maritim.go.id/webservice/");
+            marvesLetterAPI.setCode("MARVESLETTER_API_URL");
+            marvesLetterAPI.setName("Marves Persuratan Restful Service");
+            marvesLetterAPI.setValue("https://persuratan.maritim.go.id/webservice");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
             marvesLetterAPI.setIsEditable(true);
             marvesLetterAPI.setIsSystem(false);
             sysParamRepository.save(marvesLetterAPI);
+        }
+
+        SystemParameter covidTrackerAPI = sysParamRepository.findByCode("COVIDTRACKER_API_URL").orElse(new SystemParameter());
+        if(covidTrackerAPI.getId() == null) {
+            covidTrackerAPI.setCode("COVIDTRACKER_API_URL");
+            covidTrackerAPI.setName("Covid Tracker Restful Service");
+            covidTrackerAPI.setValue("https://covidtracker.maritim.go.id/api");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            covidTrackerAPI.setIsEditable(true);
+            covidTrackerAPI.setIsSystem(false);
+            sysParamRepository.save(covidTrackerAPI);
         }
 
         logger.info("[InitialRunner][run] Finish at " + new Date(System.currentTimeMillis()));

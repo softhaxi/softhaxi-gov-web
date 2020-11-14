@@ -5,8 +5,6 @@ import java.util.List;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 import com.softhaxi.marves.core.service.employee.AbsenceService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController {
 
-	private final static Logger logger = LoggerFactory.getLogger(IndexController.class);
+	//private final static Logger logger = LoggerFactory.getLogger(IndexController.class);
 
 	@Value("${coming.soon.flag}")
 	private String comingSoonFlag;

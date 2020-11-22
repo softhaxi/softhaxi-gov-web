@@ -33,12 +33,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
+import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
@@ -154,6 +157,21 @@ public class SecurityConfiguration {
 
     }
 
+    @Bean("ldapUserDetailsContextMapper")
+    public UserDetailsContextMapper ldapUserDetailsContextMapper() {
+        return new LdapUserDetailsMapper() {
+            @Override
+            public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
+                User dUser = userRepository.findByUsernameOrEmailIgnoreCase(username).orElse(null);
+                //UserDetails details = super.mapUserFromContext(ctx, username, authorities);
+                if(dUser != null) {
+                    return super.mapUserFromContext(ctx, dUser.getId().toString(), authorities);
+                }
+                return super.mapUserFromContext(ctx, username, authorities);
+            }
+        };
+    }
+
     @Bean("ldapAuthenticationProvider")
     public LdapAuthenticationProvider ldapAuthenticationProvider() {
         LdapContextSource context = new LdapContextSource();
@@ -200,7 +218,10 @@ public class SecurityConfiguration {
         authenticator.setUserSearch(new FilterBasedLdapUserSearch("", "(|(uid={0})(mail={0}))", context));
         authenticator.afterPropertiesSet();
 
-        return new LdapAuthenticationProvider(authenticator, populator);
+        LdapAuthenticationProvider provider = new LdapAuthenticationProvider(authenticator, populator);
+        provider.setUserDetailsContextMapper(ldapUserDetailsContextMapper());
+
+        return provider;
     }
 
     @Component("webAuthenticationProvider")
@@ -252,7 +273,7 @@ public class SecurityConfiguration {
                     });
                 }
                 if (user.getPassword().equalsIgnoreCase(authentication.getCredentials().toString())) {
-                    return new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), credentials);
+                    return new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword(), credentials);
                 } else {
                     throw new UsernameNotFoundException("error.invalid.credential");
                 }

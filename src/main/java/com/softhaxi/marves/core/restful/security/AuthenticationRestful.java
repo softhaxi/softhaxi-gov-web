@@ -86,17 +86,19 @@ public class AuthenticationRestful {
                 description = "first.time.login.mobile";
             }
 
-            loggerService.saveAsyncActivityLog(
-                new ActivityLog().user(user)
-                    .actionTime(ZonedDateTime.now())
-                    .actionName("log.in")
-                    .description(description)
-                    .uri("/user")
-                    .deepLink("core://marves.dev/user")
-                    .referenceId(user.getId().toString())
-            );
+            if(!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {
+                loggerService.saveAsyncActivityLog(
+                    new ActivityLog().user(user)
+                        .actionTime(ZonedDateTime.now())
+                        .actionName("log.in")
+                        .description(description)
+                        .uri("/user")
+                        .deepLink("core://marves.dev/user")
+                        .referenceId(user.getId().toString())
+                );
 
-            chatService.sendWelcomeMessage(user);
+                chatService.sendWelcomeMessage(user);
+            }
 
             return new ResponseEntity<>(
                 new GeneralResponse(

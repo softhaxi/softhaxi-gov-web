@@ -19,8 +19,8 @@ public class CovidResful {
     @Autowired
     private SystemParameterRepository sysParamRepo;
 
-    @GetMapping
-    public ResponseEntity<?> index() {
+    @GetMapping("/statistic")
+    public ResponseEntity<?> statistic() {
         RestTemplate restTemplate = new RestTemplate();
 
         SystemParameter param = sysParamRepo.findByCode("COVIDTRACKER_API_URL").orElse(null);

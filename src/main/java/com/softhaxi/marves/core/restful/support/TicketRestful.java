@@ -85,6 +85,9 @@ public class TicketRestful {
     @PostMapping()
     public ResponseEntity<?> post(@RequestParam(required = true) String payload,
             @RequestParam(value = "file", required = false) MultipartFile file) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
         TicketRequest request = null;
         try {
             request = new ObjectMapper().readValue(payload, TicketRequest.class);
@@ -108,18 +111,6 @@ public class TicketRestful {
                 HttpStatus.BAD_REQUEST
             );
         }
-        
-        String path = null;
-        if (file != null) {
-            try {
-                path = storageService.store("/ticket/" + new SimpleDateFormat("yyyyMMdd").format(new Date()), new SimpleDateFormat("HHmmss").format(new Date()), file);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
 
         Role admin = roleRepo.findByName("ADMIN").orElse(null);
         
@@ -129,8 +120,20 @@ public class TicketRestful {
             .content(request.getContent().trim())
             .status("open")
             .pic(admin != null ? admin.getId().toString() : null);
+        
+        String path = null;
+        //String rename =  ticket.getCode() + "_" + new SimpleDateFormat("HHmmss").format(new Date());
+        if (file != null) {
+            try {
+                path = storageService.store("/ticket/" + new SimpleDateFormat("yyyyMMdd").format(new Date()), ticket.getCode(), file);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
         if(path != null) {
-            ticket.setFilename(file.getOriginalFilename());
+            path = path.replace('\\', '/');
+            ticket.setFilename(path.substring(path.lastIndexOf("/") + 1));
             ticket.setStoragePath(path);
         } 
 

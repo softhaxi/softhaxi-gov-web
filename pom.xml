@@ -91,7 +91,7 @@
             <scope>provided</scope>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
 			<version>3.5.1</version>
@@ -129,7 +129,7 @@
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>commons-fileupload</groupId>
@@ -190,7 +190,11 @@
 						<configuration>
 							<executable>true</executable>
 							<layout>ZIP</layout>
-							<excludeGroupIds>org.webjars,com.fasterxml.jackson.core,org.postgresql</excludeGroupIds>
+							<excludeGroupIds>
+								org.webjars,
+								com.fasterxml.jackson.core,
+								org.postgresql
+							</excludeGroupIds>
 							<!-- <excludeArtifactIds>marves-core-common</excludeArtifactIds> -->
 							<!-- <excludes>
 								<exclude>

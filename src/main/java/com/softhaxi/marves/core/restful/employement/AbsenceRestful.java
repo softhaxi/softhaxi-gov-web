@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -12,9 +14,9 @@ import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.domain.attendence.Attendence;
-import com.softhaxi.marves.core.domain.attendence.DailyAttendence;
-import com.softhaxi.marves.core.domain.attendence.MeetingAttendence;
+import com.softhaxi.marves.core.domain.attendance.Attendance;
+import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
+import com.softhaxi.marves.core.domain.attendance.MeetingAttendance;
 import com.softhaxi.marves.core.model.request.AbsenceRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
@@ -58,11 +60,38 @@ public class AbsenceRestful {
     @Autowired
     private AbsenceUtil absenceUtil;
 
+    @GetMapping("/history")
+    public ResponseEntity<?> history(@RequestParam(required = false, defaultValue = "daily") String type,
+        @RequestParam(required = false) String year, 
+        @RequestParam(required = false) String month) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        LocalDate from = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        if(year != null && month != null)
+            from = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), 1);
+
+        LocalDate to = from.with(TemporalAdjusters.lastDayOfMonth());
+        logger.info("[History] From date..." + from.toString() + " To date..." + to.toString());
+
+        Collection<?> data = absenceService.getHistoryByUser(user, type.trim().toLowerCase(), from.atStartOfDay(ZoneId.systemDefault()), 
+            to.atStartOfDay(ZoneId.systemDefault()));
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                data
+                ),
+            HttpStatus.OK
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Attendence attendence = absenceService.getByUserAndId(user, UUID.fromString(id));
+        Attendance attendence = absenceService.getByUserAndId(user, UUID.fromString(id));
         if(attendence == null) {
             return new ResponseEntity<>(
                 new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
@@ -77,7 +106,7 @@ public class AbsenceRestful {
             new GeneralResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                attendence instanceof DailyAttendence ? (DailyAttendence) attendence : (MeetingAttendence) attendence
+                attendence instanceof DailyAttendance ? (DailyAttendance) attendence : (MeetingAttendance) attendence
              ),
             HttpStatus.OK
         );
@@ -112,9 +141,9 @@ public class AbsenceRestful {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Attendence attendence = absenceService.getLastAbsence(user, request.getType(), request.getCode());
+        Attendance attendence = absenceService.getLastAbsence(user, request.getType(), request.getCode());
         if(attendence.getId() != null) {
-            if(attendence instanceof DailyAttendence) {
+            if(attendence instanceof DailyAttendance) {
                 if(request.getAction().equals("CI")) {
                     if(absenceUtil.isSameDateAction(attendence.getDateTime(), ZonedDateTime.ofInstant(request.getDateTime().toInstant(), ZoneId.systemDefault())))
                         return new ResponseEntity<>(
@@ -124,7 +153,7 @@ public class AbsenceRestful {
                                 "Can not submit Daily Clock In twice in same day"
                             ), HttpStatus.BAD_REQUEST);
                     else {
-                        DailyAttendence daily = new DailyAttendence();
+                        DailyAttendance daily = new DailyAttendance();
                         daily.setUser(user);
                         daily.setAction(request.getAction().toUpperCase().trim());
                         daily.setDateTime(ZonedDateTime.ofInstant(request.getDateTime().toInstant(), ZoneId.systemDefault()));
@@ -147,7 +176,7 @@ public class AbsenceRestful {
                     }
                 }
                 if(request.getAction().equals("CO")) {
-                    DailyAttendence daily = (DailyAttendence) attendence;
+                    DailyAttendance daily = (DailyAttendance) attendence;
                     if(daily.getOutWork() != null) {
                         return new ResponseEntity<>(
                             new ErrorResponse(
@@ -175,11 +204,11 @@ public class AbsenceRestful {
                         HttpStatus.CREATED
                     );
                 }
-            } else if(attendence instanceof MeetingAttendence) {
+            } else if(attendence instanceof MeetingAttendance) {
                 if(!attendence.getDateTime().toLocalDate()
                     .equals(LocalDate.ofInstant(request.getDateTime().toInstant(), 
                     ZoneId.systemDefault()))) {
-                    MeetingAttendence meeting = new MeetingAttendence();
+                    MeetingAttendance meeting = new MeetingAttendance();
                     meeting.setUser(user);
                     meeting.setAction(request.getAction().toUpperCase().trim());
                     meeting.setDateTime(ZonedDateTime.ofInstant(request.getDateTime().toInstant(), ZoneId.systemDefault()));
@@ -219,7 +248,7 @@ public class AbsenceRestful {
         } else {
             if(request.getAction().equals("CI")) {
                 if(request.getType().equalsIgnoreCase("DAILY")) {
-                    DailyAttendence daily = new DailyAttendence();
+                    DailyAttendance daily = new DailyAttendance();
                     daily.setUser(user);
                     daily.setAction(request.getAction().toUpperCase().trim());
                     daily.setDateTime(ZonedDateTime.ofInstant(request.getDateTime().toInstant(), ZoneId.systemDefault()));
@@ -231,7 +260,7 @@ public class AbsenceRestful {
                     }
                     attendence = absenceService.save(daily);
                 } else if(request.getType().equalsIgnoreCase("MEETING")) {
-                    MeetingAttendence meeting = new MeetingAttendence();
+                    MeetingAttendance meeting = new MeetingAttendance();
                     meeting.setUser(user);
                     meeting.setAction(request.getAction().toUpperCase().trim());
                     meeting.setDateTime(ZonedDateTime.ofInstant(request.getDateTime().toInstant(), ZoneId.systemDefault()));
@@ -261,7 +290,7 @@ public class AbsenceRestful {
                 );
             }
             
-            if(attendence instanceof DailyAttendence && request.getAction().equals("CO")) {
+            if(attendence instanceof DailyAttendance && request.getAction().equals("CO")) {
                 return new ResponseEntity<>(
                         new ErrorResponse(
                             HttpStatus.BAD_REQUEST.value(), 
@@ -281,14 +310,14 @@ public class AbsenceRestful {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Attendence attendence = absenceService.getLastAbsence(user, "DAILY", null);
+        Attendance attendence = absenceService.getLastAbsence(user, "DAILY", null);
         
         if(date == null) {
             date = LocalDate.now();
         }
         
         if(attendence != null) {
-            if(attendence instanceof DailyAttendence && attendence.getDateTime() != null) {
+            if(attendence instanceof DailyAttendance && attendence.getDateTime() != null) {
                 if(absenceUtil.isSameDateAction(attendence.getDateTime(), date.atStartOfDay(ZoneId.systemDefault()))) {
                     return new ResponseEntity<>(
                         new GeneralResponse(
@@ -319,14 +348,14 @@ public class AbsenceRestful {
         @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Attendence attendence = absenceService.getLastAbsence(user, "MEETING", code);
+        Attendance attendence = absenceService.getLastAbsence(user, "MEETING", code);
 
         if(date == null) {
             date = LocalDate.now();
         }
 
         if(attendence != null) {
-            if(attendence instanceof MeetingAttendence && attendence.getDateTime() != null) {
+            if(attendence instanceof MeetingAttendance && attendence.getDateTime() != null) {
                 if(absenceUtil.isSameDateAction(attendence.getDateTime(), date.atStartOfDay(ZoneId.systemDefault()))) {
                     return new ResponseEntity<>(
                         new GeneralResponse(

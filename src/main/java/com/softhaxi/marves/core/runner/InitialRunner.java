@@ -1,6 +1,6 @@
 package com.softhaxi.marves.core.runner;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.access.UserRole;
@@ -44,7 +44,7 @@ public class InitialRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        logger.info("[InitialRunner][run] Start at " + new Date(System.currentTimeMillis()));
+        logger.info("[run] Start at " + ZonedDateTime.now());
         var count = roleRepository.count();
         if(count == 0) { 
             Role sadmin = new Role();
@@ -172,7 +172,7 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(covidTrackerAPI);
         }
 
-        logger.info("[InitialRunner][run] Finish at " + new Date(System.currentTimeMillis()));
+        logger.info("[run] Finish at " + ZonedDateTime.now());
     }
     
 }

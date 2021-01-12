@@ -8,7 +8,7 @@ import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
-import com.softhaxi.marves.core.service.employee.MarvesHRService;
+import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class UserRestful {
     private String marvesHrUrl;
 
     @Autowired
-    private MarvesHRService marvesHrService;
+    private EmployeeVitaeService employeeVitaeService;
     
     @Autowired
     private UserRepository userRepo;
@@ -42,7 +42,7 @@ public class UserRestful {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
 
-        Map<?, ?> data = (Map<?, ?>) marvesHrService.getPersonalInfo(user.getEmail().toLowerCase().trim());
+        Map<?, ?> data = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
         if(data == null) {
             return new ResponseEntity<>(
                 new ErrorResponse(
@@ -53,17 +53,14 @@ public class UserRestful {
                 HttpStatus.BAD_REQUEST
             );
         }
-        //logger.info("[me] Data..." + data.toString());
-        Map<?, ?> result = (Map<?, ?>) ((List<?>) data.get("result")).get(0);
-        //logger.info("[me] Result..." + result.toString());
 
         return new ResponseEntity<>(
             new GeneralResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 // "Success"
-                Map.of("fullName", result.get("NAMA_ONLY"), "photoUrl", 
-                    String.format("%s%s", marvesHrUrl, result.get("FOTO_THUMB")))
+                Map.of("fullName", data.get("name"), "photoUrl", 
+                    data.get("thumbnail"), "email", data.get("email"))
             ),
             HttpStatus.OK   
         );

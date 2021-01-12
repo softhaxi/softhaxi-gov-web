@@ -1,26 +1,7 @@
-/* html,
-body {
-    height: 100%;
-    margin: auto;
-}
-
-.container {
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-}
-
-.footer {
-    position: relative;
-   
-    height: 150px;
-    clear:both;
-    padding-top:20px;
-  }  */
-
 html,
 body {
-    overflow-x: hidden;
+  overflow-x: hidden;
+  height: 100%;
 }
 
 body {

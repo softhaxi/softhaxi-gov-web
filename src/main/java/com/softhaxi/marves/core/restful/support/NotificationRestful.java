@@ -1,5 +1,8 @@
 package com.softhaxi.marves.core.restful.support;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -74,8 +77,10 @@ public class NotificationRestful {
                 statuses.add(status);
             }
         }
-        if(!statuses.isEmpty())
-            notificationStatusRepo.saveAll(statuses);
+        // if(!statuses.isEmpty())
+        //     notificationStatusRepo.saveAll(statuses);
+
+        logger.debug("[index] Number of notification..." +notifications.size());
         
         return new ResponseEntity<>(
             new GeneralResponse(
@@ -156,7 +161,10 @@ public class NotificationRestful {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
 
-        Collection<Notification> notifications = notificationRepo.findAllUndeliveredByUser(user);
+        Collection<Notification> notifications = notificationRepo.findAllUndeliveredByUser(user,
+            LocalDate.now().atStartOfDay(ZoneId.systemDefault()),
+            LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault())
+        );
 
         logger.info("[undeliveredList] Count..." + notifications.size());
 
@@ -181,11 +189,6 @@ public class NotificationRestful {
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 notifications
-                // Map.of(
-                //     "id", "1", 
-                //     "content", "Testing notification from server", 
-                //     "dateTime", LocalDateTime.now()
-                // )
             ),
             HttpStatus.OK
         );

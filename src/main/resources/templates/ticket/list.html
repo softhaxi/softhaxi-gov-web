@@ -5,37 +5,53 @@
 
     <head th:fragment="common_head(meta,title,links,script)">
         <title>[[#{app.name}]] - [[#{open.ticket}]]</title>
+        <script>
+            function showPreview(src) {
+                //src = src.replace('\\', '\/');
+                console.log(src);
+                $('#image').attr('src', src).attr('src');
+                $('#image-preview').modal('show')
+            }
+
+            function onChangeAction(id, action) {
+                window.location = '/ticket/' + id + '?action=' + action;
+            }
+        </script>
     </head>
     <body class="bg-light">
         <header>
             <div layout:fragment="first-navbar" class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-              <ul class="navbar-nav mr-auto">
-                  <li class="nav-item active">
-                      <a class="nav-link" th:href="@{/dashboard}">Dashboard <span class="sr-only">(current)</span></a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link" th:href="@{/employement}">Employment</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link" th:href="@{/letter}">Letter</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link" th:href="@{/report}">Report</a>
-                  </li>
-              </ul>
-              <ul class="navbar-nav">
-                  <li class="nav-item dropdown mr-3">
-                      <a class="nav-link dropdown-toggle" th:href="@{'/settings'}" id="dropdown01"
-                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Settings</a>
-                      <div class="dropdown-menu dropdown-menu-md-right" aria-labelledby="dropdown01">
-                          <a class="dropdown-item" href="#">Office Master</a>
-                          <a class="dropdown-item" href="#">System Parameter</a>
-                      </div>
-                  </li>
-                  <li class="nav-item text-nowrap">
-                      <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
-                  </li>
-              </ul>
+                <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                      <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Dashboard</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" th:href="@{/employement}">Employment</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link" th:href="@{/letter}">Letter</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link" th:href="@{/report}">Report</a>
+                      </li>
+                    </ul>
+                    <ul class="navbar-nav d-flex">
+                      <li class="nav-item dropdown mr-4">
+                        <a class="nav-link dropdown-toggle" href="#" id="settings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          Settings
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="settings">
+                          <li><a class="dropdown-item" href="#">Office Master</a></li>
+                          <!-- <li><hr class="dropdown-divider"></li> -->
+                          <li><a class="dropdown-item" href="#">System Parameter</a></li>
+                        </ul>
+                      </li>
+                        <li class="nav-item text-nowrap">
+                            <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
+                        </li>
+                    </ul>
+                  </div>
             </div>
             <div layout:fragment="second-navbar" class="nav-scroller bg-white box-shadow">
                 <nav class="nav nav-underline">
@@ -49,93 +65,67 @@
             </div>
         </header>
         <div layout:fragment="content" class="container-fluid">
-            <div class="row my-2 rounded" style="min-height: 500px !important">
-                <div class="col-md-3" style="height: 75vh">
-                    <div class="row mb-2">
-                        <div class="col-md-12">
-                            <input class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search">
-                        </div>
-                        <!-- <div class="col-md-5">
-                            <select class="custom-select custom-select-sm" id="status" onchange="onChangeStatus(this)">
-                                <option value="open" th:selected="${status == 'open'}">Open</option>
-                                <option value="progress" th:selected="${status == 'progress'}">In Progress</option>
-                                <option value="resolved" th:selected="${status == 'resolved'}">Resolved</option>
-                                <option value="close" th:selected="${status == 'close'}">Close</option>
-                            </select>
-                        </div> -->
-                        <!-- <div class="col-md-7">
-                            <div th:if="${totalPages > 1}">
-                                <div class="row col-sm-10">
-                                    <div class="col-sm-2">
-                                        Total Rows: [[${totalItems}]]
-                                    </div>
-                                    <div class="col-sm-1">
-                                        <span th:each="i: ${#numbers.sequence(1, totalPages)}">
-                                            <a th:if="${currentPage != i}" th:href="@{'/ticket?page=' + ${i}} + '?status=' + ${status}">[[${i}]]</a>
-                                            <span th:unless="${currentPage != i}">[[${i}]]</span> &nbsp; &nbsp;
-                                        </span>
-                                    </div>
-                                    <div class="col-sm-1">
-                                        <a th:if="${currentPage < totalPages}" th:href="@{'/ticket?page=' + ${currentPage + 1}} + '?status=' + ${status}">Next</a>
-                                        <span th:unless="${currentPage < totalPages}">></span>
-                                    </div>
-                            
-                                    <div class="col-sm-1">
-                                        <a th:if="${currentPage < totalPages}" th:href="@{'/ticket?page=' + ${totalPages}} + '?status=' + ${status}">Last</a>
-                                        <span th:unless="${currentPage < totalPages}">>|</span>
-                                    </div>
+            <div class="row pt-2">
+                <div class="col-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <ul class="nav flex-column">
+                                <div class="sidebar-heading">
+                                    Ticket by Status
                                 </div>
-                            </div>
-                        </div> -->
-                    </div>
-                    <div class="list-group no-padding" role="tablist" th:each="item, iter: ${data}">
-                        <a class="list-group-item list-group-item-action" th:classappend="${iter.index == 0} ? active : ''" id="${item.id}" data-toggle="detail" th:href="${'#' + item.id}" role="tab" aria-controls="${item.id}">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1" th:text="${item.code}"></h6>
-                                <small th:text="${#temporals.format(item.dateTime, 'dd MMM yyyy HH:mm')}">3 days ago</small>
-                            </div>
-                            <div class="d-flex w-100 justify-content-between">
-                                <small th:text="${item.user.profile.fullName}"></small>
-                                <span class="label label-success" th:utext="${item.status}">SOLVED</span>
-                            </div>
-                            
-                        </a>
-                    </div>
-                </div>
-                <div class="col-md-9">
-                    <div class="tab-content" id="nav-tabContent" th:each="item, iter: ${data}">
-                        <div class="tab-pane fade show" th:classappend="${iter.index == 0} ? active : ''" th:id="${item.id}" role="tabpanel" th:attr="aria-labelledby=${item.id}">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex w-100 justify-content-between mb-1">
-                                        <h6 class="mb-1">[[${item.code}]] <br/>
-                                            <span><small th:text="${item.user.profile.fullName + ' at ' +  #temporals.format(item.dateTime, 'dd MMM yyyy HH:mm')}"></small></span>
-                                        </h6>
-                                        <small>
-                                            <select class="custom-select custom-select-sm"  th:onchange="onChangeAction(this, [[${item.id}]])">
-                                                <option selected>select.action</option>
-                                                <option value="start" th:selected="${item.status == 'start'}">start</option>
-                                                <option value="finish" th:selected="${item.status == 'finish'}">finish</option>
-                                                <option value="deliver" th:selected="${item.status == 'deliver'}">deliver</option>
-                                                <option value="close" th:selected="${item.status == 'close'}">close</option>
-                                            </select>
-                                        </small>
-                                    </div>
-                                    <div class="row" th:if="${item.photoUrl != null}">
-                                        <div class="col-md-2">
-                                            <a th:href="'javascript:showPreview(\'' + ${item.photoUrl} + '\');'"><img th:if="${item.photoUrl != null}" th:src="${'/asset' + item.storagePath}" height="180px" /></a>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <p th:text="${item.content}"></p>
-                                        </div>
-                                    </div>
-                                    <p th:unless="${item.storagePath != null}" th:text="${item.content}"></p>
-                                </div>
-                            </div>
+                                <li class="nav-item">
+                                  <a class="nav-link active" href="#">OPEN</a>
+                                </li>
+                                <li class="nav-item">
+                                  <a class="nav-link" href="#">RESOLVED</a>
+                                </li>
+                                <li class="nav-item">
+                                  <a class="nav-link" href="#">CLOSED</a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="col-9">
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Ticket</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Report Date</th>
+                                    <th scope="col"></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr th:each="item, iter: ${data}">
+                                    <th scope="row">[[${iter.index+1}]]</th>
+                                    <td><a th:href="@{/ticket + ${item.id}}">[[${item.code}]]</a></td>
+                                    <td>[[${item.content}]]</td>
+                                    <td>[[${#strings.toUpperCase(item.status)}]]</td>
+                                    <td>[[${#temporals.format(item.dateTime, 'dd MMM yyyy HH:mm')}]]</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                              Action
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "start")'>Start</a></li>
+                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "finish")'>Finish</a></li>
+                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "close")'>Close</a></li>
+                                            </ul>
+                                          </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> 
             
             <div class="modal fade" id="image-preview" tabindex="-1" role="dialog" aria-labelledby="image-preview" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
@@ -146,24 +136,6 @@
                     </div>
                 </div>
             </div>
-            <script>
-                function showPreview(src) {
-                    //src = src.replace('\\', '\/');
-                    console.log(src);
-                    $('#image').attr('src', src).attr('src');
-                    $('#image-preview').modal('show')
-                }
-
-                function onChangeStatus(element) {
-                    var status = (element.value || element.options[element.selectedIndex].value);
-                    window.location = '/ticket';
-                }
-
-                function onChangeAction(element, id) {
-                    var action = (element.value || element.options[element.selectedIndex].value);
-                    window.location = '/ticket/' + id + '?action=' + action;
-                }
-            </script>
         </div>
     </body>
 </html>

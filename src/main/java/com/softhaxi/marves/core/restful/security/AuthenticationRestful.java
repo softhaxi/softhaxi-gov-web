@@ -76,12 +76,10 @@ public class AuthenticationRestful {
                     user.setIsLDAPUser(true);
                     user.setEmail(userLdap.get("email").toString());
                     profile = new Profile().fullName(userLdap.get("fullName").toString())
-                        .primaryEmail(userLdap.get("email").toString());;
-                    //employee = new Employee().employeeNo(userLdap.get("employeeNo").toString());
+                        .primaryEmail(userLdap.get("email").toString());
                 
                 }
                 user.setProfile(profile);
-                //user.setEmployee(employee);
                 user = userService.saveMobileUser(user);
                 description = "first.time.login.mobile";
             }

@@ -94,9 +94,15 @@ public class AuthenticationRestful {
                     profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(userLdap.get("email").toString().toLowerCase().trim());
                     user.setUsername(userLdap.get("username").toString().trim().toUpperCase());  
                     user.setIsLDAPUser(true);
-                    user.setEmail(profileData.get("email").toString());
-                    profile = new Profile().fullName(profileData.get("name").toString())
-                        .primaryEmail(profileData.get("email").toString());
+                    if(profileData != null) {
+                        user.setEmail(profileData.get("email").toString());
+                        profile = new Profile().fullName(profileData.get("name").toString())
+                            .primaryEmail(profileData.get("email").toString()); 
+                    } else {
+                        user.setEmail(userLdap.get("email").toString());
+                        profile = new Profile().fullName(userLdap.get("fullName").toString())
+                            .primaryEmail(userLdap.get("email").toString());
+                    }
                 }
                 user.setProfile(profile);
                 user = userService.saveMobileUser(user);

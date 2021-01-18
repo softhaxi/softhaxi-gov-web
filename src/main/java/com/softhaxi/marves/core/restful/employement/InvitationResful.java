@@ -186,6 +186,7 @@ public class InvitationResful {
                 invitee = new User()
                     .email(email)
                     .username(email.substring(0, email.indexOf("@")).toUpperCase());
+                invitee.setIsLDAPUser(true);
                 userRepo.save(invitee);
             }
             if(!user.equals(invitee)) {

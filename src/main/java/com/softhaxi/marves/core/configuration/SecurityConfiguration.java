@@ -76,8 +76,17 @@ public class SecurityConfiguration {
         @Value("${app.ldap.port}")
         private String ldapPort;
 
-        @Value("${app.ldap.base-dn}")
-        private String baseDN;
+        @Value("${ldap.urls}")
+        private String ldapUrl;
+
+        @Value("${ldap.base.dn}")
+        private String ldapBaseDN;
+
+        @Value("${ldap.username}")
+        private String ldapUsername;
+
+        @Value("${ldap.password}")
+        private String ldapPassword;
 
         @Autowired
         private RestfulAuthenticationEntryPoint authenticationEntryPoint;
@@ -99,15 +108,17 @@ public class SecurityConfiguration {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.ldapAuthentication()
-                    .userDnPatterns("uid={0},ou=people", "uid={0},ou=otherpeople")
+                    //.userDnPatterns("uid={0},ou=people", "uid={0},ou=otherpeople")
                     //.userDnPatterns("uid={0}")
                     .userSearchFilter("(|(uid={0})(mail={0}))")
-                    .groupSearchBase("ou=groups")
+                    //.groupSearchBase("ou=groups")
                     .contextSource()
-                    .url(String.format("ldap://%s:%s/%s", ldapHost, ldapPort, baseDN))
-                    .and().passwordCompare()
+                    .url(String.format("%s/%s", ldapUrl, ldapBaseDN))
+                    .managerDn(ldapUsername)
+                    .managerPassword(ldapPassword);
+                    //.and().passwordCompare()
                     // .passwordEncoder(new BCryptPasswordEncoder())
-                    .passwordAttribute("userPassword");
+                    //.passwordAttribute("userPassword");
         }
 
         @Bean(name = "restAuthenticationManager")

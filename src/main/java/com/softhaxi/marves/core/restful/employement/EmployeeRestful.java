@@ -78,6 +78,42 @@ public class EmployeeRestful {
         );
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam(value="q", required = true) String keyword) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
+
+        List<Map<?, ?>> data = (List<Map<?, ?>>) employeeInfoService.findEmployeeList(keyword);
+        if(data == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "invalid data response"
+                ),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+        // int index = IntStream.range(0, data.size())
+        //     .filter(item -> {
+        //         String email = (String) data.get(item).get("email");
+        //         if(email == null) 
+        //             return false;
+        //         return email.equalsIgnoreCase(user.getEmail());
+        //     })
+        //     .findFirst().orElse(-1);
+        // data.remove(index);
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                data
+            ),
+            HttpStatus.OK   
+        );
+    }
+
     @GetMapping("/personalInfo")
     public ResponseEntity<?> personalInfo(@RequestParam(required = false) String payload) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

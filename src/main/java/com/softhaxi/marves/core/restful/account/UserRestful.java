@@ -8,6 +8,7 @@ import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
+import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 
 import org.slf4j.Logger;
@@ -37,14 +38,44 @@ public class UserRestful {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
 
         Map<?, ?> data = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
-        if(data == null) {
+        if(data != null) {
             return new ResponseEntity<>(
+                new GeneralResponse(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    // "Success"
+                    Map.of("id", user.getId(), "fullName", data.get("name"), "photoUrl", 
+                        data.get("thumbnail"), "email", data.get("email"))
+                ),
+                HttpStatus.OK   
+            );
+            
+        }
+
+        data = (Map<?, ?>) userService.retrieveUserLdapDetail(user.getEmail().trim().toLowerCase());
+        logger.info("[ME] === " + data);
+        if(data != null) {
+            return new ResponseEntity<>(
+                new GeneralResponse(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    Map.of("id", user.getId(), "fullName", data.get("fullName").toString(), "photoUrl", 
+                        "", "email", data.get("email").toString())
+                ),
+                HttpStatus.OK   
+            );
+        }
+
+        return new ResponseEntity<>(
                 new ErrorResponse(
                     HttpStatus.BAD_REQUEST.value(),
                     HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -52,17 +83,5 @@ public class UserRestful {
                 ),
                 HttpStatus.BAD_REQUEST
             );
-        }
-
-        return new ResponseEntity<>(
-            new GeneralResponse(
-                HttpStatus.OK.value(),
-                HttpStatus.OK.getReasonPhrase(),
-                // "Success"
-                Map.of("fullName", data.get("name"), "photoUrl", 
-                    data.get("thumbnail"), "email", data.get("email"))
-            ),
-            HttpStatus.OK   
-        );
     }
 }

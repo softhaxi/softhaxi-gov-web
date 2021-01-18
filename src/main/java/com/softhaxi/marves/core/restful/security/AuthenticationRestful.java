@@ -3,13 +3,19 @@ package com.softhaxi.marves.core.restful.security;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
+import com.softhaxi.marves.core.domain.access.Role;
+import com.softhaxi.marves.core.domain.access.UserRole;
 import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.repository.access.RoleRepository;
+import com.softhaxi.marves.core.repository.access.UserRoleRepository;
+import com.softhaxi.marves.core.repository.account.ProfileRepository;
 import com.softhaxi.marves.core.service.account.UserService;
+import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 import com.softhaxi.marves.core.service.logging.LoggerService;
 import com.softhaxi.marves.core.service.message.ChatService;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
@@ -46,15 +52,26 @@ public class AuthenticationRestful {
     @Autowired
     private AccessTokenUtil accessTokenUtil;
 
-
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ProfileRepository profileRepo;
+
+    @Autowired
+    private EmployeeVitaeService employeeVitaeService;
 
     @Autowired
     private LoggerService loggerService;
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private RoleRepository roleRepo;
+
+    @Autowired
+    private UserRoleRepository userRoleRepo;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -65,23 +82,45 @@ public class AuthenticationRestful {
                 new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
 
             user = userService.findByUsername(request.getUserid().trim()).orElse(null);
+            Profile profile = null;
+            Map<?, ?> userLdap = null;
+            Map<?, ?> profileData = null;
             if (user == null) {
-                Map<?, ?> userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
+                userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
                 //Employee employee = null;
-                Profile profile = null;
                 user = new User();
                 if(userLdap != null) {
                     logger.debug("[login] User ldap..." + userLdap.toString());
+                    profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(userLdap.get("email").toString().toLowerCase().trim());
                     user.setUsername(userLdap.get("username").toString().trim().toUpperCase());  
                     user.setIsLDAPUser(true);
-                    user.setEmail(userLdap.get("email").toString());
-                    profile = new Profile().fullName(userLdap.get("fullName").toString())
-                        .primaryEmail(userLdap.get("email").toString());
-                
+                    user.setEmail(profileData.get("email").toString());
+                    profile = new Profile().fullName(profileData.get("name").toString())
+                        .primaryEmail(profileData.get("email").toString());
                 }
                 user.setProfile(profile);
                 user = userService.saveMobileUser(user);
                 description = "first.time.login.mobile";
+            } else {
+                profile = profileRepo.findByUser(user).orElse(null);
+                if(profile == null) {
+                    userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(user.getEmail().trim().toLowerCase());
+                    profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
+                    if(profileData != null) {
+                        profile = new Profile().fullName(profileData.get("name").toString())
+                            .primaryEmail(profileData.get("email").toString()); 
+                    } else {
+                        profile = new Profile().fullName(userLdap.get("fullName").toString())
+                            .primaryEmail(userLdap.get("email").toString());
+                    }
+                    profile.setUser(user);
+                    profileRepo.save(profile);
+                    Role role = roleRepo.findByName("MOBILE").orElse(null);
+                    if(role != null) {
+                        userRoleRepo.save(new UserRole(user, role));
+                    }
+                    description = "first.time.login.mobile";
+                }
             }
 
             if(!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {

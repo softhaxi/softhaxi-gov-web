@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.account.User;
@@ -114,7 +116,8 @@ public class AbsenceRestful {
     
     @PostMapping()
     public ResponseEntity<?> post(@RequestParam(required = true) String payload,
-        @RequestParam(value = "file", required = false) MultipartFile file) {
+        @RequestParam(value = "file", required = false) MultipartFile file,
+        HttpServletRequest servlet) {
         AbsenceRequest request = null;
         try {
             request = new ObjectMapper().readValue(payload, AbsenceRequest.class);
@@ -128,6 +131,9 @@ public class AbsenceRestful {
                 HttpStatus.BAD_REQUEST
             );
         }
+
+        String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
+        logger.info("[post] IP Adress..." + ipAddress);
 
         String path = null;
         if (file != null) {
@@ -163,6 +169,7 @@ public class AbsenceRestful {
                         if(path != null) {
                             daily.setPicturePath(path);
                         }
+                        daily.setIpAddress(ipAddress);
                         attendence = absenceService.save(daily);
 
                         return new ResponseEntity<>(
@@ -193,6 +200,7 @@ public class AbsenceRestful {
                     if(path != null) {
                         daily.setPicturePath(path);
                     }
+                    daily.setOutIpAddress(ipAddress);
                     attendence = absenceService.save(daily);
     
                     return new ResponseEntity<>(
@@ -226,6 +234,7 @@ public class AbsenceRestful {
                     if(path != null) {
                         meeting.setPicturePath(path);
                     }
+                    meeting.setIpAddress(ipAddress);
                     attendence = absenceService.save(meeting);
                     return new ResponseEntity<>(
                         new GeneralResponse(
@@ -258,6 +267,7 @@ public class AbsenceRestful {
                     if(path != null) {
                         daily.setPicturePath(path);
                     }
+                    daily.setIpAddress(ipAddress);
                     attendence = absenceService.save(daily);
                 } else if(request.getType().equalsIgnoreCase("MEETING")) {
                     MeetingAttendance meeting = new MeetingAttendance();
@@ -278,6 +288,7 @@ public class AbsenceRestful {
                     if(path != null) {
                         meeting.setPicturePath(path);
                     }
+                    meeting.setIpAddress(ipAddress);
                     attendence = absenceService.save(meeting);
                 }
                 return new ResponseEntity<>(

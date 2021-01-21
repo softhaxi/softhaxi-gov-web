@@ -43,6 +43,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,7 +102,7 @@ public class InvitationResful {
             });
             invitation.setMembers(members);
         });
-        //logger.info("[Index] number of invitation = " + invitations.size());
+        logger.info("[Index] number of invitation = " + invitations.size());
 
         return new ResponseEntity<>(
             new GeneralResponse(
@@ -137,26 +138,36 @@ public class InvitationResful {
         if (file != null) {
             try {
                 String folder = String.format("/%s/%s", "invitation", new SimpleDateFormat("yyyyMMdd").format(new Date()));
-                path = storageService.store(folder, new SimpleDateFormat("HHmmss").format(new Date()), file);
+                path = storageService.store(folder, null, file);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
         }
 
-        String[] times = request.getStartTime().split(":");
         LocalDate startDate = request.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = request.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        String[] startTimes = request.getStartTime().split(":");
+        String[] endTimes = request.getEndTime().split(":");
+        
         ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-            Integer.parseInt(times[0]), Integer.parseInt(times[1]), 0, 0, ZoneId.systemDefault());
+            Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
+        ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+            Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
 
         Invitation invitation = new Invitation()
-            .code(request.getCode().trim())
+            .code(request.getCode())
             .title(request.getTitle().trim())
-            .description(request.getDescription())
+            .description(request.getDescription() != null ? request.getDescription() : request.getTitle())
             .location(request.getLocation())
+            .startDate(startDate)
+            .endDate(endDate)
             .startTime(startTime)
+            .endTime(endTime)
             .category(request.getCategory().toUpperCase())
             .user(user);
         if(path != null) {
+            invitation.setFileName(file.getOriginalFilename());
             invitation.setAttachement(path);
         }
         invitationRepo.save(invitation);
@@ -204,11 +215,11 @@ public class InvitationResful {
         
         return new ResponseEntity<>(
             new GeneralResponse(
-                HttpStatus.OK.value(),
-                HttpStatus.OK.getReasonPhrase(),
+                HttpStatus.CREATED.value(),
+                HttpStatus.CREATED.getReasonPhrase(),
                 invitation
             ),
-            HttpStatus.OK   
+            HttpStatus.CREATED   
         );
     }
 
@@ -216,7 +227,7 @@ public class InvitationResful {
     public ResponseEntity<?> get(@PathVariable String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-        Invitation invitation = invitationRepo.getByUserAndId(user, UUID.fromString(id)).orElse(null);
+        Invitation invitation = invitationRepo.findByUserAndId(user, UUID.fromString(id)).orElse(null);
         if(invitation == null) {
             return new ResponseEntity<>(
                 new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
@@ -253,12 +264,57 @@ public class InvitationResful {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        
+        Invitation invitation = invitationRepo.findByUserAndId(user, UUID.fromString(id)).orElse(null);
+        if(invitation == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+        
+        if(invitation.getUser().equals(user)) {
+            invitation.setDeleted(true);
+            invitationRepo.save(invitation);
+        } else {
+            InvitationMember member = invitationMemberRepo.findByUserAndInvitationId(user, invitation.getId()).orElse(null);
+            if(member == null) {
+                return new ResponseEntity<>(
+                    new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                        HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                        "item.not.found"
+                    ),
+                    HttpStatus.NOT_FOUND
+                );
+            }
+
+            member.setDeleted(true);
+            invitationMemberRepo.save(member);
+        }
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                "invitation.deleted"
+             ),
+            HttpStatus.OK
+        );
+    }
+
     @GetMapping("/complete/{id}")
     public ResponseEntity<?> complete(@PathVariable String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
         logger.info("[complete] complete invitation ");
-        InvitationMember member = invitationMemberRepo.getByUserAndInvitationId(user, UUID.fromString(id)).orElse(null);
+        InvitationMember member = invitationMemberRepo.findByUserAndInvitationId(user, UUID.fromString(id)).orElse(null);
         if(member == null) {
             return new ResponseEntity<>(
                 new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
@@ -272,7 +328,7 @@ public class InvitationResful {
         member.setStatus("ATTENDED");
         invitationMemberRepo.save(member);
 
-        Invitation invitation = invitationRepo.getByUserAndId(user, UUID.fromString(id)).orElse(null);
+        Invitation invitation = invitationRepo.findByUserAndId(user, UUID.fromString(id)).orElse(null);
         if(invitation == null) {
             return new ResponseEntity<>(
                 new ErrorResponse(HttpStatus.NOT_FOUND.value(), 

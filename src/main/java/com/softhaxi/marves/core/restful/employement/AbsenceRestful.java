@@ -133,7 +133,7 @@ public class AbsenceRestful {
         }
 
         String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
-        logger.info("[post] IP Adress..." + ipAddress);
+        //logger.info("[post] IP Adress..." + ipAddress);
 
         String path = null;
         if (file != null) {

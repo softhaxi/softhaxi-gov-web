@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/employee.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+            <div>
+                    <h1 class="text-center" th:text="#{label.sysparam.title}"></h1>
+            </div>
+             <div class="my-2 p-3 bg-white rounded shadow-sm">        
+                        <div class="table-wrapper table-responsive-sm">
+                        <div class="table-title">
+                                <div class="col-sm-12 text-center">
+                                    <h3 th:text="#{label.sysparam.table.title}"></h3>
+                                </div>
+                        </div>
+                        <div class="row py-3 clearfix">
+                            <div class="col-sm-8 text-align-right">
+                                <form action="#" th:action="@{/sysparam/add}" th:object="${sysParam}" method="POST">
+                                    <button type="submit" class="btn btn-success" data-toggle="modal" ><i class="material-icons"></i> <span>Add System Parameter</span></button>
+                                </form>
+                                    <!-- <a href="#deleteEmployeeModal" class="btn btn-danger  pull-right" data-toggle="modal"><i class="material-icons"></i> <span>Delete</span></a>						 -->
+                            </div>
+                            <div class="search-container py-3 col-sm-4">
+                                <form action="#" th:action="@{/sysparam}" >
+                                    <input type="text" th:placeholder="#{label.sysparam.search}" name="paramCode" class="col-sm-10">
+                                    <button type="submit"><i class="fa fa-search"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                            <table class="table w-auto table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" th:text="#{no}"></th>
+                                            <th class="col-md-1" scope="col" th:text="#{label.sysparam.code}"></th>
+                                            <th class="col-md-3" scope="col" th:text="#{label.sysparam.name}"></th>
+                                            <th class="col-md-3" scope="col" th:text="#{label.sysparam.description}"></th>
+                                            <th class="col-md-2" scope="col" th:text="#{label.sysparam.value}"></th>
+                                            <th class="col-md-2" scope="col" th:text="#{label.sysparam.regex}"></th>
+                                            <th class="col-md-1" scope="col" th:text="Action"/>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="sysparam: ${sysparamList}" th:if="${sysparamList.numberOfElements > 0}">
+                                            <td th:text="${sysparamStat.count + startIndex}" />
+                                            <td th:text="${sysparam.code}" />
+                                            <td th:text="${sysparam.name}" />
+                                            <td th:text="${sysparam.decription}" />
+                                            <td th:text="${sysparam.value}" />
+                                            <td th:text="${sysparam.regex}" />
+                                            <td>
+                                                    <form action="#" th:action="@{/sysparam/action}" th:object="${sysParam}" method="POST">
+                                                        <button type="submit" name="btnAction" value="delete" class="fa fa-trash px-2 bg-white text-dark shadow-none" style="border: none"> </button>
+                                                        <button type="submit" name="btnAction" value="update" class="fa fa-edit px-2 bg-white text-dark shadow-none" style="border: none"> </button>
+                                                        <input type="hidden" th:value="${sysparam.id}" name="id"/>
+                                                    </form>
+                                                    <!-- <a href="#">
+                                                    <span  class="fa fa-trash px-2 bg-white text-dark"></span>
+                                                  </a>
+                                                  <a href="#">
+                                                        <span  class="fa fa-edit px-2 bg-white text-dark"></span>
+                                                      </a> -->
+                                                </td>
+                                        </tr>
+                                        <tr th:unless="${sysparamList.numberOfElements > 0}">
+                                            <td colspan="6" align="center">Record not found</td>
+                                        </tr>
+                                </table>
+                            </div>
+                            <nav aria-label="Page navigation example" th:if="${sysparamList.totalPages > 1}">
+                                    <ul th:class="pagination" th:classappend="justify-content-end"  id="pagination">
+                                            
+                                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                                <th:block th:if="${search}">
+                                                    <a class="page-link" th:href="@{/sysparam(page=${currentPage-1}, search=${search})}" aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </th:block>
+                                                <th:block th:unless="${search}">
+                                                        <a class="page-link" th:href="@{/sysparam(page=${currentPage-1})}" aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                                            <span aria-hidden="true">&laquo;</span>
+                                                        </a>
+                                                </th:block>
+                                        </li>
+                                        <th:block th:each="pageNumber : ${pageNumbers}">
+                                            <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active" >
+                                                <th:block th:if="${search}">
+                                                    <a th:href="@{/sysparam(page=${pageNumber-1}, search=${search})}" th:classappend="page-link">
+                                                        <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                    </a>
+                                                </th:block>
+                                                <th:block th:unless="${search}">
+                                                    <a th:href="@{/sysparam(page=${pageNumber-1})}" th:classappend="page-link">
+                                                        <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                    </a>
+                                                </th:block>
+                                            </li>
+                                        </th:block>
+                                        <li class="page-item" th:classappend="${currentPage + 1 == sysparamList.totalPages} ? 'disabled'">
+                                            <th:block th:if="${search}">
+                                                <a class="page-link" th:href="@{/sysparam(page=${currentPage+1}, search=${search})}" aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </th:block>
+                                            <th:block th:unless="${search}">
+                                                <a class="page-link" th:href="@{/sysparam(page=${currentPage+1})}" aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </th:block>
+                                        </li>
+                                    
+                                    </ul>
+                                </nav>  
+             </div>
+        <!-- <script th:src="@{/scripts/jquery.twbsPagination.js}"></script>
+        <script type="text/javascript">
+            $(function () {
+                window.pagObj = $('#pagination').twbsPagination({
+                    totalPages: [[${sysparamList}]],
+                    visiblePages: 5,
+                    onPageClick: function (event, page) {
+                        console.info(page + ' (from options)');
+                    }
+                }).on('page', function (event, page) {
+                    console.info(page + ' (from event listening)');
+                });
+            });
+        </script> -->
+    </div>
+</body>
+
+</html>

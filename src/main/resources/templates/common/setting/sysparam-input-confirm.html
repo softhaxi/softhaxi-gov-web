@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/employee.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+        <div>
+                <h1 class="text-center" th:text="#{label.sysparam.title}"></h1>
+        </div>
+        <div class="my-2 p-3 bg-white rounded shadow-sm">        
+            <div class="table-wrapper table-responsive-sm">
+            <div class="table-title">
+                <div class="col-sm-12 text-center">
+                    <h3 th:text="#{label.sysparam.table.title}"></h3>
+                </div>
+            </div>
+
+            <form action="#" th:action="@{/sysparam/submit}" th:object="${sysParam}" method="post" class="py-4 col-sm-12 d-flex justify-content-center align-items-center">
+                <div class="row  col-sm-6 align-items-center">
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.code}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.code}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.name}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.name}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.value}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.value}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                            <label class="col-sm-3" th:text="#{label.sysparam.description}"></label>
+                            <label class="col-sm-1" >:</label>
+                            <label class="col-sm-7" th:text="${sysParam.decription}"></label>
+                        </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.regex}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.regex}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.additional.info}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7 font-weight-bold" th:text="${sysParam.additionalInfo}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.system}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.system == true? 'Yes':'No'}"></label>
+                    </div>
+                    <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.editable}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.editable == true? 'Yes':'No'}"></label>
+                    </div>
+                    <!-- <div class="col-md-12 py-2">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.deleted}"></label>
+                        <label class="col-sm-1" >:</label>
+                        <label class="col-sm-7" th:text="${sysParam.deleted == true? 'Yes':'No'}"></label>
+                    </div> -->
+                    <input type="hidden" name="id" th:field="*{id}"/>
+                    <input type="hidden" name="code" th:field="*{code}"/>
+                    <input type="hidden" name="name" th:field="*{name}"/>
+                    <input type="hidden" name="value" th:field="*{value}"/>
+                    <input type="hidden" name="value" th:field="*{decription}"/>
+                    <input type="hidden" name="regex" th:field="*{regex}"/>
+                    <input type="hidden" name="additionalInfo" th:field="*{additionalInfo}"/>
+                    <input type="hidden" name="system" th:field="*{system}"/>
+                    <input type="hidden" name="editable" th:field="*{editable}"/>
+                    <input type="hidden" name="deleted" th:field="*{deleted}"/>
+                    <div class="py-4 d-flex flex-row-reverse">
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-primary px-3" th:text="#{label.button.submit}"></button>
+                        </div>
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-secondary px-3" th:text="#{label.button.back}" name="btnAction"  value="back"></button>
+                        </div>
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-dark px-3" th:text="#{label.button.cancel}" name="btnAction" value="cancel"></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

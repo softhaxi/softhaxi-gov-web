@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+        
+        <div>
+                <h1 class="text-center" th:text="#{label.activity.title}"></h1>
+        </div>
+         <div class="my-2 p-3 bg-white rounded shadow-sm">
+                <div class="search-container p-3">
+                        <form action="#" th:action="@{/employment/activity}" >
+                            <input type="text" placeholder="Search.." name="search" class="col-sm-4">
+                            <button type="submit"><i class="fa fa-search"></i></button>
+                        </form>
+                    </div>        
+           <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col" th:text="#{no}"></th>
+                        <th scope="col" th:text="#{label.activity.username}"></th>
+                        <th scope="col" th:text="#{label.activity.action_name}"></th>
+                        <th scope="col" th:text="#{description}"></th>
+                        <th scope="col" th:text="#{lable.activity.ip.address}"></th>
+                        <th scope="col" th:text="#{label.activity.action_type}"></th>
+                        <th scope="col" th:text="#{label.activity.action_time}"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="activity: ${activities}" th:if="${activities.numberOfElements > 0}">
+                        <td th:text="${activityStat.count + startIndex}" />
+                        <td th:text="${activity.user.username}" />
+                        <td th:text="${activity.actionName}" />
+                        <td th:text="${activity.description}" />
+                        <td th:text="${activity.ipAddress}" />
+                        <td th:text="${activity.actionType}" />
+                        <td th:text="${#temporals.format(activity.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}" />
+                    </tr>
+                    <tr th:unless="${activities.numberOfElements > 0}">
+                        <td colspan="6" align="center">Record not found</td>
+                    </tr>
+            </table>
+            <nav aria-label="Page navigation example" th:if="${activities.totalPages > 1}">
+            <ul th:class="pagination" th:classappend="justify-content-end" >
+                    
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <th:block th:if="${search}">
+                            <a class="page-link" th:href="@{/employment/activity(page=${currentPage-1}, search=${search})}" aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </th:block>
+                        <th:block th:unless="${search}">
+                                <a class="page-link" th:href="@{/employment/activity(page=${currentPage-1})}" aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                        </th:block>
+                </li>
+                <th:block th:each="pageNumber : ${pageNumbers}">
+                    <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active" >
+                        <th:block th:if="${search}">
+                            <a th:href="@{/employment/activity(page=${pageNumber-1}, search=${search})}" th:classappend="page-link">
+                                <span aria-hidden="true" th:text="${pageNumber}"></span>
+                            </a>
+                        </th:block>
+                        <th:block th:unless="${search}">
+                            <a th:href="@{/employment/activity(page=${pageNumber-1})}" th:classappend="page-link">
+                                <span aria-hidden="true" th:text="${pageNumber}"></span>
+                            </a>
+                        </th:block>
+                    </li>
+                </th:block>
+                <li class="page-item" th:classappend="${currentPage + 1 == activities.totalPages} ? 'disabled'">
+                    <th:block th:if="${search}">
+                        <a class="page-link" th:href="@{/employment/activity(page=${currentPage+1}, search=${search})}" aria-label="Next" title="Next Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </th:block>
+                    <th:block th:unless="${search}">
+                        <a class="page-link" th:href="@{/employment/activity(page=${currentPage+1})}" aria-label="Next" title="Next Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </th:block>
+                </li>
+            
+            </ul>
+        </nav>   
+        </div>
+
+        <script th:src="@{/scripts/dashboard.js}"></script>
+    </div>
+</body>
+
+</html>

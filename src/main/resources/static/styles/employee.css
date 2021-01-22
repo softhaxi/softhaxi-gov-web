@@ -1,0 +1,23 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+}
+.employee_username{
+  grid-column-start: 2;
+  grid-row-start: 1;
+}
+.employee_img_thumbnail{
+  grid-column-start: 1;
+  grid-row-start: 1;
+  grid-row-end: 4;
+
+}
+.employee_email{
+  grid-column-start: 2;
+  grid-row-start: 2;
+}
+.employee_mobile{
+  grid-column-start: 2;
+  grid-row-start: 3;
+}

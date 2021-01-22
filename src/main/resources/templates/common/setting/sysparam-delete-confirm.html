@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/employee.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" th:href="@{/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:classappend="${#httpServletRequest.getRequestURI() == '/employment' ? 'active':''}" class="nav-link" th:href="@{/employment}">Employment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/letter}">Letter</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/report}">Report</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex">
+                    <li class="nav-item dropdown mr-4">
+                        <a class="nav-link dropdown-toggle" href="#" id="settings" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Settings
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="settings">
+                            <li><a class="dropdown-item" href="#">Office Master</a></li>
+                            <li><a class="dropdown-item" href="#">System Parameter</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item text-nowrap">
+                        <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
+                    </li>
+                </ul>
+            </div>
+        </div> -->
+    </header>
+    <div layout:fragment="content" class="container">
+        <div>
+                <h1 class="text-center" th:text="#{label.sysparam.title}"></h1>
+        </div>
+        <div class="my-2 p-3 bg-white rounded shadow-sm">        
+            <div class="table-wrapper table-responsive-sm">
+            <div class="table-title">
+                <div class="col-sm-12 text-center">
+                    <h3 th:text="#{label.sysparam.table.title}"></h3>
+                </div>
+            </div>
+            <form action="#" th:action="@{/sysparam/delete}" th:object="${sysParam}" method="post" class="py-4 col-sm-12 d-flex justify-content-center align-items-center">
+                <div class="row  col-sm-8 align-items-center">
+                    <p>Are you sure to delete <strong><span th:text=${sysParam.code}></span></strong> with name <strong><span th:text=${sysParam.name}></span></strong>?</p>
+                    <input type="hidden" name="id" th:field="*{id}"/>
+                    <input type="hidden" name="code" th:field="*{code}"/>
+                    <input type="hidden" name="name" th:field="*{name}"/>
+                    <div class="py-4 d-flex flex-row-reverse">
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-primary px-3" th:text="#{label.button.yes}"></button>
+                        </div>
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-dark px-3" th:text="#{label.button.no}" name="btnAction" value="cancel"></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

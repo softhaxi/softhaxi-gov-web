@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/employee.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+            <div>
+                    <h1 class="text-center" th:text="#{label.sysparam.title}"></h1>
+            </div>
+            <div class="my-2 p-3 bg-white rounded shadow-sm">        
+                <div class="table-wrapper table-responsive-sm">
+                <div class="table-title">
+                        <div class="col-sm-12 text-center">
+                            <h3 th:text="#{label.sysparam.table.title}"></h3>
+                        </div>
+                </div>
+                <div class="row py-3 align-items-center">
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-8 alert alert-danger text-center" role="alert" th:if="${failed}">
+                        <span th:text="${failed}"></span>
+                    </div>
+                </div>
+            <form action="#" th:action="@{/sysparam/confirm}" name="sysParam" th:object="${sysParam}" method="post" class="py-4 col-sm-12 d-flex justify-content-center align-items-center">
+                <div class="row col-sm-6 align-items-center">
+                    <div class="col-md-12 py-2 form-group  align-items-center">
+                        <label class="col-sm-3" th:text="#{label.sysparam.code}"></label>
+                        <input class="col-sm-8" type="text" th:field="*{code}">
+                        <span th:if="${#fields.hasErrors('code')}" th:errors="*{code}">Code Error</span>
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.name}"></label>
+                        <input class="col-sm-8" type="text" th:field="*{name}">
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.value}"></label>
+                        <input class="col-sm-8" type="text" th:field="*{value}">
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                            <label class="col-sm-3" th:text="#{label.sysparam.description}"></label>
+                            <input class="col-sm-8" type="text" th:field="*{decription}">
+                        </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.regex}"></label>
+                        <input class="col-sm-8" type="text" th:field="*{regex}">
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.additional.info}"></label>
+                        <input class="col-sm-8" type="text" th:field="*{additionalInfo}">
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.system}"></label>
+                        <input class="form-check-input" type="checkbox" name="system" th:value="${sysParam.system}" 
+                            th:checked="${sysParam.system}" onclick="this.value = this.checked">
+                    </div>
+                    <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.editable}"></label>
+                        <!-- <input class="form-check-input" type="checkbox" th:field="*{editable}" > -->
+                        <input class="form-check-input" type="checkbox" name="editable" th:value="${sysParam.editable}" 
+                            th:checked="${sysParam.editable}" onclick="this.value = this.checked">
+                    </div>
+                    <!-- <div class="col-md-12 py-2 form-group">
+                        <label class="col-sm-3" th:text="#{label.sysparam.is.deleted}"></label>
+                        <input class="form-check-input" type="checkbox" name="deleted" th:value="${sysParam.deleted}" 
+                        th:checked="${sysParam.deleted}" onclick="this.value = this.checked">
+                    </div> -->
+                    <div class="py-4 d-flex  flex-row-reverse">
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-primary float-end px-3" th:text="#{label.button.confirm}"></button>
+                        </div>  
+                        <div class="p-2">
+                            <a th:href="@{/sysparam}" class="btn btn-secondary float-end px-3" th:text="#{label.button.cancel}" ></a>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="id" th:field="*{id}"/>
+            </form>
+                    </div>
+            </div>
+            <script th:src="@{/scripts/sysparam.js}"></script>
+    </div>
+</body>
+
+</html>

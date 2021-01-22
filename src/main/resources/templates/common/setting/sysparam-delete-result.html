@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/employee.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+        <div>
+                <h1 class="text-center" th:text="#{label.sysparam.title}"></h1>
+        </div>
+        <div class="my-2 p-3 bg-white rounded shadow-sm">        
+            <div class="table-wrapper table-responsive-sm">
+            <div class="table-title">
+                <div class="col-sm-12 text-center" >
+                    <h3 th:text="#{label.sysparam.table.title}"></h3>
+                </div>
+            </div>
+            
+            <div class="row py-3 align-items-center">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-8 alert alert-danger text-center" role="alert" th:if="${failed}">
+                    <span th:text="${failed}"></span>
+                </div>
+                <div class="col-sm-8 alert alert-success text-center" role="alert" th:if="${success}">
+                    <span th:text="${success}"></span>
+                </div>
+            </div>
+            
+            <form action="#" th:action="@{/sysparam/done}" th:object="${sysParam}" method="post" class="py-4 col-sm-12 d-flex justify-content-center align-items-center">
+                    <div class="py-4 d-flex flex-row-reverse">
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-primary px-3" th:text="#{label.button.done}" name="btnAction"  value="done"></button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

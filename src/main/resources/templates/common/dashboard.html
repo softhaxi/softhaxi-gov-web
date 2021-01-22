@@ -24,54 +24,7 @@
     </head>
     <body class="bg-light">
         <header>
-            <div layout:fragment="first-navbar" class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-              <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Dashboard</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" th:href="@{/employement}">Employment</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link" th:href="@{/letter}">Letter</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link" th:href="@{/report}">Report</a>
-                  </li>
-                </ul>
-                <ul class="navbar-nav d-flex">
-                  <li class="nav-item dropdown mr-4">
-                    <a class="nav-link dropdown-toggle" href="#" id="settings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      Settings
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="settings">
-                      <li><a class="dropdown-item" href="#">Office Master</a></li>
-                      <!-- <li><hr class="dropdown-divider"></li> -->
-                      <li><a class="dropdown-item" href="#">System Parameter</a></li>
-                    </ul>
-                  </li>
-                    <li class="nav-item text-nowrap">
-                        <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
-                    </li>
-                </ul>
-              </div>
-            </div>
-            <div layout:fragment="second-navbar" class="nav-scroller bg-white box-shadow">
-                <nav class="nav nav-underline">
-                    <a class="nav-link active" th:href="@{/dashboard}">Dashboard</a>
-                    <a class="nav-link" th:href="@{/ticket}">
-                      Open Ticket
-                      <!-- <span class="badge badge-pill bg-light align-text-bottom">0</span> -->
-                    </a>
-                    <a class="nav-link" href="#">Covid Tracker</a>
-                    <!-- <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a>
-                    <a class="nav-link" href="#">Link</a> -->
-                </nav>
-            </div>
+            
         </header>
         <div layout:fragment="content" class="container">
             <div class="row my-2" style="height: 375px">

@@ -74,3 +74,32 @@ body {
 .lh-100 { line-height: 1; }
 .lh-125 { line-height: 1.25; }
 .lh-150 { line-height: 1.5; }
+
+.table-condensed{
+  font-size: 0.8em;
+}
+
+.table-title {
+  padding-bottom: 15px;
+  background: #6388b5;
+  color: #fff;
+  padding: 16px 30px;
+  min-width: 100%;
+  border-radius: 3px 3px 0 0;
+}
+
+.fa fa-trash:hover{
+  color:red;
+}
+
+input.error{
+  border: 1px solid;
+  border-color: red;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.075) inset, 0 5 10px rgba(252, 4, 45, 0.1);
+  outline: 0 none;
+}
+
+label.error{
+  color: red;
+  font-size: 0.8em;
+}

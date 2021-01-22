@@ -19,13 +19,54 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
-                    <section layout:fragment="first-navbar">
-                        This is first navbar
+                    <section layout:fragment="first-navbar" class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+                            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                      <li class="nav-item">
+                                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dashboard') ? 'active':''}" class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                                      </li>
+                                      <li class="nav-item">
+                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/employment') ? 'active':''}" class="nav-link" th:href="@{/employment}">Employment</a>
+                                      </li>
+                                      <li class="nav-item">
+                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/letter') ? 'active':''}" class="nav-link" th:href="@{/letter}">Letter</a>
+                                      </li>
+                                      <li class="nav-item">
+                                          <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/report') ? 'active':''}" class="nav-link" th:href="@{/report}">Report</a>
+                                      </li>
+                                    </ul>
+                                    <ul class="navbar-nav d-flex">
+                                      <li class="nav-item dropdown mr-4">
+                                        <a class="nav-link dropdown-toggle" href="#" id="settings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                          Settings
+                                        </a>
+                                        <ul class="dropdown-menu" aria-labelledby="settings">
+                                          <li><a class="dropdown-item" href="#">Office Master</a></li>
+                                          <!-- <li><hr class="dropdown-divider"></li> -->
+                                          <li><a class="dropdown-item" th:href="@{/sysparam}">System Parameter</a></li>
+                                        </ul>
+                                      </li>
+                                        <li class="nav-item text-nowrap">
+                                            <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
+                                        </li>
+                                    </ul>
+                                  </div>
                     </section>
                 </nav>
 
                 <section layout:fragment="second-navbar">
-                    This is second navbar
+                        <div layout:fragment="second-navbar" class="nav-scroller bg-white box-shadow">
+                                <nav class="nav nav-underline"  th:if="${#strings.contains(#httpServletRequest.requestURI, 'employment')}">
+                                        <a th:classappend="${#httpServletRequest.getRequestURI() == '/employment' ? 'active':''}" class="nav-link" th:href="@{/employment}">Master User</a>
+                                        <a th:classappend="${#httpServletRequest.getRequestURI() == '/employment/activity' ? 'active':''}" class="nav-link" th:href="@{/employment/activity}">Activity</a>
+                                </nav>
+                                <nav class="nav nav-underline" th:if="${#strings.contains(#httpServletRequest.requestURI, 'dashboard')} or 
+                                ${#strings.contains(#httpServletRequest.requestURI, 'ticket')}">
+                                        <a th:classappend="${#httpServletRequest.getRequestURI() == '/dashboard' ? 'active':''}" class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                                        <a th:classappend="${#httpServletRequest.getRequestURI() == '/ticket' ? 'active':''}" class="nav-link" th:href="@{/ticket}">Open Ticket</a>
+                                        <a class="nav-link" href="#">Covid Tracker</a>
+                                    </nav>
+                            </div>
                 </section>
                 
             </header>

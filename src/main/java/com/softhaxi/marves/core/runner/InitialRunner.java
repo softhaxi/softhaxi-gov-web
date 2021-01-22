@@ -139,7 +139,7 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(excludeHouseKeep);
         }
 
-        SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVES_HR_API_URL").orElse(new SystemParameter());
+        SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVESHR_API_URL").orElse(new SystemParameter());
         if(marvesHRAPI.getId() == null) {
             marvesHRAPI.setCode("MARVESHR_API_URL");
             marvesHRAPI.setName("Marves HR Restful Service");

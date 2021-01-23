@@ -33,7 +33,6 @@ import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
 import com.softhaxi.marves.core.service.storage.FileStorageService;
 
-import org.apache.catalina.connector.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,33 +75,46 @@ public class InvitationResful {
     private NotificationStatusRepository notificationStatusRepo;
 
     @GetMapping()
-    public ResponseEntity<?> index(@RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+    public ResponseEntity<?> index(@RequestParam(name="email", required = false) String email,
+        @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
-
+        
         if (date == null)
             date = LocalDate.now();
+        
+        final User specificUser = email != null ? userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null)
+            : null;
+        Collection<Invitation> invitations = null;
+        if(email != null) {
+            if(specificUser != null)
+                invitations = invitationRepo.findAllUserDailyInvitation(specificUser, date);
+        } else {
+            invitations = invitationRepo.findAllUserDailyInvitation(user, date);
+        }
 
-        Collection<Invitation> invitations = invitationRepo.findAllUserDailyInvitation(user, date);
-
-        invitations.forEach((invitation) -> {
-            // logger.info("[index] Invitation member ==" + invitation.getInvitees());
-            Set<Map<String, Object>> members = new HashSet<>();
-            invitation.getInvitees().forEach((member) -> {
-                Map<String, Object> temp = new HashMap<>();
-                temp.put("email", member.getUser().getEmail());
-                temp.put("id", member.getUser().getId());
-                temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
-                temp.put("response", member.getResponse());
-                temp.put("organizer", member.getOrganizer());
-                members.add(temp);
-                if(member.getUser().equals(user)) {
-                    invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
-                }
+        if(invitations != null) {
+            invitations.forEach((invitation) -> {
+                Set<Map<String, Object>> members = new HashSet<>();
+                invitation.getInvitees().forEach((member) -> {
+                    Map<String, Object> temp = new HashMap<>();
+                    temp.put("email", member.getUser().getEmail());
+                    temp.put("id", member.getUser().getId());
+                    temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
+                    temp.put("response", member.getResponse());
+                    temp.put("organizer", member.getOrganizer());
+                    members.add(temp);
+                    if(specificUser != null) {
+                        if(member.getUser().equals(specificUser)) {
+                            invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
+                        }
+                    } else if(member.getUser().equals(user)) {
+                        invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
+                    }
+                });
+                invitation.setMembers(members);
             });
-            invitation.setMembers(members);
-        });
-        logger.info("[Index] number of invitation = " + invitations.size());
+        }
 
         return new ResponseEntity<>(
             new GeneralResponse(

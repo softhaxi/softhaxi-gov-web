@@ -10,6 +10,7 @@ public class InvitationRequest implements Serializable {
      */
     private static final long serialVersionUID = -7377330212903413314L;
     
+    private String id;
     private String code;
     private String title;
     private String category = "INOFFICE";
@@ -27,7 +28,8 @@ public class InvitationRequest implements Serializable {
     public InvitationRequest() {
     }
 
-    public InvitationRequest(String code, String title, String category, Date startDate, Date endDate, String description, String startTime, String endTime, String invitee, String location, double latitude, double longitude) {
+    public InvitationRequest(String id, String code, String title, String category, Date startDate, Date endDate, String description, String startTime, String endTime, String invitee, String location, double latitude, double longitude) {
+        this.id = id;
         this.code = code;
         this.title = title;
         this.category = category;
@@ -40,6 +42,14 @@ public class InvitationRequest implements Serializable {
         this.location = location;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -136,6 +146,11 @@ public class InvitationRequest implements Serializable {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public InvitationRequest id(String id) {
+        setId(id);
+        return this;
     }
 
     public InvitationRequest code(String code) {

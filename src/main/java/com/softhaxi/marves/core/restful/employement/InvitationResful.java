@@ -6,14 +6,17 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,19 +100,21 @@ public class InvitationResful {
             invitations.forEach((invitation) -> {
                 Set<Map<String, Object>> members = new HashSet<>();
                 invitation.getInvitees().forEach((member) -> {
-                    Map<String, Object> temp = new HashMap<>();
-                    temp.put("email", member.getUser().getEmail());
-                    temp.put("id", member.getUser().getId());
-                    temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
-                    temp.put("response", member.getResponse());
-                    temp.put("organizer", member.getOrganizer());
-                    members.add(temp);
-                    if(specificUser != null) {
-                        if(member.getUser().equals(specificUser)) {
+                    if(!member.isDeleted()) {
+                        Map<String, Object> temp = new HashMap<>();
+                        temp.put("email", member.getUser().getEmail());
+                        temp.put("id", member.getUser().getId());
+                        temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
+                        temp.put("response", member.getResponse());
+                        temp.put("organizer", member.getOrganizer());
+                        members.add(temp);
+                        if(specificUser != null) {
+                            if(member.getUser().equals(specificUser)) {
+                                invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
+                            }
+                        } else if(member.getUser().equals(user)) {
                             invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
                         }
-                    } else if(member.getUser().equals(user)) {
-                        invitation.setCompleted(member.getStatus() != null && member.getStatus().equalsIgnoreCase("ATTENDED"));
                     }
                 });
                 invitation.setMembers(members);
@@ -195,7 +200,7 @@ public class InvitationResful {
         notification.setDateTime(ZonedDateTime.now());
         notificationRepo.save(notification);
         
-        String[] inviteeEmails = request.getInvitee().split(";");
+        List<String> inviteeEmails = request.getInvitee() != null ? new LinkedList<>(Arrays.asList(request.getInvitee().split(";"))) : null;
         List<InvitationMember> invitees = new ArrayList<>();
         invitees.add(new InvitationMember()
             .invitation(invitation)
@@ -203,23 +208,25 @@ public class InvitationResful {
             .organizer(true)
             .response("ACCEPT"));
         List<NotificationStatus> statuses = new ArrayList<>();
-        for(String email: inviteeEmails) {
-            User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
-            if(invitee == null) {
-                invitee = new User()
-                    .email(email)
-                    .username(email.substring(0, email.indexOf("@")).toUpperCase());
-                invitee.setIsLDAPUser(true);
-                userRepo.save(invitee);
-            }
-            if(!user.equals(invitee)) {
-                invitees.add(new InvitationMember()
-                    .invitation(invitation)
-                    .user(invitee));
-                statuses.add(new NotificationStatus(
-                    (Message) notification,
-                    invitee, false, false
-                ));
+        if(inviteeEmails != null && !inviteeEmails.isEmpty()) {
+            for(String email: inviteeEmails) {
+                User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
+                if(invitee == null) {
+                    invitee = new User()
+                        .email(email)
+                        .username(email.substring(0, email.indexOf("@")).toUpperCase());
+                    invitee.setIsLDAPUser(true);
+                    userRepo.save(invitee);
+                }
+                if(!user.equals(invitee)) {
+                    invitees.add(new InvitationMember()
+                        .invitation(invitation)
+                        .user(invitee));
+                    statuses.add(new NotificationStatus(
+                        (Message) notification,
+                        invitee, false, false
+                    ));
+                }
             }
         }
         invitationMemberRepo.saveAll(invitees);
@@ -232,6 +239,125 @@ public class InvitationResful {
                 invitation
             ),
             HttpStatus.CREATED   
+        );
+    }
+
+    @PostMapping("/edit")
+    public ResponseEntity<?> edit(@RequestParam(required = true) String payload,
+        @RequestParam(value = "file", required = false) MultipartFile file) {
+        logger.info("[edit] Start....");
+        InvitationRequest request;
+        try {
+            request = new ObjectMapper().readValue(payload, InvitationRequest.class);
+        } catch (JsonProcessingException ex) {
+            logger.error("[post] Exception..." + ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), 
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), 
+                    Map.of("payload", "json.required")
+                ),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        Invitation invitation = invitationRepo.findByUserAndId(user, UUID.fromString(request.getId())).orElse(null);
+        if(invitation == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        String path = null;
+        if (file != null) {
+            try {
+                String folder = String.format("/%s/%s", "invitation", new SimpleDateFormat("yyyyMMdd").format(new Date()));
+                path = storageService.store(folder, null, file);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        logger.info("[edit] File Path...." + path);
+
+        LocalDate startDate = invitation.getStartDate();
+
+        String[] startTimes = request.getStartTime().split(":");
+        String[] endTimes = request.getEndTime().split(":");
+        
+        ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+            Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
+        ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+            Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
+
+        
+        //invitation.location(request.getLocation());
+        invitation.startTime(startTime);
+        invitation.endTime(endTime);
+        if(path != null) {
+            invitation.setFileName(file.getOriginalFilename());
+            invitation.setAttachement(path);
+        }
+        //invitationRepo.save(invitation);
+
+        Notification notification = new Notification()
+                .level("PRIVATE")
+                .assignee("SPECIFIC")
+                .category("TASK")
+                .deepLink("core://marves.dev/invitation")
+                .referenceId(invitation.getId().toString())
+                .uri("/invitation");
+        notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
+        notification.setDateTime(ZonedDateTime.now());
+        notificationRepo.save(notification);
+        
+        List<InvitationMember> invitees = new LinkedList<>();
+        List<NotificationStatus> statuses = new LinkedList<>();
+
+        if(request.getInvitee() != null && !request.getInvitee().isBlank()) {
+            List<String> inviteeEmails = new LinkedList<>(Arrays.asList(request.getInvitee().split(";")));
+            invitation.getInvitees().forEach((member) -> {
+                if(!member.isOrganizer() && !inviteeEmails.contains(member.getUser().getEmail())) {
+                    member.deleted(true);
+                }
+            });
+
+            invitation.getInvitees().forEach((member) -> inviteeEmails.remove(member.getUser().getEmail()));
+            for(String email: inviteeEmails) {
+                User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
+                if(invitee == null) {
+                    invitee = new User()
+                        .email(email)
+                        .username(email.substring(0, email.indexOf("@")).toUpperCase());
+                    invitee.setIsLDAPUser(true);
+                    userRepo.save(invitee);
+                }
+                if(!user.equals(invitee)) {
+                    invitees.add(new InvitationMember()
+                        .invitation(invitation)
+                        .user(invitee));
+                    statuses.add(new NotificationStatus(
+                        (Message) notification,
+                        invitee, false, false
+                    ));
+                }
+            }
+        }
+        invitationMemberRepo.saveAll(invitees);
+        notificationStatusRepo.saveAll(statuses);
+        
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                invitation
+            ),
+            HttpStatus.OK   
         );
     }
 

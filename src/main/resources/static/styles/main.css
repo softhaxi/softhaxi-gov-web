@@ -103,3 +103,44 @@ label.error{
   color: red;
   font-size: 0.8em;
 }
+
+form.search input[type=text] {
+
+  padding: 5px;
+  font-size: 17px;
+  border: 1px solid #eceaea;
+  border-right:none;
+  float: left;
+  width: 90%;
+  background: #fff;
+  border-radius: 3px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+form.search button {
+  float: left;
+  width: 10%;
+  padding: 5px;
+  border-radius: 3px;
+  color: #000;
+  font-size: 17px;
+  border: 1px solid #eceaea;
+  border-left: none;
+  cursor: pointer;
+  background: #fff;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
+form.search::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.dropdown-btn-white {
+  color: #000;
+  background-color: #fff;
+  border-color: #eceaea;
+}

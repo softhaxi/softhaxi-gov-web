@@ -118,7 +118,7 @@
                     <form class="search" action="#" th:object="${sysParam}" method="POST" id="search" >
                         <input autocomplete="off" type="text" placeholder="Search.." name="username" id="input-search">
                         <button type="button" id="btn-search"><i class="fa fa-search"  id="icn-btn-search"></i></button>
-                        <select id="opt-username" class="form-control selectpicker" >
+                        <select id="opt-username" class="form-control select2-single" >
 
                         </select>
                     </form>
@@ -220,7 +220,7 @@
                                         selOpts += "<option value='"+value+"'>"+text+"</option>";
                                     });
                                     $('#opt-username').append(selOpts);
-                                    //$('#opt-username').show();
+                                    $('#opt-username').show();
                                     $('#opt-username > option').show();
                                     }                                    
                                     

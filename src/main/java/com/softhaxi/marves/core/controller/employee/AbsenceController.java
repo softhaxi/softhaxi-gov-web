@@ -96,27 +96,6 @@ public class AbsenceController {
                 userMap.put("name", user.getProfile().getFullName());
                 userList.add(userMap);
             }
-                userMap = new HashMap<>();
-                userMap.put("username", "ANDRA");
-                userMap.put("name", "Andra Ramadhan");
-                userList.add(userMap);
-                userMap = new HashMap<>();
-                userMap.put("username", "ANDRE");
-                userMap.put("name", "Andre Ramadhan");
-                userList.add(userMap);
-                userMap = new HashMap<>();
-                userMap.put("username", "ANDRO");
-                userMap.put("name", "Andro Ramadhan");
-                userList.add(userMap);
-                userMap = new HashMap<>();
-                userMap.put("username", "ANDRI");
-                userMap.put("name", "Andri Ramadhan");
-                userList.add(userMap);
-                userMap = new HashMap<>();
-                userMap.put("username", "ANDREW");
-                userMap.put("name", "Andrew Ramadhan");
-                userList.add(userMap);
-            logger.debug("userList: "+userList);
             Gson gson = new Gson();
             json = gson.toJson(userList);
             logger.debug("Json: " + json);

@@ -39,7 +39,7 @@ public class ActivityController {
     public String getActivity(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam("search") Optional<String> username) {
         int currentPage = page.orElse(0);
         String strUserName = username.orElse("");
-        Pageable paging = PageRequest.of(currentPage, pageSize, Sort.by("description"));
+        Pageable paging = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "actionTime"));
         
         Page<ActivityLog> pagedResult = new PageImpl<>(new ArrayList<>());
         

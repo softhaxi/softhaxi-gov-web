@@ -2,27 +2,25 @@ package com.softhaxi.marves.core.controller.employee;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.domain.attendance.Attendance;
 import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.attendance.DailyAttendanceRepository;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
-import com.unboundid.util.json.JSONField;
-import com.unboundid.util.json.JSONObject;
+import com.softhaxi.marves.core.service.AbsenceWebService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,29 +48,28 @@ public class AbsenceController {
     private DailyAttendanceRepository dailyAttendanceRepository;
 
     @Autowired
-    private static SystemParameterRepository systemParameterRepository;
+    private SystemParameterRepository systemParameterRepository;
+
+    @Autowired
+    private AbsenceWebService absenceWebService;
 
     @GetMapping("/absence")
     public String getAllAbsences(Model model) {
 
-        List<DailyAttendance> attendanceList = dailyAttendanceRepository.findAll();
-
-
         LocalDate today = LocalDate.now();
         int defaultMonth = today.getMonthValue();
         int defaultYear = today.getYear();
-        
+
         model.addAttribute("month", defaultMonth);
         model.addAttribute("year", defaultYear);
 
-        ZonedDateTime startWorkingTime = ZonedDateTime.of(2020, 12, 12, 9, 0, 0, 0, ZoneId.of("UTC"));// todo add from
-                                                                                                      // System
-                                                                                                      // Parameter
-        ZonedDateTime endWorkingTime = ZonedDateTime.of(2020, 12, 12, 18, 0, 0, 0, ZoneId.of("UTC"));
-
-        model.addAttribute("startWorkingTime", startWorkingTime);
-        model.addAttribute("endWorkingTime", endWorkingTime);
+        List<DailyAttendance> attendanceList = this.absenceWebService.findAll();
+        List<ZonedDateTime> zonedDateTimes = this.absenceWebService.getWorkingTimeSysParam();
+        
+        model.addAttribute("startWorkingTime", zonedDateTimes.get(0));
+        model.addAttribute("endWorkingTime", zonedDateTimes.get(1));
         model.addAttribute("attendanceList", attendanceList);
+
         return "common/absence/absence-list";
     }
 
@@ -80,10 +77,7 @@ public class AbsenceController {
     public @ResponseBody String findUserByName(Model model, @RequestParam("username") Optional<String> name) {
         String strName = name.orElse("");
         
-        
         List<User> users = userRepository.findUserByUsernameLike(strName.toUpperCase());
-        
-        
         List<Map<String, String>> userList = new ArrayList<>();
         
         String json = "";
@@ -98,7 +92,7 @@ public class AbsenceController {
             }
             Gson gson = new Gson();
             json = gson.toJson(userList);
-            logger.debug("Json: " + json);
+            
         } catch (Exception e) {
             
         }
@@ -139,20 +133,5 @@ public class AbsenceController {
         return "common/absence/absence-list";
     }
 
-    private static List<ZonedDateTime> setWorkingTime(){
-        List<ZonedDateTime> zonedDateTime = new ArrayList<>();
-
-        Optional<SystemParameter> inWorkingTime = systemParameterRepository.findByCode("MAX_CLOCK_IN_DAILY");
-        Optional<SystemParameter> outWorkingTime = systemParameterRepository.findByCode("MAX_CLOCK_OUT_DAILY");
-        if(inWorkingTime.isPresent()){
-           // ZonedDateTime d=inWorkingTime.get().getValue();
-        }
-        if(outWorkingTime.isPresent()){
-            
-        }
-
-
-        return zonedDateTime;
-    }
 
 }

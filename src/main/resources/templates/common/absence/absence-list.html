@@ -114,15 +114,17 @@
                 <div class="title col-sm-4">
                     <h3 th:text="#{label.absence.presensi.log}"></h3>
                 </div>
-                <div class="title col-sm-4">
+                <div class="col-sm-4" style="position: relative">
                     <form class="search" action="#" th:object="${sysParam}" method="POST" id="search" >
-                        <input autocomplete="off" type="text" placeholder="Search.." name="username" id="input-search">
+                        <input autocomplete="off" type="text" placeholder="Search.." name="username" id="input-search" class="dropdown-toggle">
                         <button type="button" id="btn-search"><i class="fa fa-search"  id="icn-btn-search"></i></button>
-                        <select id="opt-username" class="form-control select2-single" >
-
-                        </select>
                     </form>
+                    <div class="dropdown dropdown-username" id="dropdown-username" style="position: absolute">
+                        <ul class="list-unstyled" id="list-username" aria-labelledby="dropdownMenuButton2">
+                        </ul>
+                    </div>
                 </div>
+                <!-- 2021-01-21 15:53:26.587+08 -->
                 <div class="title col-sm-3">
                     <div class="dropdown float-end">
                         <button class="btn dropdown-btn-white dropdown-toggle" type="button" id="month-button"
@@ -182,8 +184,8 @@
                             <td th:text="${attendance.ipAddress}" />
                             <td th:text="${#temporals.format(attendance.outDateTime, 'HH:mm:ss')}" />
                             <td th:text="${attendance.outIpAddress}" />
-                            <td th:text="${attendance.outDateTime gt startWorkingTime}? 'Ya':'Tidak' " />
-                            <td th:text="${attendance.outDateTime lt endWorkingTime}? 'Ya':'Tidak' " />
+                            <td th:text="${attendance.comeLate}? 'Ya':'Tidak' " />
+                            <td th:text="${attendance.goBackEarly}? 'Ya':'Tidak' " />
                             <td th:text="${attendance.workDuration}" />
                             <td th:text="${attendance.outWork}" />
                             <td th:if="${attendance.mockLocation==true}" class="text-danger">On</td>
@@ -198,12 +200,12 @@
         
         <script>
                 $(document).ready(function(){
-                    $('#opt-username').hide();
-                    $('#opt-username option').hide();
+                    $('#dropdown-username').hide();
+                    $('#dropdown-username ul').empty();
                     $("input[name='username']").keyup( 
                     function(e) {
-                        $('#opt-username').empty();
-                        $('#opt-username').hide();
+                        $('#dropdown-username ul').empty();
+                        $('#dropdown-username').hide();
                         if($("input[name='username']").val().length >= 2 && $("input[name='username']").val() != ""){  
                             $.ajax({
                                 type: "GET",
@@ -217,11 +219,11 @@
                                     $.each(data, function(k, v){
                                         var value = data[k].username;
                                         var text = data[k].name;
-                                        selOpts += "<option value='"+value+"'>"+text+"</option>";
+                                        selOpts += '<li><a href=\'#\' class=\'username-list\' title="'+text+'">'+text+'</a></li>';
                                     });
-                                    $('#opt-username').append(selOpts);
-                                    $('#opt-username').show();
-                                    $('#opt-username > option').show();
+                                    $('#dropdown-username ul').append(selOpts);
+                                    $('#dropdown-username').show();
+                                    //$('#opt-username > option').show();
                                     }                                    
                                     
                                 }
@@ -236,21 +238,13 @@
                             $(this).hide();
                         }
                     );
-        
-                // $("#username").keyup(function(){
-                //     alert("aaaa");
-                //     $.ajax({
-                //         type: "GET",
-                //         url: "/absence/find-user-byname",
-                //         data:'username='+$("#username").val(),
-                //         beforeSend: function(){
-                //             $("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
-                //         },
-                //         success: function(data){
-                //             console.log(data);
-                //         }
-                //         });
-                //     });
+
+                    $('ul#list-username').click(
+                        function(e){
+                            $('#dropdown-username').hide();
+                            $("input[name='username']").val($('ul#list-username li a').attr("title"));
+                        }
+                    );
         
                     $("#presensi-month li").click(function(){
                         var month = $(this).attr('id') ;

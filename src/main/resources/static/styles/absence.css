@@ -100,3 +100,23 @@ a{
 .row {
     padding:0;
 }
+
+.dropdown-username{
+    position: absolute;
+    display: block;
+    width: 100%;
+    background-color: white;
+    
+}
+
+.dropdown-username a {
+    color: inherit; /* blue colors for links too */
+    text-decoration: inherit; /* no underline */
+    display: block;
+    padding: 2px 7px;
+  }
+
+  .dropdown-username a:hover {
+    background-color: #555;
+    color: #fff;
+  }

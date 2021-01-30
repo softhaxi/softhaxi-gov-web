@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.DirContextOperations;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -62,6 +63,12 @@ public class SecurityConfiguration {
 
     @Value("${app.ldap.base-dn}")
     private String baseDN;
+
+    @Value("${ldap.username}")
+    private String ldapUsername;
+
+    @Value("${ldap.password}")
+    private String ldapPassword;
 
     @Autowired
     private UserRepository userRepository;
@@ -140,7 +147,7 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable()
-                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**", "/ws").permitAll()
                     .anyRequest().fullyAuthenticated().and().formLogin().loginPage("/").permitAll()
                     .defaultSuccessUrl("/dashboard").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/?logout")
                     .permitAll();
@@ -295,5 +302,21 @@ public class SecurityConfiguration {
         public boolean supports(Class<?> authentication) {
             return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
         }
+    }
+
+    @Bean("ldapContextSource")
+    public LdapContextSource contextSource() {
+        LdapContextSource context = new LdapContextSource();
+        context.setUrls(new String[] { String.format("ldap://%s:%s", ldapHost, ldapPort) });
+        context.setBase(baseDN);
+        context.setUserDn(ldapUsername);
+        context.setPassword(ldapPassword);
+
+        return context;
+    }
+
+    @Bean
+    public LdapTemplate ldapTemplate() {
+        return new LdapTemplate(contextSource());
     }
 }

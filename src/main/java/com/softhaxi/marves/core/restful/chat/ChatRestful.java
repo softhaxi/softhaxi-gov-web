@@ -4,9 +4,13 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.chatting.Chat;
 import com.softhaxi.marves.core.domain.chatting.ChatRoom;
@@ -16,6 +20,7 @@ import com.softhaxi.marves.core.domain.messaging.MessageStatus;
 import com.softhaxi.marves.core.model.request.ChatRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.repository.account.ProfileRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomMemberRepository;
@@ -34,8 +39,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+//https://github.com/amrkhaledccd/One-to-One-WebSockets-Chat
 @RestController
 @RequestMapping("/api/v1/chat")
 public class ChatRestful {
@@ -44,6 +51,9 @@ public class ChatRestful {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private ProfileRepository profileRepo;
 
     @Autowired
     private ChatRoomRepository chatRoomRepo;
@@ -60,13 +70,14 @@ public class ChatRestful {
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody ChatRequest payload) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User sender = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        final User sender = userRepo.findById(UUID.fromString(auth.getPrincipal().toString()))
+            .orElse(new User().id(UUID.fromString(auth.getPrincipal().toString())));
 
         ChatRoom chatRoom = null;
+        User recipient = null;
         if(payload.getChatRoom() == null) {
             if(payload.getRecipient() != null) {
-                sender = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(sender);
-                User recipient = userRepo.findById(UUID.fromString(payload.getRecipient())).orElse(null);
+                recipient = userRepo.findById(UUID.fromString(payload.getRecipient())).orElse(null);
                 if(recipient == null) {
                     return new ResponseEntity<>(
                         new ErrorResponse(
@@ -100,6 +111,14 @@ public class ChatRestful {
                 ), HttpStatus.NOT_FOUND
             );
         }
+        if(recipient == null) {
+            ChatRoomMember member = chatRoom.getMembers().stream()
+                .filter((item) -> !item.getUser().equals(sender))
+                .findFirst().orElse(null);
+            if(member != null) {
+                recipient = member.getUser();
+            }
+        }
         Chat chat = new Chat()
                         .chatRoom(chatRoom)
                         .sender(sender)
@@ -107,16 +126,22 @@ public class ChatRestful {
                         .dateTime(ZonedDateTime.ofInstant(payload.getDateTime().toInstant(), ZoneId.systemDefault()));
         chatRepo.save(chat);
         if(payload.getChatRoom() == null)
-            chatStatusRepo.save(new ChatStatus(chat, new User().id(UUID.fromString(payload.getRecipient())), false, false));
+            chatStatusRepo.save(new ChatStatus(chat, recipient, false, false));
         else {
             Collection<ChatStatus> statuses = new ArrayList<>();
-            for(ChatRoomMember member : chatRoom.getMembers()) {
+            chatRoom.getMembers().forEach((member) -> {
                 if(!member.getUser().equals(sender)) {
                     statuses.add(new ChatStatus(chat, member.getUser(), false, false));
                 }
-            }
+            });
             chatStatusRepo.saveAll(statuses);
         }
+
+        // messagingTemplate.convertAndSendToUser("test", "/message", chat);
+        // messagingTemplate.convertAndSendToUser(
+        //     String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()), 
+        //     "/test/message", chat);
+
         chat.setMyself(true);
         return new ResponseEntity<>(
             new GeneralResponse(
@@ -134,20 +159,42 @@ public class ChatRestful {
         UUID id = UUID.fromString(auth.getPrincipal().toString());
         User user = userRepo.findById(id).orElse(new User().id(id));
 
-        Collection<ChatRoom> rooms = chatRoomRepo.findAllByUser(user);
+        List<ChatRoom> rooms = new LinkedList<>(chatRoomRepo.findAllByUser(user));
         for(ChatRoom room: rooms) {
-            String[] names = room.getName().split("\\|");
-            if(names[0].equalsIgnoreCase(user.getEmail())) 
-                room.setName(names[1]);
-            else
-                room.setName(names[0]);
+            Profile profile = null;
+            ChatRoomMember member = room.getMembers().stream()
+                .filter((item) -> !item.getUser().equals(user))
+                .findFirst().orElse(null);
+            if(member != null) {
+                profile = profileRepo.findByUser(member.getUser()).orElse(null);
+            }
+            // 
+            //room.setName(recipient.getProfile().getFullName());
+            if(profile != null) {
+                room.setRecipient(member.getUser().getEmail());
+                // logger.info(recipient.toString());
+                room.setName(profile.getFullName());
+            } else {
+                String[] names = room.getName().split("\\|");
+                if(names[0].equalsIgnoreCase(user.getEmail())) 
+                    room.setName(names[1]);
+                else
+                    room.setName(names[0]);
+            }
 
             if(room.getChats() != null && !room.getChats().isEmpty()) {
                 Chat chat = room.getChats().stream().reduce((a, b) -> b).orElse(null);
-                if(chat != null)
-                    room.setLastMessage(chat.getContent());
+                if(chat != null) {
+                    room.setLatestChat(chat);
+                }
             }
         }
+        Collections.sort(rooms, new Comparator<ChatRoom>() {
+            @Override
+            public int compare(ChatRoom o1, ChatRoom o2) {
+                return o2.getLatestChat().getDateTime().compareTo(o1.getLatestChat().getDateTime());
+            }
+        });
 
         return new ResponseEntity<>(
             new GeneralResponse(

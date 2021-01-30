@@ -1,5 +1,7 @@
 package com.softhaxi.marves.core.restful.account;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,6 +13,7 @@ import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 
+import org.apache.groovy.util.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -40,6 +44,30 @@ public class UserRestful {
 
     @Autowired
     private UserService userService;
+
+    @GetMapping("")
+    public ResponseEntity<?> index(@RequestParam(name = "type", defaultValue = "mobile") String type) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
+
+        List<User> users = new LinkedList<>(userRepo.findAllActiveMobileUser());
+        Collection<Map<?, ?>> data = new LinkedList<>();
+        users.forEach((item) -> {
+            if(!item.equals(user)) {
+            data.add(Maps.of("id", item.getId(), "email", item.getEmail(), 
+                "fullName", item.getProfile().getFullName()));
+            }
+        });
+
+        return new ResponseEntity<>(
+                new GeneralResponse(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    data
+                ),
+                HttpStatus.OK   
+            );
+    }
 
     @GetMapping("/me")
     public ResponseEntity<?> me() {

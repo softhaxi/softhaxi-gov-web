@@ -103,7 +103,7 @@ public class DispensationResful {
         String path = null;
         if (file != null) {
             try {
-                String folder = String.format("/%s/%s", "invitation", new SimpleDateFormat("yyyyMMdd").format(new Date()));
+                String folder = String.format("/%s/%s", "dispensation", new SimpleDateFormat("yyyyMMdd").format(new Date()));
                 path = storageService.store(folder, null, file);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -133,8 +133,7 @@ public class DispensationResful {
             .ipAddress(ipAddress)
             .uri("/dispensation")
             .deepLink("core://marves.dev/dispensasion")
-            .referenceId(dispensation.getId().toString())
-            .actionType("dispensasion");
+            .referenceId(dispensation.getId().toString());
         loggerService.saveAsyncActivityLog(activityLog);
 
         

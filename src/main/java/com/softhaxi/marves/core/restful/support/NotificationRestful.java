@@ -5,6 +5,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
@@ -14,6 +16,7 @@ import com.softhaxi.marves.core.domain.messaging.Notification;
 import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
 
@@ -40,6 +43,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationRestful {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationRestful.class);
+
+    @Autowired
+    private UserRepository userRepo;
 
     @Autowired
     private NotificationRepository notificationRepo;
@@ -159,16 +165,26 @@ public class NotificationRestful {
     @GetMapping("/undelivered")
     public ResponseEntity<?> undeliveredList() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
 
-        Collection<Notification> notifications = notificationRepo.findAllUndeliveredByUser(user,
+        List<Notification> notifications = new LinkedList<>(notificationRepo.findAllUndeliveredByUser(user,
             LocalDate.now().atStartOfDay(ZoneId.systemDefault()),
             LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault())
-        );
+        ));
 
+        //logger.info("[undeliveredList] Count..." + notifications.size());
+
+        Collection<NotificationStatus> statuses = new LinkedList<>();
+        List<Notification> removedNotification = new LinkedList<>();
+        notifications.forEach((notification) -> {
+            notification.getStatuses().forEach((status) -> {
+                if(status.getUser().equals(user) && status.isDelivered()) {
+                    removedNotification.add(notification);
+                }
+            });
+        });
+        notifications.removeAll(removedNotification);
         logger.info("[undeliveredList] Count..." + notifications.size());
-
-        Collection<NotificationStatus> statuses = new ArrayList<>();
         for(Notification notification: notifications) {
             NotificationStatus status = notificationStatusRepo.findOneUndeliveredNotificationByUser(notification, user).orElse(null);
             if(status == null) 

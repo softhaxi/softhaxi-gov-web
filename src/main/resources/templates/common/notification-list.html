@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link th:href="@{/styles/notification.css}" rel="stylesheet" />
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+        
+            <div class="row py-5 col-sm-12 no-marginLR">
+                <div class="col-sm-3 title">
+                    <h3 th:text="#{label.notification.title}"></h3>
+                </div>
+                <div class="col-sm-9 d-flex justify-content-end">
+                        <button th:text="#{label.notification.create.new}" class="py-1 px-5 btn-new-notification"></button>
+                </div>
+             </div>
+             <div class="row  no-marginLR">
+                 <div class=" col-sm-9">
+                <table class="table notification-list white-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" th:text="#{label.notification.to}"></th>
+                                <th scope="col" th:text="#{label.notification.content}"></th>
+                                <th scope="col" th:text="#{label.notification.send.date}">Employee No</th>
+                                <th scope="col" th:text="#{label.notification.send.time}">Employee No</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="notification: ${notifications}">
+                                <td th:text="${notification.user.email}" />
+                                <td th:text="${notification.content}" />
+                                <td th:text="${#temporals.format(notification.dateTime, 'dd/MM/yyyy')}" />
+                                <td th:text="${#temporals.format(notification.dateTime, 'HH.mm.ss')}" />
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-sm-3">
+                <table class="table notification-list white-table table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2" th:text="#{label.notification.new}"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr >
+                                <td class="px-3" th:text="#{label.notification.to}" colspan="2"></td>
+                            </tr>
+                            <tr >
+                                <td class="px-3" colspan="2"><input type="text" name="to" class="input-notif"></td>
+                            </tr>
+                            <tr >
+                                <td class="px-3" th:text="#{label.notification.content}" colspan="2"></td>
+                            </tr>
+                            <tr >
+                                <td class="p-3" colspan="2">
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-btn-grey dropdown-toggle w-100" type="button" id="year-button"
+                                            data-bs-toggle="dropdown" aria-expanded="false" th:value="${year}">
+                                            2021
+                                        </button>
+                                        <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton" id="presensi-year">
+                                            <li id="2021"><a class="dropdown-item" href="#">2021</a></li>
+                                            <li id="2022"><a class="dropdown-item" href="#">2022</a></li>
+                                            <li id="2023"><a class="dropdown-item" href="#">2023</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr >
+                                <td class="px-3" th:text="#{label.notification.new}" colspan="2"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><textarea name="description" class="form-control input-notif no-border no-radius" style="resize:none;" height="15"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="btn-new-notification py-2 px-4">Kirim</button>
+                                </td>
+                                <td align="right">
+                                    <button class="btn-cancel-notification py-2 px-4">Batal</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> 
+            </div>
+            <!-- <nav aria-label="Page navigation example" th:if="${employees.totalPages > 1}">
+                <ul th:class="pagination" th:classappend="justify-content-end" >
+                        
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/employment(page=${currentPage-1})}"
+                            aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <th:block th:each="pageNumber : ${pageNumbers}">
+                        <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active" >
+                        <a th:href="@{/employment(page=${pageNumber-1})}"
+                            th:classappend="page-link">
+                            <span aria-hidden="true" th:text="${pageNumber}"></span>
+                        </a>
+                        </li>
+                    </th:block>
+                    <li class="page-item" th:classappend="${currentPage + 1 == employees.totalPages} ? 'disabled'">
+                        <a class="page-link"
+                        th:href="@{/employment(page=${currentPage+1})}"
+                            aria-label="Next" title="Next Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                
+                </ul>     
+                </nav>        -->
+        
+
+        <script th:src="@{/scripts/dashboard.js}"></script>
+    </div>
+</body>
+
+</html>

@@ -32,6 +32,9 @@
                                             <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/letter') ? 'active':''}" class="nav-link" th:href="@{/letter}">Letter</a>
                                       </li>
                                       <li class="nav-item">
+                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/notification') ? 'active':''}" class="nav-link" th:href="@{/notification}">Notifikasi</a>
+                                      </li>
+                                      <li class="nav-item">
                                             <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/absence') ? 'active':''}" class="nav-link" th:href="@{/absence}">Presensi</a>
                                       </li>
                                       <li class="nav-item">

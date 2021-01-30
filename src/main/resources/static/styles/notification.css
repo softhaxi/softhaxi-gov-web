@@ -1,0 +1,24 @@
+.notification-list thead tr{
+    background: #BBEED0;
+}
+.btn-new-notification{
+    background: #42BC6F;
+    color: #fff;
+    border: none;
+}
+.btn-cancel-notification{
+    background: #C4C4C4;
+    color: #fff;
+    border: none;
+}
+
+.no-marginLR {
+    margin-left:0;
+    margin-right:0;
+}
+.input-notif{
+    width: 100%;
+    background: #F4F4F4;
+    border:none;
+    padding: 2px 0;
+}

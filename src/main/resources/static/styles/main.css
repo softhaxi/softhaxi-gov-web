@@ -7,7 +7,10 @@ body {
 body {
     padding-top: 56px;
 }
-
+.title>*{
+  text-transform: uppercase;
+  font-weight: bold;
+}
 @media (max-width: 991.98px) {
     .offcanvas-collapse {
       position: fixed;
@@ -143,4 +146,24 @@ form.search::after {
   color: #000;
   background-color: #fff;
   border-color: #eceaea;
+}
+
+.dropdown-btn-grey {
+  color: #000;
+  background-color: #F4F4F4;
+  border-radius: 0;
+  border: none;
+}
+
+.textarea-grey{
+    background-color: #F4F4F4;
+}
+
+.no-border, .no-radius{
+  border-radius: 0;
+  border: none;
+}
+
+.white-table>tbody>tr>td{
+  background: #fff;
 }

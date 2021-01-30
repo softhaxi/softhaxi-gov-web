@@ -28,8 +28,8 @@
                         </div>
                         <span th:text=#{label.absence.today.login}></span>
                     </div>
-                    <div class="content text-center py-3"><span class="actual-value">750</span>/<span
-                            class="expected-value">750</span> orang</div>
+                    <div class="content text-center py-3"><span class="actual-value" th:text="${login}"></span>/<span
+                            class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
                         <a href="#" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
@@ -47,8 +47,8 @@
                         </div>
                         <span th:text=#{label.absence.today.fake.locator}></span>
                     </div>
-                    <div class="content text-center py-3"><span class="actual-value">750</span>/<span
-                            class="expected-value">750</span> orang</div>
+                    <div class="content text-center py-3"><span class="actual-value" th:text="${totalFakeLocator}"></span>/<span
+                            class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
                         <a href="#" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
@@ -65,8 +65,8 @@
                                         
                                         </div>
                                 <span th:text=#{label.absence.today.presensi.in}></span></div>
-                    <div class="content text-center py-3"><span class="actual-value">750</span>/<span
-                            class="expected-value">750</span> orang</div>
+                    <div class="content text-center py-3"><span class="actual-value" th:text="${inPresensi}"></span>/<span
+                            class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
                         <a href="#" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
@@ -82,8 +82,8 @@
                                         </svg>                                        
                                 </div>
                                 <span th:text=#{label.absence.today.presensi.out}></span></div>
-                    <div class="content text-center py-3"><span class="actual-value">750</span>/<span
-                            class="expected-value">750</span> orang</div>
+                    <div class="content text-center py-3"><span class="actual-value" th:text="${outPresensi}"></span>/<span
+                            class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
                         <a href="#" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
@@ -98,8 +98,8 @@
                                         <path fill-rule="evenodd" clip-rule="evenodd" d="M4.41667 0.125H33.5833C35.875 0.125 37.75 2 37.75 4.29167V33.4583C37.75 35.75 35.875 37.625 33.5833 37.625H25.25L19 43.875L12.75 37.625H4.41667C2.10417 37.625 0.25 35.75 0.25 33.4583V4.29167C0.25 2 2.10417 0.125 4.41667 0.125ZM23.5208 33.4583H33.5833V4.29166H4.41668V33.4583H14.4792L15.6875 34.6667L19 37.9792L22.2917 34.6875L23.5208 33.4583ZM19 18.875C22.4375 18.875 25.25 16.0625 25.25 12.625C25.25 9.1875 22.4375 6.375 19 6.375C15.5625 6.375 12.75 9.1875 12.75 12.625C12.75 16.0625 15.5625 18.875 19 18.875ZM21.0833 12.625C21.0833 11.4792 20.1458 10.5417 19 10.5417C17.8542 10.5417 16.9167 11.4792 16.9167 12.625C16.9167 13.7708 17.8542 14.7083 19 14.7083C20.1458 14.7083 21.0833 13.7708 21.0833 12.625ZM31.5 28.4167C31.5 23.2083 23.2292 20.9583 19 20.9583C14.7708 20.9583 6.5 23.2083 6.5 28.4167V31.375H31.5V28.4167ZM19 25.125C16.3125 25.125 13.2083 26.1458 11.6666 27.2083H26.3333C24.7916 26.1458 21.6875 25.125 19 25.125Z" fill="white"/>
                                         </svg>
                                 </div><span th:text=#{label.absence.today.dispensasi}></span></div>
-                    <div class="content text-center py-3"><span class="actual-value">750</span>/<span
-                            class="expected-value">750</span> orang</div>
+                    <div class="content text-center py-3"><span class="actual-value" th:text="${dispensasi}"></span>/<span
+                            class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
                         <a href="#" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>

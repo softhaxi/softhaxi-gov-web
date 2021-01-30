@@ -7,13 +7,19 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
+import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.attendance.DailyAttendanceRepository;
+import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
+import com.softhaxi.marves.core.repository.employee.EmployeeRepository;
+import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 
 import org.slf4j.Logger;
@@ -35,20 +41,76 @@ public class AbsenceWebService {
     @Autowired
     private SystemParameterRepository systemParameterRepository;
 
+    @Autowired
+    private ActivityLogRepository activityLogRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private DispensationRepository dispensationRepository;
+
     public List<DailyAttendance> findUserHistoryByMonthYear(User user, int month, int year) {
         List<DailyAttendance> attendances = dailyAttendanceRepository.findUserHistoryByMonthYear(user, month, year);
 
         attendances = this.resetAttendanceTimeStatus(attendances);
 
+
+      /*  Map<String, Object> attendanceMap = new HashMap<>();
+        int totalFakeLocator = 0;
+        for (DailyAttendance dailyAttendance : attendances) {
+            if(dailyAttendance.isMockLocation()){
+                ++totalFakeLocator;
+            }
+        }
+
+        int totalEmployee = employeeRepository.findAll().size();
+        int login = activityLogRepository.findUserByActionName("log.in");
+        int inPresensi = activityLogRepository.findUserByActionName("clock.in");
+        int outPresensi = activityLogRepository.findUserByActionName("clockOut.in");
+        int dispensasi = dispensationRepository.findDispensationByRangeDate().size();
+
+        attendanceMap.put("totalEmployee", totalEmployee);
+        attendanceMap.put("totalFakeLocator", totalFakeLocator);
+        attendanceMap.put("login", login);
+        attendanceMap.put("inPresensi", inPresensi);
+        attendanceMap.put("outPresensi", outPresensi);
+        attendanceMap.put("dispensasi", dispensasi);
+        attendanceMap.put("attendances", attendances);*/
+
         return attendances;
     }
 
-    public List<DailyAttendance> findAll() {
+    public Map<String, Object> findAll() {
+        Map<String, Object> attendanceMap = new HashMap<>();
         List<DailyAttendance> attendances = dailyAttendanceRepository.findAll();
+        int totalFakeLocator = 0;
 
         attendances = this.resetAttendanceTimeStatus(attendances);
 
-        return attendances;
+        for (DailyAttendance dailyAttendance : attendances) {
+            if(dailyAttendance.isMockLocation()){
+                ++totalFakeLocator;
+            }
+        }
+
+        logger.debug("activityLogRepository: "+ activityLogRepository.findUserByActionName("log.in"));
+
+        int totalEmployee = employeeRepository.findAll().size();
+        int login = activityLogRepository.findUserByActionName("log.in");
+        int inPresensi = activityLogRepository.findUserByActionName("clock.in");
+        int outPresensi = activityLogRepository.findUserByActionName("clock.out");
+        int dispensasi = dispensationRepository.findDispensationByRangeDate().size();
+
+        attendanceMap.put("totalEmployee", totalEmployee);
+        attendanceMap.put("totalFakeLocator", totalFakeLocator);
+        attendanceMap.put("login", login);
+        attendanceMap.put("inPresensi", inPresensi);
+        attendanceMap.put("outPresensi", outPresensi);
+        attendanceMap.put("dispensasi", dispensasi);
+        attendanceMap.put("attendances", attendances);
+
+        return attendanceMap;
     }
 
     public List<ZonedDateTime> getWorkingTimeSysParam() {

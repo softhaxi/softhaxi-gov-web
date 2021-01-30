@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.attendance.Attendance;
 import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.account.UserRepository;
@@ -48,9 +49,6 @@ public class AbsenceController {
     private DailyAttendanceRepository dailyAttendanceRepository;
 
     @Autowired
-    private SystemParameterRepository systemParameterRepository;
-
-    @Autowired
     private AbsenceWebService absenceWebService;
 
     @GetMapping("/absence")
@@ -63,13 +61,19 @@ public class AbsenceController {
         model.addAttribute("month", defaultMonth);
         model.addAttribute("year", defaultYear);
 
-        List<DailyAttendance> attendanceList = this.absenceWebService.findAll();
+        Map<String, Object> attendanceMap = this.absenceWebService.findAll();
         List<ZonedDateTime> zonedDateTimes = this.absenceWebService.getWorkingTimeSysParam();
-        
+        logger.debug("attendanceMap" + attendanceMap);
         model.addAttribute("startWorkingTime", zonedDateTimes.get(0));
         model.addAttribute("endWorkingTime", zonedDateTimes.get(1));
-        model.addAttribute("attendanceList", attendanceList);
-
+        model.addAttribute("attendanceList", (List<DailyAttendance>) attendanceMap.get("attendances"));
+        model.addAttribute("totalEmployee",attendanceMap.get("totalEmployee"));
+        model.addAttribute("totalFakeLocator",attendanceMap.get("totalFakeLocator"));
+        model.addAttribute("login",attendanceMap.get("login"));
+        model.addAttribute("inPresensi",attendanceMap.get("inPresensi"));
+        model.addAttribute("outPresensi",attendanceMap.get("outPresensi"));
+        model.addAttribute("dispensasi",attendanceMap.get("dispensasi"));
+        
         return "common/absence/absence-list";
     }
 
@@ -119,7 +123,7 @@ public class AbsenceController {
         
         for (User user : users) {
             
-            dailyAttendancesPerUser = dailyAttendanceRepository.findUserHistoryByMonthYear(user, intMonth, intYear);
+            dailyAttendancesPerUser = absenceWebService.findUserHistoryByMonthYear(user, intMonth, intYear);
             dailyAttendances.addAll(dailyAttendancesPerUser);
         }
         logger.debug("dailyAttendances: "+dailyAttendances);

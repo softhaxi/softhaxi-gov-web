@@ -32,7 +32,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="notification: ${notifications}">
+                            <tr th:each="notification: ${notifications}" th:if="${notification.user!=null}">
                                 <td th:text="${notification.user.email}" />
                                 <td th:text="${notification.content}" />
                                 <td th:text="${#temporals.format(notification.dateTime, 'dd/MM/yyyy')}" />

@@ -295,7 +295,6 @@ public class InvitationResful {
         ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
             Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
 
-        
         //invitation.location(request.getLocation());
         invitation.startTime(startTime);
         invitation.endTime(endTime);
@@ -304,22 +303,12 @@ public class InvitationResful {
             invitation.setAttachement(path);
         }
         //invitationRepo.save(invitation);
-
-        Notification notification = new Notification()
-                .level("PRIVATE")
-                .assignee("SPECIFIC")
-                .category("TASK")
-                .deepLink("core://marves.dev/invitation")
-                .referenceId(invitation.getId().toString())
-                .uri("/invitation");
-        notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
-        notification.setDateTime(ZonedDateTime.now());
-        notificationRepo.save(notification);
         
         List<InvitationMember> invitees = new LinkedList<>();
         List<NotificationStatus> statuses = new LinkedList<>();
 
         if(request.getInvitee() != null && !request.getInvitee().isBlank()) {
+            logger.info("[edit] invitees..." + request.getInvitee());
             List<String> inviteeEmails = new LinkedList<>(Arrays.asList(request.getInvitee().split(";")));
             invitation.getInvitees().forEach((member) -> {
                 if(!member.isOrganizer() && !inviteeEmails.contains(member.getUser().getEmail())) {
@@ -328,23 +317,38 @@ public class InvitationResful {
             });
 
             invitation.getInvitees().forEach((member) -> inviteeEmails.remove(member.getUser().getEmail()));
-            for(String email: inviteeEmails) {
-                User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
-                if(invitee == null) {
-                    invitee = new User()
-                        .email(email)
-                        .username(email.substring(0, email.indexOf("@")).toUpperCase());
-                    invitee.setIsLDAPUser(true);
-                    userRepo.save(invitee);
-                }
-                if(!user.equals(invitee)) {
-                    invitees.add(new InvitationMember()
-                        .invitation(invitation)
-                        .user(invitee));
-                    statuses.add(new NotificationStatus(
-                        (Message) notification,
-                        invitee, false, false
-                    ));
+
+            if(!inviteeEmails.isEmpty()) {
+                Notification notification = new Notification()
+                        .level("PRIVATE")
+                        .assignee("SPECIFIC")
+                        .category("TASK")
+                        .deepLink("core://marves.dev/invitation")
+                        .referenceId(invitation.getId().toString())
+                        .uri("/invitation");
+                notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
+                notification.setDateTime(ZonedDateTime.now());
+                notificationRepo.save(notification);
+
+                for(String email: inviteeEmails) {
+                    User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
+                    if(invitee == null) {
+                        invitee = new User()
+                            .email(email)
+                            .username(email.substring(0, email.indexOf("@")).toUpperCase())
+                            .status("INACTIVE");
+                        invitee.setIsLDAPUser(true);
+                        userRepo.save(invitee);
+                    }
+                    if(!user.equals(invitee)) {
+                        invitees.add(new InvitationMember()
+                            .invitation(invitation)
+                            .user(invitee));
+                        statuses.add(new NotificationStatus(
+                            (Message) notification,
+                            invitee, false, false
+                        ));
+                    }
                 }
             }
         }
@@ -387,7 +391,7 @@ public class InvitationResful {
             members.add(temp);
 
             if(member.getUser().equals(user)) {
-                invitation.setCompleted(member.getStatus() == "ATTENDED");
+                invitation.setCompleted(member.getStatus().equalsIgnoreCase("ATTENDED"));
             }
         });
         invitation.setMembers(members);

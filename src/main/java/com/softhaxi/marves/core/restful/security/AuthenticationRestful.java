@@ -105,6 +105,7 @@ public class AuthenticationRestful {
                     }
                 }
                 user.setProfile(profile);
+                user.setStatus("ACTIVE");
                 user = userService.saveMobileUser(user);
                 description = "first.time.login.mobile";
             } else {
@@ -119,6 +120,7 @@ public class AuthenticationRestful {
                         profile = new Profile().fullName(userLdap.get("fullName").toString())
                             .primaryEmail(userLdap.get("email").toString());
                     }
+                    user.setStatus("ACTIVE");
                     profile.setUser(user);
                     profileRepo.save(profile);
                     Role role = roleRepo.findByName("MOBILE").orElse(null);

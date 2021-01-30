@@ -172,6 +172,17 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(covidTrackerAPI);
         }
 
+        SystemParameter maxDispensationDay = sysParamRepository.findByCode("DISPENSATION_MAX_DAYS").orElse(new SystemParameter());
+        if(covidTrackerAPI.getId() == null) {
+            covidTrackerAPI.setCode("DISPENSATION_MAX_DAYS");
+            covidTrackerAPI.setName("Maximum Input dispensation in days");
+            covidTrackerAPI.setValue("14");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            covidTrackerAPI.setIsEditable(true);
+            covidTrackerAPI.setIsSystem(false);
+            sysParamRepository.save(maxDispensationDay);
+        }
+
         logger.info("[run] Finish at " + ZonedDateTime.now());
     }
     

@@ -147,7 +147,7 @@ public class SecurityConfiguration {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable()
-                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**", "/ws").permitAll()
+                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**").permitAll()
                     .anyRequest().fullyAuthenticated().and().formLogin().loginPage("/").permitAll()
                     .defaultSuccessUrl("/dashboard").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/?logout")
                     .permitAll();

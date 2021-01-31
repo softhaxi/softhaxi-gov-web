@@ -296,6 +296,7 @@ public class InvitationResful {
             Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
 
         //invitation.location(request.getLocation());
+        invitation.setDescription(request.getDescription());
         invitation.startTime(startTime);
         invitation.endTime(endTime);
         if(path != null) {

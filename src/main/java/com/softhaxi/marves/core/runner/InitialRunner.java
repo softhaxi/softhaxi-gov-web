@@ -173,59 +173,59 @@ public class InitialRunner implements CommandLineRunner {
         }
 
         SystemParameter maxDispensationDay = sysParamRepository.findByCode("DISPENSATION_MAX_DAYS").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("DISPENSATION_MAX_DAYS");
-            covidTrackerAPI.setName("Maximum Input dispensation in days");
-            covidTrackerAPI.setValue("14");
+        if(maxDispensationDay.getId() == null) {
+            maxDispensationDay.setCode("DISPENSATION_MAX_DAYS");
+            maxDispensationDay.setName("Maximum Input dispensation in days");
+            maxDispensationDay.setValue("14");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
+            maxDispensationDay.setIsEditable(true);
+            maxDispensationDay.setIsSystem(false);
             sysParamRepository.save(maxDispensationDay);
         }
 
 
 
         SystemParameter maxClockInDaily = sysParamRepository.findByCode("MAX_CLOCK_IN_DAILY").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("MAX_CLOCK_IN_DAILY");
-            covidTrackerAPI.setName("Maximum Clock In Daily");
-            covidTrackerAPI.setValue("07:30:00");
+        if(maxClockInDaily.getId() == null) {
+            maxClockInDaily.setCode("MAX_CLOCK_IN_DAILY");
+            maxClockInDaily.setName("Maximum Clock In Daily");
+            maxClockInDaily.setValue("07:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
+            maxClockInDaily.setIsEditable(true);
+            maxClockInDaily.setIsSystem(false);
             sysParamRepository.save(maxClockInDaily);
         }
 
         SystemParameter maxClockOutDaily = sysParamRepository.findByCode("MAX_CLOCK_OUT_DAILY").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("MAX_CLOCK_OUT_DAILY");
-            covidTrackerAPI.setName("Maximum Clock Out Daily");
-            covidTrackerAPI.setValue("16:00:00");
+        if(maxClockOutDaily.getId() == null) {
+            maxClockOutDaily.setCode("MAX_CLOCK_OUT_DAILY");
+            maxClockOutDaily.setName("Maximum Clock Out Daily");
+            maxClockOutDaily.setValue("16:00:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
+            maxClockOutDaily.setIsEditable(true);
+            maxClockOutDaily.setIsSystem(false);
             sysParamRepository.save(maxClockOutDaily);
         }
 
         SystemParameter maxClockInFriday = sysParamRepository.findByCode("MAX_CLOCK_IN_FRIDAY").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("MAX_CLOCK_IN_FRIDAY");
-            covidTrackerAPI.setName("Max Clock In Friday");
-            covidTrackerAPI.setValue("07:30:00");
+        if(maxClockInFriday.getId() == null) {
+            maxClockInFriday.setCode("MAX_CLOCK_IN_FRIDAY");
+            maxClockInFriday.setName("Max Clock In Friday");
+            maxClockInFriday.setValue("07:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
+            maxClockInFriday.setIsEditable(true);
+            maxClockInFriday.setIsSystem(false);
             sysParamRepository.save(maxClockInFriday);
         }
 
         SystemParameter maxClockOutFriday = sysParamRepository.findByCode("MAX_CLOCK_OUT_FRIDAY").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("MAX_CLOCK_OUT_FRIDAY");
-            covidTrackerAPI.setName("Maximum Clock Out Friday");
-            covidTrackerAPI.setValue("16:30:00");
+        if(maxClockOutFriday.getId() == null) {
+            maxClockOutFriday.setCode("MAX_CLOCK_OUT_FRIDAY");
+            maxClockOutFriday.setName("Maximum Clock Out Friday");
+            maxClockOutFriday.setValue("16:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
+            maxClockOutFriday.setIsEditable(true);
+            maxClockOutFriday.setIsSystem(false);
             sysParamRepository.save(maxClockOutFriday);
         }
 

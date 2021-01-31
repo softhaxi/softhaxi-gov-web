@@ -45,7 +45,7 @@ public class UserRestful {
     @Autowired
     private UserService userService;
 
-    @GetMapping("")
+    @GetMapping()
     public ResponseEntity<?> index(@RequestParam(name = "type", defaultValue = "mobile") String type) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
@@ -74,7 +74,9 @@ public class UserRestful {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
 
+        //logger.info("Calling....");
         Map<?, ?> data = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
+        
         if(data != null) {
             return new ResponseEntity<>(
                 new GeneralResponse(
@@ -90,7 +92,7 @@ public class UserRestful {
         }
 
         data = (Map<?, ?>) userService.retrieveUserLdapDetail(user.getEmail().trim().toLowerCase());
-        logger.info("[ME] === " + data);
+        //logger.info("[ME] === " + data);
         if(data != null) {
             return new ResponseEntity<>(
                 new GeneralResponse(

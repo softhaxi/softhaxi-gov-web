@@ -22,6 +22,7 @@ import com.softhaxi.marves.core.domain.attendance.MeetingAttendance;
 import com.softhaxi.marves.core.model.request.AbsenceRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
 import com.softhaxi.marves.core.service.employee.AbsenceService;
 import com.softhaxi.marves.core.service.storage.FileStorageService;
 import com.softhaxi.marves.core.util.AbsenceUtil;
@@ -57,6 +58,9 @@ public class AbsenceRestful {
     private AbsenceService absenceService;
 
     @Autowired
+    private DispensationRepository dispensationRepo;
+
+    @Autowired
     private FileStorageService storageService;
 
     @Autowired
@@ -69,11 +73,18 @@ public class AbsenceRestful {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
 
-        LocalDate from = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate now = LocalDate.now();
+
+        LocalDate from = now.with(TemporalAdjusters.firstDayOfMonth());
         if(year != null && month != null)
             from = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), 1);
 
-        LocalDate to = from.with(TemporalAdjusters.lastDayOfMonth());
+        LocalDate to = null;
+        if(now.getYear() == from.getYear() && now.getMonthValue() == from.getMonthValue()) {
+            to = now;
+        } else {
+            to = from.with(TemporalAdjusters.lastDayOfMonth());
+        }
         logger.info("[History] From date..." + from.toString() + " To date..." + to.toString());
 
         Collection<?> data = absenceService.getHistoryByUser(user, type.trim().toLowerCase(), from.atStartOfDay(ZoneId.systemDefault()), 
@@ -138,8 +149,8 @@ public class AbsenceRestful {
         String path = null;
         if (file != null) {
             try {
-                String folder = String.format("/%s/%s", request.getType().toLowerCase(), new SimpleDateFormat("yyyyMMdd").format(new Date()));
-                path = storageService.store(folder, new SimpleDateFormat("HHmmss").format(new Date()), file);
+                //String folder = String.format("/%s/%s", request.getType().toLowerCase(), new SimpleDateFormat("yyyyMMdd").format(new Date()));
+                path = storageService.store(String.format("/%s",request.getType().toLowerCase()), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), file);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }

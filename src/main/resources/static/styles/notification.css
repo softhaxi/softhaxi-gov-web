@@ -22,3 +22,42 @@
     border:none;
     padding: 2px 0;
 }
+
+#new-notification-form{
+    margin-top: -20px;
+}
+
+#triangle-up {
+    margin-left: 200px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid #BBEED0;
+  }
+
+.dropdown-toggle::after {
+    margin-top: 10px;
+    float:right;
+}
+
+.dropdown-email{
+    position: absolute;
+    margin-top: 3px;
+    display: block;
+    width: 270px;
+    background-color: white;
+    
+}
+
+.dropdown-email a {
+    color: inherit; /* blue colors for links too */
+    text-decoration: inherit; /* no underline */
+    display: block;
+    padding: 2px 7px;
+  }
+
+  .dropdown-email a:hover {
+    background-color: #555;
+    color: #fff;
+  }

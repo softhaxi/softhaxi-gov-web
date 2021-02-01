@@ -31,7 +31,7 @@
                     <div class="content text-center py-3"><span class="actual-value" th:text="${login}"></span>/<span
                             class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
-                        <a href="#" class="py-2">
+                        <a th:href="@{/employment/activity?action=log.in}" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
                             <i class="fa fa-arrow-right text-center grid-item"></i>
                         </a>
@@ -68,7 +68,7 @@
                     <div class="content text-center py-3"><span class="actual-value" th:text="${inPresensi}"></span>/<span
                             class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
-                        <a href="#" class="py-2">
+                        <a th:href="@{/employment/activity?action=clock.in}" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
                             <i class="fa fa-arrow-right text-center grid-item"></i>
                         </a>
@@ -85,7 +85,7 @@
                     <div class="content text-center py-3"><span class="actual-value" th:text="${outPresensi}"></span>/<span
                             class="expected-value" th:text="${totalEmployee}"></span> orang</div>
                     <div class="footer">
-                        <a href="#" class="py-2">
+                        <a th:href="@{/employment/activity?action=clock.out}" class="py-2">
                             <span th:text="#{label.absence.detail}" class="grid-item"></span>
                             <i class="fa fa-arrow-right text-center grid-item"></i>
                         </a>

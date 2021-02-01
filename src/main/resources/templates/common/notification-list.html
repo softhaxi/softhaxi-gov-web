@@ -11,17 +11,16 @@
     <header>
     </header>
     <div layout:fragment="content" class="container">
-        
             <div class="row py-5 col-sm-12 no-marginLR">
                 <div class="col-sm-3 title">
                     <h3 th:text="#{label.notification.title}"></h3>
                 </div>
                 <div class="col-sm-9 d-flex justify-content-end">
-                        <button th:text="#{label.notification.create.new}" class="py-1 px-5 btn-new-notification"></button>
+                    <button th:text="#{label.notification.create.new}" class="py-1 px-5 btn-new-notification" id="btn-add-notification"></button>
                 </div>
              </div>
-             <div class="row  no-marginLR">
-                 <div class=" col-sm-9">
+             <div class="row  no-marginLR" id="notification-list">
+                 <div class="col-sm-9">
                 <table class="table notification-list white-table">
                         <thead>
                             <tr>
@@ -41,7 +40,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-3" id="new-notification-form">
                 <table class="table notification-list white-table table-borderless">
                         <thead>
                             <tr>
@@ -62,19 +61,22 @@
                                 <td class="p-3" colspan="2">
                                     <div class="dropdown">
                                         <button class="btn dropdown-btn-grey dropdown-toggle w-100" type="button" id="year-button"
-                                            data-bs-toggle="dropdown" aria-expanded="false" th:value="${year}">
-                                            2021
+                                            data-bs-toggle="dropdown" aria-expanded="false" th:value="${perihal}">
+                                            Kabar Bahagia
                                         </button>
                                         <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton" id="presensi-year">
-                                            <li id="2021"><a class="dropdown-item" href="#">2021</a></li>
-                                            <li id="2022"><a class="dropdown-item" href="#">2022</a></li>
-                                            <li id="2023"><a class="dropdown-item" href="#">2023</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Kabar Bahagia</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Upacara Nasional</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Penyemprotan</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Kabar Dukacita</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Hari Ulang Tahun</a></li>
+                                            <li id="1"><a class="dropdown-item" href="#">Open Ticket</a></li>
                                         </ul>
                                     </div>
                                 </td>
                             </tr>
                             <tr >
-                                <td class="px-3" th:text="#{label.notification.new}" colspan="2"></td>
+                                <td class="px-3" th:text="#{label.notification.description}" colspan="2"></td>
                             </tr>
                             <tr>
                                 <td colspan="2"><textarea name="description" class="form-control input-notif no-border no-radius" style="resize:none;" height="15"></textarea></td>
@@ -120,8 +122,24 @@
                 </ul>     
                 </nav>        -->
         
-
-        <script th:src="@{/scripts/dashboard.js}"></script>
+        <script>
+            var isFormHidden = false;
+            $("#btn-add-notification").click(function(){
+                $("#new-notification-form").toggle();
+                if(!isFormHidden){
+                    $('#new-notification-form').siblings().removeClass('col-sm-9').addClass('col-sm-12');
+                    isFormHidden = true;
+                }else{
+                    $('#new-notification-form').siblings().removeClass('col-sm-12').addClass('col-sm-9');
+                    isFormHidden = false;
+                }
+            });
+            $("#presensi-month li").click(function(){
+                var month = $(this).attr('id') ;
+                $('#month-button').text($(this).find('a').text());
+                $("#month-button").prop('value', month);
+            });
+        </script>
     </div>
 </body>
 

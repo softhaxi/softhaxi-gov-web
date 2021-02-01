@@ -11,6 +11,8 @@ import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class ActivityController {
 
+    Logger logger = LoggerFactory.getLogger(ActivityController.class);
+
     @Autowired
     private ActivityLogRepository activityLogRepository;
 
@@ -36,26 +40,30 @@ public class ActivityController {
     private int pageSize;
 
     @GetMapping("/employment/activity")
-    public String getActivity(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam("search") Optional<String> username) {
+    public String getActivity(Model model, @RequestParam("page") Optional<Integer> page, @RequestParam("search") Optional<String> username, @RequestParam("action") Optional<String> action) {
         int currentPage = page.orElse(0);
         String strUserName = username.orElse("");
+        String strAction = action.orElse("");
         Pageable paging = PageRequest.of(currentPage, pageSize, Sort.by(Sort.Direction.DESC, "actionTime"));
         
         Page<ActivityLog> pagedResult = new PageImpl<>(new ArrayList<>());
+        List<ActivityLog> activityLogs = new ArrayList<>();
         
         if(!"".equals(strUserName)){
             Optional<User> user = userService.findByUsername(strUserName);
             model.addAttribute("search", strUserName);
             if(!user.isEmpty()){
-                List<ActivityLog> activityLogs = activityLogRepository.findActivityLogByUserName(user.get());
-                int start = (int)paging.getOffset();
-                int end = (start + paging.getPageSize()) > activityLogs.size() ? activityLogs.size() : (start + paging.getPageSize());
-                pagedResult = new PageImpl<ActivityLog>(activityLogs.subList(start, end), paging, activityLogs.size());
+                activityLogs = activityLogRepository.findActivityLogByUserName(user.get(), strAction);
             }
         }else{
-            pagedResult=activityLogRepository.findAll(paging);
+                activityLogs = activityLogRepository.findActivityLogByAction(strAction);
         }
-        
+
+        if(null!=activityLogs && activityLogs.size()>0){
+            int start = (int)paging.getOffset();
+            int end = (start + paging.getPageSize()) > activityLogs.size() ? activityLogs.size() : (start + paging.getPageSize());
+            pagedResult = new PageImpl<ActivityLog>(activityLogs.subList(start, end), paging, activityLogs.size());
+        }
         
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("startIndex", pageSize * currentPage);

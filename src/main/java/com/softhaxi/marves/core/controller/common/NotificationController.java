@@ -26,10 +26,6 @@ public class NotificationController {
     @GetMapping("/notification")
     public String getAllNotification(Model model){
         List<Notification> notifications = notificationRepository.findAll();
-        for (Notification notification : notifications) {
-            logger.debug("notification: " + notification.toString());
-        }
-        
         model.addAttribute("notifications", notifications);
         return "common/notification-list.html";
     }

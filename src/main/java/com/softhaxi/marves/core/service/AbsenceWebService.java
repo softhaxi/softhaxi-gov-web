@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
-import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.attendance.DailyAttendanceRepository;
 import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
@@ -94,8 +93,6 @@ public class AbsenceWebService {
             }
         }
 
-        logger.debug("activityLogRepository: "+ activityLogRepository.findUserByActionName("log.in"));
-
         int totalEmployee = employeeRepository.findAll().size();
         int login = activityLogRepository.findUserByActionName("log.in");
         int inPresensi = activityLogRepository.findUserByActionName("clock.in");
@@ -117,7 +114,6 @@ public class AbsenceWebService {
 
         LocalDate today = LocalDate.now();
         int dayOfWeek = today.getDayOfWeek().getValue();
-        logger.debug("dayOfWeek: " + dayOfWeek);
 
         String inWorkingParam = "MAX_CLOCK_IN_DAILY";
         String outWorkingParam = "MAX_CLOCK_OUT_DAILY";
@@ -153,7 +149,6 @@ public class AbsenceWebService {
         List<LocalTime> localTimes = new ArrayList<>();
         LocalDate today = LocalDate.now();
         int dayOfWeek = today.getDayOfWeek().getValue();
-        logger.debug("dayOfWeek: " + dayOfWeek);
 
         String inWorkingParam = "MAX_CLOCK_IN_DAILY";
         String outWorkingParam = "MAX_CLOCK_OUT_DAILY";
@@ -186,16 +181,12 @@ public class AbsenceWebService {
 
             if (null != dailyAttendance.getDateTime()) {
                 LocalTime inLocalTime = getLocalTime(dailyAttendance.getDateTime());
-                logger.debug("inLocalTime: " + inLocalTime);
-                logger.debug("localTimesParam.get(0): " + localTimesParam.get(0));
                 if (inLocalTime.isAfter(localTimesParam.get(0))) {
                     dailyAttendance.setComeLate(true);
                 }
             }
             if (null != dailyAttendance.getOutDateTime()) {
                 LocalTime outLocalTime = getLocalTime(dailyAttendance.getOutDateTime());
-                logger.debug("outLocalTime: " + outLocalTime);
-                logger.debug("localTimesParam.get(1): " + localTimesParam.get(1));
                 if (outLocalTime.isBefore(localTimesParam.get(1))) {
                     dailyAttendance.setGoBackEarly(true);
                 }

@@ -63,7 +63,7 @@ public class AbsenceController {
 
         Map<String, Object> attendanceMap = this.absenceWebService.findAll();
         List<ZonedDateTime> zonedDateTimes = this.absenceWebService.getWorkingTimeSysParam();
-        logger.debug("attendanceMap" + attendanceMap);
+        
         model.addAttribute("startWorkingTime", zonedDateTimes.get(0));
         model.addAttribute("endWorkingTime", zonedDateTimes.get(1));
         model.addAttribute("attendanceList", (List<DailyAttendance>) attendanceMap.get("attendances"));
@@ -116,7 +116,7 @@ public class AbsenceController {
 
         int intMonth = month.orElse(defaultMonth);
         int intYear = year.orElse(defaultYear);
-        logger.debug(strName +" "+intMonth + " " +intYear);
+        
         List<User> users = userRepository.findUserByUsernameLike(strName);
         List<DailyAttendance> dailyAttendances = new ArrayList<>();
         List<DailyAttendance> dailyAttendancesPerUser = new ArrayList<>();
@@ -126,7 +126,7 @@ public class AbsenceController {
             dailyAttendancesPerUser = absenceWebService.findUserHistoryByMonthYear(user, intMonth, intYear);
             dailyAttendances.addAll(dailyAttendancesPerUser);
         }
-        logger.debug("dailyAttendances: "+dailyAttendances);
+        
         ZonedDateTime startWorkingTime = ZonedDateTime.of(2020, 12, 12, 9, 0, 0, 0, ZoneId.of("UTC"));
         ZonedDateTime endWorkingTime = ZonedDateTime.of(2020, 12, 12, 18, 0, 0, 0, ZoneId.of("UTC"));
 

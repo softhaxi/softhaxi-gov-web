@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,6 +67,9 @@ public class ChatRestful {
 
     @Autowired
     private ChatStatusRepository chatStatusRepo;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody ChatRequest payload) {
@@ -137,10 +141,11 @@ public class ChatRestful {
             chatStatusRepo.saveAll(statuses);
         }
 
-        // messagingTemplate.convertAndSendToUser("test", "/message", chat);
-        // messagingTemplate.convertAndSendToUser(
-        //     String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()), 
-        //     "/test/message", chat);
+        //messagingTemplate.convertAndSendToUser("test", "/message", chat);
+        //logger.info(String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()));
+        messagingTemplate.convertAndSendToUser(
+            String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()), 
+            "/queue/message", chat.getId().toString());
 
         chat.setMyself(true);
         return new ResponseEntity<>(
@@ -181,6 +186,12 @@ public class ChatRestful {
                 else
                     room.setName(names[0]);
             }
+
+            // long unread = room.getChats().stream().filter((item) -> {
+            //     //System.out.println(item.isRead());
+            //     return !item.isRead() && !item.getUser().equals(user);
+            // }).count();
+            // room.setUnreadChat(unread);
 
             if(room.getChats() != null && !room.getChats().isEmpty()) {
                 Chat chat = room.getChats().stream().reduce((a, b) -> b).orElse(null);
@@ -232,7 +243,7 @@ public class ChatRestful {
                         if(status.getUser().equals(user)) {
                             if(!status.isDelivered()) {
                                 status.setDelivered(true);
-                                //status.setRead(true);
+                                status.setRead(true);
                                 statuses.add((ChatStatus) status);
                             }
                             chat.setDelivered(true);
@@ -245,7 +256,7 @@ public class ChatRestful {
                         statuses.add(new ChatStatus(chat, user, true, false));
                     else if(!status.isDelivered()) {
                         status.setDelivered(true);
-                        //status.setRead(true);
+                        status.setRead(true);
                         statuses.add(status);
                     }
                     chat.setDelivered(true);

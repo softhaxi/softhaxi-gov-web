@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
@@ -128,6 +129,7 @@ public class SecurityConfiguration {
                     //.passwordAttribute("userPassword");
         }
 
+        @Primary()
         @Bean(name = "restAuthenticationManager")
         @Override
         public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -146,8 +148,10 @@ public class SecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
+            //http.antMatcher("/socket/**").cors().and().csrf().disable();
             http.csrf().disable()
-                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**", "/asset/**").permitAll()
+                    .authorizeRequests().antMatchers("/", "/webjars/**", "/styles/**", "/scripts/**",
+                    "/asset/**", "/socket/**", "/app/**").permitAll()
                     .anyRequest().fullyAuthenticated().and().formLogin().loginPage("/").permitAll()
                     .defaultSuccessUrl("/dashboard").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/?logout")
                     .permitAll();

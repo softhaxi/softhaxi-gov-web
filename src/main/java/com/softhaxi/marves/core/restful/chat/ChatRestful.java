@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 //https://github.com/amrkhaledccd/One-to-One-WebSockets-Chat
@@ -145,6 +144,10 @@ public class ChatRestful {
         //logger.info(String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()));
         messagingTemplate.convertAndSendToUser(
             String.format("%s.%s", chatRoom.getId().toString(), recipient.getEmail()), 
+            "/queue/message", chat.getId().toString());
+
+        messagingTemplate.convertAndSendToUser(
+            recipient.getEmail(), 
             "/queue/message", chat.getId().toString());
 
         chat.setMyself(true);

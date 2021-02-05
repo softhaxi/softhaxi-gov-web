@@ -61,3 +61,10 @@
     background-color: #555;
     color: #fff;
   }
+
+  .email-list{
+      padding: 3px 5px;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+      border-bottom-color: rgb(129, 129, 129);
+  }

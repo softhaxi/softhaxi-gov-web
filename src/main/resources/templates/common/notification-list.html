@@ -56,7 +56,7 @@
                             </tr>
                             <tr >
                                 <td class="px-3" colspan="2"><input type="text" autocomplete="off" class="input-notif" name="assignee" th:value="${assignee}" id="input-assignee">
-                                    <div class="dropdown dropdown-email" id="dropdown-email" style="position: absolute">
+                                    <div class="dropdown dropdown-email" id="dropdown-email" style="z-index: 1000; display: none;" >
                                         <ul class="list-unstyled" id="list-email" aria-labelledby="dropdownMenuButton2">
                                         </ul>
                                     </div>
@@ -72,7 +72,7 @@
                                 <td class="p-3" colspan="2">
                                     <div class="dropdown">
                                         <button class="btn dropdown-btn-grey dropdown-toggle w-100" type="button" id="perihal" name="category"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            data-bs-toggle="dropdown" aria-expanded="false" style="z-index: -1;">
                                             Kabar Bahagia
                                         </button>
                                         <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton" id="perihal-dropdown">
@@ -105,37 +105,10 @@
                 </form>
                 </div> 
             </div>
-            <!-- <nav aria-label="Page navigation example" th:if="${employees.totalPages > 1}">
-                <ul th:class="pagination" th:classappend="justify-content-end" >
-                        
-                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link"
-                            th:href="@{/employment(page=${currentPage-1})}"
-                            aria-label="Previous" title="Previous Page" data-toggle="tooltip">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <th:block th:each="pageNumber : ${pageNumbers}">
-                        <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active" >
-                        <a th:href="@{/employment(page=${pageNumber-1})}"
-                            th:classappend="page-link">
-                            <span aria-hidden="true" th:text="${pageNumber}"></span>
-                        </a>
-                        </li>
-                    </th:block>
-                    <li class="page-item" th:classappend="${currentPage + 1 == employees.totalPages} ? 'disabled'">
-                        <a class="page-link"
-                        th:href="@{/employment(page=${currentPage+1})}"
-                            aria-label="Next" title="Next Page" data-toggle="tooltip">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                
-                </ul>     
-                </nav>        -->
-        
         <script>
-            var isFormHidden = false;
+            var isFormHidden = true;
+            $("#new-notification-form").hide();
+            $('#new-notification-form').siblings().removeClass('col-sm-9').addClass('col-sm-12');
             $("#btn-add-notification").click(function(){
                 $("#new-notification-form").toggle();
                 if(!isFormHidden){

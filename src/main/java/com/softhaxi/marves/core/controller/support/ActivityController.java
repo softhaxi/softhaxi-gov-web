@@ -64,7 +64,7 @@ public class ActivityController {
             int end = (start + paging.getPageSize()) > activityLogs.size() ? activityLogs.size() : (start + paging.getPageSize());
             pagedResult = new PageImpl<ActivityLog>(activityLogs.subList(start, end), paging, activityLogs.size());
         }
-        
+        model.addAttribute("action", strAction);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("startIndex", pageSize * currentPage);
         model.addAttribute("activities", pagedResult);

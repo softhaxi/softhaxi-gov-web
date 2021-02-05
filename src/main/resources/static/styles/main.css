@@ -6,6 +6,7 @@ body {
 
 body {
     padding-top: 56px;
+    font-family: 'Poppins', sans-serif;
 }
 .title>*{
   text-transform: uppercase;
@@ -73,6 +74,7 @@ body {
   
   .text-white-50 { color: rgba(255, 255, 255, .5); }
   .bg-purple { background-color: #6f42c1; }
+  
 
 .lh-100 { line-height: 1; }
 .lh-125 { line-height: 1.25; }
@@ -167,3 +169,7 @@ form.search::after {
 .white-table>tbody>tr>td{
   background: #fff;
 }
+
+.bg-input-form { background: #F4F4F4; border:none; padding: 5px;}
+.bg-button { background: #42BC6F; border: none;}
+.text-blue{color: #0983E7;}

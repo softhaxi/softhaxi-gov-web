@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link rel="stylesheet" href="https://formden.com/static/cdn/bootstrap-iso.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+        <div class="row py-5 col-sm-12 no-marginLR">
+            <div class="col-sm-3 title">
+                <h3 th:text="#{label.chat.title}"></h3>
+            </div>
+        </div>
+        <form th:action="@{/download-chat}" method="post">
+            
+             <div class="bg-white px-5 py-3 row" id="create-chat">
+                <div th:if="${errorMessage}">
+                    <div th:if="${errorMessage=='invalidDateParse'}" class="text-danger">Tanggal invalid</div>
+                    <div th:if="${errorMessage=='invalidDateOrder'}" class="text-danger">Tanggal awal lebih besar daripada tanggal akhir</div>
+                </div>
+                <div class="py-3"><span>Nama</span></div>
+                <div class="py-3"><input type="text" name="name" autocomplete="off" id="name" class="w-100 bg-input-form"></div>
+                <div class="py-3"><span>Periode Tanggal</span></div>
+                <div class="py-3 col-sm-5">
+                    <input type="date" name="fromdate" class="form-control bg-input-form" data-date="" data-date-format="DD MMMM YYYY" >
+                </div>
+                <div class="py-3 col-sm-2 text-center"><span>s / d</span></div>
+                <div class="py-3 col-sm-5"><input type="date" name="todate" class="form-control bg-input-form" data-date="" data-date-format="DD MMMM YYYY"></div>
+                <div class="py-3 col-sm-12">
+                    <button type="submit" class="bg-button float-end col-sm-2 py-2 text-white">Download</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+<script>
+    $("input[type=date]").on("change", function() {
+    this.setAttribute(
+        "data-date",
+        moment(this.value, "YYYY-MM-DD")
+        .format(this.getAttribute("data-date-format") )
+    )
+}).trigger("change")
+</script>
+</body>
+
+</html>

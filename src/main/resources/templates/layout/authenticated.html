@@ -29,16 +29,16 @@
                                             <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/employment') ? 'active':''}" class="nav-link" th:href="@{/employment}">Employment</a>
                                       </li>
                                       <li class="nav-item">
-                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/letter') ? 'active':''}" class="nav-link" th:href="@{/letter}">Letter</a>
+                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/chat') ? 'active':''}" class="nav-link" th:href="@{/create-chat}">Chat</a>
+                                      </li>
+                                      <li class="nav-item">
+                                            <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/ticket/open-ticket') ? 'active':''}" class="nav-link" th:href="@{/ticket/open-ticket}">Open Ticket</a>
                                       </li>
                                       <li class="nav-item">
                                             <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/notification') ? 'active':''}" class="nav-link" th:href="@{/notification}">Notifikasi</a>
                                       </li>
                                       <li class="nav-item">
                                             <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/absence') ? 'active':''}" class="nav-link" th:href="@{/absence}">Presensi</a>
-                                      </li>
-                                      <li class="nav-item">
-                                          <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/report') ? 'active':''}" class="nav-link" th:href="@{/report}">Report</a>
                                       </li>
                                     </ul>
                                     <ul class="navbar-nav d-flex">

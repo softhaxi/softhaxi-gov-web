@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
@@ -67,8 +68,9 @@ public class NotificationController {
         String strEmail = email.orElse("");
         
         List<User> users = userRepository.findUserByUsernameLike(strEmail);
-        List<Map<String, String>> userList = new ArrayList<>();
         
+        List<Map<String, String>> userList = new ArrayList<>();
+        users = users.stream().limit(10).collect(Collectors.toList());
         String json = "";
         
         try {
@@ -78,9 +80,9 @@ public class NotificationController {
                 userMap.put("email", user.getEmail());
                 userList.add(userMap);
             }
+
             Gson gson = new Gson();
             json = gson.toJson(userList);
-            
         } catch (Exception e) {
             e.printStackTrace();
         }

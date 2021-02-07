@@ -99,16 +99,14 @@ public class NotificationController {
                 "app_id", appId,
                 "included_segments", Arrays.asList(subscriber),
                 "headings", ImmutableMap.of("en", notification.getCategory()),
-                "contents", ImmutableMap.of("en", notification.getContent()),
-                "template_id", "8d98a080-04d2-4873-bf29-3c463ce6866a"
+                "contents", ImmutableMap.of("en", notification.getContent())
             );
         }else{
             body = Maps.of(
                 "app_id", appId,
                 "include_player_ids", Arrays.asList(notification.getUser().getOneSignalId()),
                 "headings", ImmutableMap.of("en", notification.getCategory()),
-                "contents", ImmutableMap.of("en", notification.getContent()),
-                "template_id", "8d98a080-04d2-4873-bf29-3c463ce6866a"
+                "contents", ImmutableMap.of("en", notification.getContent())
             );
         }
         

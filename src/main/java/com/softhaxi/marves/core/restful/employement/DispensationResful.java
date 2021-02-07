@@ -115,6 +115,7 @@ public class DispensationResful {
 
         Dispensation dispensation = new Dispensation()
             .type(request.getType().toUpperCase())
+            .desciption(request.getDescription().trim())
             .startDate(startDate)
             .endDate(endDate)
             .ipAddress(ipAddress)

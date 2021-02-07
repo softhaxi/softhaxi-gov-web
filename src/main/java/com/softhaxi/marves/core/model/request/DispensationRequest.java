@@ -10,14 +10,16 @@ public class DispensationRequest implements Serializable {
     private static final long serialVersionUID = 8372001577458034742L;
 
     private String type;
+    private String description;
     private Date startDate;
     private Date endDate;
 
     public DispensationRequest() {
     }
 
-    public DispensationRequest(String type, Date startDate, Date endDate) {
+    public DispensationRequest(String type, String description, Date startDate, Date endDate) {
         this.type = type;
+        this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -28,6 +30,14 @@ public class DispensationRequest implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Date getStartDate() {

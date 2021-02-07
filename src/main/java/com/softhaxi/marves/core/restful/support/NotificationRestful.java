@@ -2,12 +2,12 @@ package com.softhaxi.marves.core.restful.support;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.messaging.Message;
@@ -23,6 +23,8 @@ import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepositor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -56,13 +58,22 @@ public class NotificationRestful {
     @GetMapping()
     public ResponseEntity<?> index(
         @RequestParam(value="page", defaultValue = "1", required = false) int page,
-        @RequestParam(value="q", required=false) String q) {
+        @RequestParam(value="q", required=false) String q,
+        @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString()))
+            .orElse(new User().id(UUID.fromString(auth.getPrincipal().toString())));
+
+        if (date == null)
+            date = LocalDate.now();
 
         Collection<Notification> notifications = notificationRepo.findAllByUser(user);
+        List<Notification> filtered = notifications.stream()
+                .filter((item) -> item.getDateTime() != null && (item.getDateTime().toLocalDate().equals(user.getCreatedAt().toLocalDate())
+                        || item.getDateTime().toLocalDate().isAfter(user.getCreatedAt().toLocalDate())))
+                        .collect(Collectors.toList());
         Collection<NotificationStatus> statuses = new ArrayList<>();
-        for(Notification notification: notifications) {
+        for(Notification notification: filtered) {
             if(notification.getStatuses() != null && !notification.getStatuses().isEmpty()) {
                 for(MessageStatus status: notification.getStatuses()) {
                     if(status.getUser().equals(user)) {
@@ -86,13 +97,13 @@ public class NotificationRestful {
         // if(!statuses.isEmpty())
         //     notificationStatusRepo.saveAll(statuses);
 
-        logger.debug("[index] Number of notification..." +notifications.size());
+        logger.debug("[index] Number of notification..." +filtered.size());
         
         return new ResponseEntity<>(
             new GeneralResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                notifications
+                filtered
             ), 
             HttpStatus.OK
         );

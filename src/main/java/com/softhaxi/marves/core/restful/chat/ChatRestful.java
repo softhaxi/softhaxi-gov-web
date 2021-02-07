@@ -3,11 +3,14 @@ package com.softhaxi.marves.core.restful.chat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import static java.util.Map.entry;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.Profile;
@@ -26,10 +29,12 @@ import com.softhaxi.marves.core.repository.chat.ChatRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomMemberRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomRepository;
 import com.softhaxi.marves.core.repository.chat.ChatStatusRepository;
+import com.softhaxi.marves.core.service.message.NotificationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -69,6 +74,12 @@ public class ChatRestful {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private NotificationService<Chat> notificationService;
+
+    @Value("${onesignal.app.id}")
+    private String appId;
 
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody ChatRequest payload) {
@@ -149,6 +160,23 @@ public class ChatRestful {
         messagingTemplate.convertAndSendToUser(
             recipient.getEmail(), 
             "/queue/message", chat.getId().toString());
+
+        if(recipient.getOneSignalId() != null && !recipient.getOneSignalId().isEmpty()) {
+            Map<String, Object> body = Map.ofEntries(
+                entry("app_id", appId),
+                entry("headings", Map.of("en", sender.getProfile().getFullName())),
+                entry("contents", Map.of("en", chat.getContent())),
+                entry("data", Map.of("deepLink", "core://marves.dev/chat", 
+                    "view", "detail", 
+                    "refId", chat.getChatRoom().getId().toString())),
+                entry("include_player_ids", Arrays.asList(recipient.getOneSignalId())),
+                entry("small_icon", "ic_stat_marves"),
+                // entry("android_channel_id", "066ee9a7-090b-4a42-b084-0dcbbeb7f158"),
+                entry("android_accent_color", "FF19A472"),
+                entry("android_group", chat.getChatRoom().getId().toString())
+            );
+            notificationService.sendPushNotification(chat, body);
+        }
 
         chat.setMyself(true);
         return new ResponseEntity<>(

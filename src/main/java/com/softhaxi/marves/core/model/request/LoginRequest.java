@@ -15,13 +15,15 @@ public class LoginRequest implements Serializable {
     private static final long serialVersionUID = 8629797093319506417L;
     private String userid;
     private String password;
+    private String oneSignalId;
 
     public LoginRequest() {
     }
 
-    public LoginRequest(String userid, String password) {
+    public LoginRequest(String userid, String password, String oneSignalId) {
         this.userid = userid;
         this.password = password;
+        this.oneSignalId = oneSignalId;
     }
 
     public String getUserid() {
@@ -40,6 +42,14 @@ public class LoginRequest implements Serializable {
         this.password = password;
     }
 
+    public String getOneSignalId() {
+        return oneSignalId;
+    }
+
+    public void setOneSignalId(String oneSignalId) {
+        this.oneSignalId = oneSignalId;
+    }
+
     public LoginRequest userid(String userid) {
         this.userid = userid;
         return this;
@@ -47,6 +57,11 @@ public class LoginRequest implements Serializable {
 
     public LoginRequest password(String password) {
         this.password = password;
+        return this;
+    }
+
+    public LoginRequest oneSignalId(String oneSignalId) {
+        this.oneSignalId = oneSignalId;
         return this;
     }
 

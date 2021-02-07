@@ -85,7 +85,9 @@ public class AuthenticationRestful {
             Profile profile = null;
             Map<?, ?> userLdap = null;
             Map<?, ?> profileData = null;
+            boolean saveChat = false;
             if (user == null) {
+                saveChat = true;
                 userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
                 //Employee employee = null;
                 user = new User();
@@ -106,11 +108,13 @@ public class AuthenticationRestful {
                 }
                 user.setProfile(profile);
                 user.setStatus("ACTIVE");
+                user.setOneSignalId(request.getOneSignalId());
                 user = userService.saveMobileUser(user);
                 description = "first.time.login.mobile";
             } else {
                 profile = profileRepo.findByUser(user).orElse(null);
                 if(profile == null) {
+                    saveChat = true;
                     userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(user.getEmail().trim().toLowerCase());
                     profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
                     if(profileData != null) {
@@ -121,6 +125,7 @@ public class AuthenticationRestful {
                             .primaryEmail(userLdap.get("email").toString());
                     }
                     user.setStatus("ACTIVE");
+                    user.setOneSignalId(request.getOneSignalId());
                     profile.setUser(user);
                     profileRepo.save(profile);
                     Role role = roleRepo.findByName("MOBILE").orElse(null);
@@ -128,6 +133,9 @@ public class AuthenticationRestful {
                         userRoleRepo.save(new UserRole(user, role));
                     }
                     description = "first.time.login.mobile";
+                } else {
+                    user.setOneSignalId(request.getOneSignalId()); 
+                    saveChat = false;
                 }
             }
 
@@ -142,7 +150,8 @@ public class AuthenticationRestful {
                         .referenceId(user.getId().toString())
                 );
 
-                chatService.sendWelcomeMessage(user);
+                if(saveChat)
+                    chatService.sendWelcomeMessage(user);
             }
 
             return new ResponseEntity<>(

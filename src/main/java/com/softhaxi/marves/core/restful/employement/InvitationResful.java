@@ -391,9 +391,9 @@ public class InvitationResful {
             temp.put("organizer", member.getOrganizer());
             members.add(temp);
 
-            if(member.getUser().equals(user)) {
-                invitation.setCompleted(member.getStatus().equalsIgnoreCase("ATTENDED"));
-            }
+            // if(member.getUser().equals(user)) {
+            //     invitation.setCompleted(member.getStatus().equalsIgnoreCase("ATTENDED"));
+            // }
         });
         invitation.setMembers(members);
 

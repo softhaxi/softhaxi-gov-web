@@ -4,6 +4,8 @@
 .w-30{width:30%!important}
 .employee-list{
     box-shadow: 1px 1px 1px 1px grey;
+    max-height: 600px;
+    height: auto;
 }
 .ticket-grid-container {
     display: grid;
@@ -11,19 +13,20 @@
     grid-gap: 5px;
     padding: 15px 5px;
     cursor: pointer;
-    
+    border-width:1px;  
+    border-bottom-style:inset;
   }
   .ticket-grid-container:hover{
     background-color: #B8D5EB;
   }
 
-  .employee-no{
+  .ticket-no{
       font-size: 1.5em;;
       font-weight: bold;
       text-align: left;
   }
 
-  .employee-name{
+  .user-name{
       font-size: 1em;
       text-align: left;
   }

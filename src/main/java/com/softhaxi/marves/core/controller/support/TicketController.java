@@ -2,11 +2,13 @@ package com.softhaxi.marves.core.controller.support;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.softhaxi.marves.core.domain.account.User;
+import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.employee.Employee;
 import com.softhaxi.marves.core.domain.support.Ticket;
 import com.softhaxi.marves.core.repository.account.UserRepository;
@@ -35,10 +37,8 @@ public class TicketController {
     @Autowired
     private TicketService ticketService;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired UserRepository userRepository;
+    @Autowired 
+    UserRepository userRepository;
 
     @GetMapping()
     public String index(
@@ -78,34 +78,91 @@ public class TicketController {
     @GetMapping("/open-ticket")
     public String action(Model model){
         Collection<Ticket> ticketList = ticketService.findAllOrderByDateTimeDesc();
-        List<Employee> employeeList = new ArrayList<>();
-        for (Ticket ticket : ticketList) {
-            Optional<Employee> employee = employeeRepository.findEmployeeByUserName(ticket.getUser());
-            if(employee.isPresent()){
-                employeeList.add(employee.get());
-            }
+
+    
+        Ticket ticket = ticketList.iterator().next();
+        model.addAttribute("ticketNo", ticket.getCode());
+        if(null!=ticket.getUser().getProfile()){
+            model.addAttribute("userName", ticket.getUser().getProfile().getFullName());
+        }else{
+            model.addAttribute("userName", ticket.getUser().getUsername());
         }
+        model.addAttribute("ticketContent", ticket.getContent());
+        model.addAttribute("ticketStatus", ticket.getStatus());
+
         model.addAttribute("tickets", ticketList);
-        model.addAttribute("employees", employeeList);
+
         return "ticket/list2";
     }
 
     @PostMapping(value="/ticket-filter")
-    public String findUserByName(Model model, @RequestParam("userid") Optional<String> userId) {
-        String strUserId = userId.orElse("");
-        logger.debug("strUserId: " +strUserId);
-        User user = userRepository.findById(UUID.fromString(strUserId)).get();
-        Employee employee = employeeRepository.findEmployeeByUserName(user).get();
-        Collection<Ticket> ticketList = ticketService.findByUserId(user);
-        model.addAttribute("employeeNo", employee.getEmployeeNo());
-        if(null!=employee.getUser().getProfile()){
-            model.addAttribute("employeeName", employee.getUser().getProfile().getFullName());
-        }else{
-            model.addAttribute("employeeName", employee.getUser().getUsername());
-        }
-        for (Ticket ticket : ticketList) {
+    public String findUserByName(Model model, @RequestParam("ticketcode") Optional<String> ticketCode) {
+        String strTticketCode = ticketCode.orElse("");
+        Optional<Ticket> optTicket = ticketService.findTicketByCode(strTticketCode);    
+        if(optTicket.isPresent()){
+            Ticket ticket = optTicket.orElse(new Ticket());
+            model.addAttribute("ticketNo", ticket.getCode());
+            if(null!=ticket.getUser().getProfile()){
+                model.addAttribute("userName", ticket.getUser().getProfile().getFullName());
+            }else{
+                model.addAttribute("userName", ticket.getUser().getUsername());
+            }
             model.addAttribute("ticketContent", ticket.getContent());
+            model.addAttribute("ticketStatus", ticket.getStatus());
         }
+        
+        return "ticket/list2";
+    }
+    
+    @PostMapping(value = "/update-status")
+    public String updateTicketStatus(Model model, @RequestParam("ticketcode") Optional<String> ticketCode, @RequestParam("status") Optional<String> status) {
+        Map<String, String> statusMap = new HashMap<>();
+        String strTticketCode = ticketCode.orElse("");
+        logger.debug("strTticketCode: " + strTticketCode);
+        if(ticketCode.isPresent() && status.isPresent()){
+            try {
+                ticketService.updateTicketStatus(ticketCode.get(), status.get());
+            } catch (Exception e) {
+                statusMap.put("status", "error");
+                e.printStackTrace();
+            }
+        }
+
+        Optional<Ticket> optTicket = ticketService.findTicketByCode(strTticketCode);    
+        if(optTicket.isPresent()){
+            Ticket ticket = optTicket.orElse(new Ticket());
+            model.addAttribute("ticketNo", ticket.getCode());
+            if(null!=ticket.getUser().getProfile()){
+                model.addAttribute("userName", ticket.getUser().getProfile().getFullName());
+            }else{
+                model.addAttribute("userName", ticket.getUser().getUsername());
+            }
+            model.addAttribute("ticketContent", ticket.getContent());
+            model.addAttribute("ticketStatus", ticket.getStatus());
+        }
+        return "ticket/list2";
+    }
+
+    @PostMapping(value="/search-ticket")
+    public String searchTicketByCode(Model model, @RequestParam("ticketcode") Optional<String> ticketCode) {
+
+
+        String strTicketCode = ticketCode.orElse("");
+
+        Collection<Ticket> ticketList = ticketService.findTicketLikeCode(strTicketCode);
+
+        Ticket ticket = ticketList.iterator().next();
+        model.addAttribute("ticketNo", ticket.getCode());
+        if(null!=ticket.getUser().getProfile()){
+            model.addAttribute("userName", ticket.getUser().getProfile().getFullName());
+        }else{
+            model.addAttribute("userName", ticket.getUser().getUsername());
+        }
+        model.addAttribute("ticketContent", ticket.getContent());
+        model.addAttribute("ticketStatus", ticket.getStatus());
+
+        model.addAttribute("tickets", ticketList);
+
         return "ticket/list2";
     }
     

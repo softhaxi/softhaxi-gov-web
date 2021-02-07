@@ -15,36 +15,34 @@
             <div class="row">
                 <div class="w-35">
                     <div class="bg-white" style="position: relative">
-                        <form class="search" action="#" th:object="${sysParam}" method="POST" id="search" >
-                            <input autocomplete="off" type="text" placeholder="Search.." name="username" id="input-search" class="dropdown-toggle">
-                            <button type="button" id="btn-search"><i class="fa fa-search"  id="icn-btn-search"></i></button>
+                        <form class="search" th:action="@{/ticket/search-ticket}" th:object="${sysParam}" method="POST" id="search" >
+                            <input autocomplete="off" type="text" placeholder="Search.." name="ticketcode" id="input-search" class="dropdown-toggle">
+                            <button type="submit" id="btn-search"><i class="fa fa-search"  id="icn-btn-search"></i></button>
                         </form>
                     </div>
-                    <div class="bg-white my-5 employee-list">
-                        <th:block th:each="employee : ${employees}">
-                        <div class="ticket-grid-container" th:id="${employee.user.id}">
-                            <div class="employee-no"><span th:text="${employee.employeeNo}"></span></div>
-                            <div class="ticket-date"><span th:text="${#temporals.format(employee.user.createdAt, 'dd-MM-yyyy')}" />
+                    <div class="bg-white p-3 ticket-list my-5 overflow-auto">
+                        <th:block th:each="ticket : ${tickets}">
+                        <div class="ticket-grid-container" th:id="${ticket.code}">
+                            <div class="ticket-no"><span th:text="${ticket.code}"></span></div>
+                            <div class="ticket-date"><span th:text="${#temporals.format(ticket.createdAt, 'dd-MM-yyyy')}" />
                                 </div>
-                            <div class="employee-name">
-                                <span th:if="${employee.user.profile}" th:text="${employee.user.profile.fullName}"></span>
-                                <span th:unless="${employee.user.profile}" th:text="${employee.user.username}"></span>
+                            <div class="user-name">
+                                <span th:if="${ticket.user.profile}" th:text="${ticket.user.profile.fullName}"></span>
+                                <span th:unless="${ticket.user.profile}" th:text="${ticket.user.username}"></span>
                             </div>
-                            <div class="ticket-time"><span th:text="${#temporals.format(employee.user.createdAt, 'HH:mm:ss')}" /></div>
+                            <div class="ticket-time"><span th:text="${#temporals.format(ticket.createdAt, 'HH:mm:ss')}" /></div>
                         </div>
                         </th:block>
                     </div>
-                    
                 </div>
                 <div id="triangle-left"></div>
                 <div class="w-60 bg-white py-4 mx-5" id="ticket-detail">
                         <div class="ticket-content row col-sm-12">
-                            <div class="col-sm-4 employee-no text-blue"><strong><span th:text="${employeeNo}"></span></strong> </div>
+                            <div class="col-sm-4 ticket-no text-blue"><strong><span th:text="${ticketNo}"></span></strong> </div>
                             <div class="col-sm-8 d-flex justify-content-end">
                                 <div class="dropdown float-end">
                                     <button class="btn dropdown-btn-white dropdown-toggle" type="button" id="ticket-status-button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                        Open
+                                        data-bs-toggle="dropdown" aria-expanded="false" th:text="${ticketStatus}" th:value="${ticketNo}">
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="ticket-status">
                                         <li id="1"><a class="dropdown-item" href="#">Open</a></li>
@@ -57,7 +55,7 @@
 
                             </div>
                             <div class="col-sm-8 my-5 mx-3">
-                                <h3 th:text="${employeeName}"></h3>
+                                <h3 th:text="${userName}"></h3>
                                 <p class="text-justify ticket-detail-desc" th:text="${ticketContent}"></p>
                             </div>
                             <div>
@@ -78,26 +76,40 @@
         <script>
             $( document ).ready(function() {
                 $("#triangle-left").css("display", "none");
-                $("#triangle-left").css("margin-top", 120);
+                /*$("#triangle-left").css("margin-top", 120);
                 $('.ticket-grid-container').click(function(){
                     var position = $(this).position();
                     var arrowPosition = position.top - 120;
                     $("#triangle-left").css("margin-top", arrowPosition);
-                });
+                });*/
 
-                $('#ticket-status li a').click(function(){
+                $('body').on( 'click', '#ticket-status li a', function(e){
+                    e.preventDefault();
                     $('#ticket-status-button').text($(this).text());
-                    $('#ticket-status-button').val($(this).text());
+                    var status = $('#ticket-status-button').text();
+                    var ticketcode = $('#ticket-status-button').attr('value');
+                    $.ajax({
+                            type: "POST",
+                            url: "/ticket/update-status",
+                            data:{ticketcode: ticketcode, status: status},
+                            success: function(data){
+                                $('#ticket-detail').empty();
+                                $('#ticket-detail').append($(data).find('.ticket-content'));
+                            },
+                            error: function(xhr, status, error){
+                                alert(error);
+                            }
+                        });
                 });
 
-                $('.ticket-grid-container').click(function(e){
+                $('.ticket-grid-container').on('click',function(e){
                     $('.ticket-grid-container').css("background-color", "#FFF");
                     $(this).css("background-color", "#B8D5EB");
-                        var userid = $(this).attr('id');
+                        var ticketcode = $(this).attr('id');
                         $.ajax({
                             type: "POST",
                             url: "/ticket/ticket-filter",
-                            data:{userid: userid},
+                            data:{ticketcode: ticketcode},
                             success: function(data){
                                 $('#ticket-detail').html($(data).find('.ticket-content'));
                             },
@@ -105,12 +117,11 @@
                                 alert(error);
                             }
                         });
-                        e.preventDefault();
-                    
                 });
 
-
             });
+
+           
         </script>
     </div>
      

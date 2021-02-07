@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.model.request.UserRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
@@ -23,6 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -113,5 +116,37 @@ public class UserRestful {
                 ),
                 HttpStatus.BAD_REQUEST
             );
+    }
+
+    @PostMapping("/update/notification")
+    public ResponseEntity<?> updateNotification(@RequestBody UserRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString())).orElse(null);
+
+        if(user == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        // logger.info("[updateNotification] OneSignal Id: " + request.getOneSignalId());
+        if(user.getOneSignalId() == null || !user.getOneSignalId().equals(request.getOneSignalId())) {
+            user.setOneSignalId(request.getOneSignalId().trim());
+            userRepo.save(user);
+        }
+        // logger.info("[updateNotification] User Id: " + user.getId().toString() + " OneSignal Id: " + user.getOneSignalId());
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                "item.updated"
+            ),
+            HttpStatus.OK   
+        );
     }
 }

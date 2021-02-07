@@ -75,7 +75,7 @@ public class NotificationController {
         String subscriber = "";
         logger.debug("Assignee: " + notification.getAssignee());
         if(null==notification.getAssignee() || notification.getAssignee().equals("")){
-            subscriber = "Subscribed Users";
+            subscriber = "Maritim Users";
         }else{
             Optional<User> user = userRepository.findUserByEmail(notification.getAssignee());
             if(user.isPresent()){

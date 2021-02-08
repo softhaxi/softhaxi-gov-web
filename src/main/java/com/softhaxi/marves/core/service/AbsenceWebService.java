@@ -15,6 +15,7 @@ import java.util.Optional;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendance.DailyAttendance;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
+import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.attendance.DailyAttendanceRepository;
 import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
 import com.softhaxi.marves.core.repository.employee.EmployeeRepository;
@@ -44,7 +45,7 @@ public class AbsenceWebService {
     private ActivityLogRepository activityLogRepository;
 
     @Autowired
-    private EmployeeRepository employeeRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private DispensationRepository dispensationRepository;
@@ -93,7 +94,7 @@ public class AbsenceWebService {
             }
         }
 
-        int totalEmployee = employeeRepository.findAll().size();
+        int totalEmployee = userRepository.findAllActiveMobileUser().size();
         int login = activityLogRepository.findUserByActionName("log.in");
         int inPresensi = activityLogRepository.findUserByActionName("clock.in");
         int outPresensi = activityLogRepository.findUserByActionName("clock.out");

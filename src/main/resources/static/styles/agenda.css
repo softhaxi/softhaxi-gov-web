@@ -1,0 +1,16 @@
+.calendar-container{height:720px;width:900px;display:inline-flex;}
+.timings{text-align:right;padding-right:10px;width:100px;height:720px;display:flex;flex-direction:column;justify-content:space-between;background-color:#fff;font-size:.5em;box-sizing:border-box}
+.timings span{font-size:200%;color:#696969}.days{height:720px;width:620px;padding:0 10px;background-color:#f0f0f0;border-color:#d1d1d1;border-style:solid;border-width:1px;box-sizing:border-box}
+.event{background-color:#fff;border-style:solid;border-width:1px;border-left-width:5px;border-color:#d1d1d1;border-left-color:#57b986;padding-left:10px;padding-top:5px;position:relative;font-size:.5em;box-sizing:border-box}
+.event .agenda-title{color:#57b986;font-size:200%}
+.monthly {
+    box-shadow: 0 13px 40px rgba(0, 0, 0, 0.5);
+    font-size: 0.8em;
+}
+.date-header-template{
+    padding: 20px;
+    background: #8678D9;
+    text-align: center;
+    color: #fff;
+    width: 720px;
+}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/authenticated}">
+
+<head th:fragment="common_head(meta,title,links,script)">
+    <title>[[#{app.name}]]</title>
+    <link rel="stylesheet" th:href="@{/styles/mini-event-calendar.min.css}">
+    <link th:href="@{/styles/agenda.css}" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+    <style>
+            html, body{
+                margin: 0;
+                padding: 0;
+            }
+            /* Just an excuse to use CSS Grid 😊 */
+            #wrapper{
+                display: grid; 
+                grid-gap: 40px; 
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+    
+            [id^=calendar],
+            [id^=calendar] + h3{
+                width: 400px;
+            }
+    
+            [id^=calendar] + h3{
+                text-align: center;
+            }
+    
+            @media only screen and (max-width: 500px){
+                #wrapper{
+                    padding: 1em;
+                    display: block;
+                }
+                [id^=calendar],
+                [id^=calendar] + h3{
+                    width: 100%;
+                    max-width: 400px;
+                    margin: 1em auto;
+                }
+    
+                [id^=calendar] + h3{
+                    display: block;
+                    margin-bottom: 2em;
+                }
+            }
+        </style>
+</head>
+
+<body class="bg-light">
+    <header>
+    </header>
+    <div layout:fragment="content" class="container">
+            <div class="row py-5 col-sm-12 no-marginLR">
+                    <div class="col-sm-3 title">
+                        <h3 th:text="#{label.agenda.title}"></h3>
+                    </div>
+                 </div>
+            <div class="row">
+                    <div class="col-sm-4">
+                <div id="wrapper">
+                        <div>
+                            <div id="calendar"></div>
+                            
+                        </div>
+                    
+                        <!-- <div>
+                            <div id="calendar2"></div>
+                            <h3>Start week days from monday</h3>
+                        </div> -->
+                    </div>
+                    </div>
+                    <div class="col-sm-8  ">
+                        <div class="date-header-template row">
+                            <div class="d-inline-block date-header col-sm-8"></div>
+                            <div id="dayTitle" class="col-sm-4 float-end">
+                                <button type="button" class="day-mover prev-day">
+                                    <svg fill="#fff" height="30" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="day-mover next-day">
+                                    <svg fill="#fff" height="30" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-container my-4">
+                                <div class="timings">
+                                    <div> <span> 9:00 </span> AM </div>
+                                    <div> 9:30 </div>
+                                    <div> <span> 10:00 </span>AM </div>
+                                    <div> 10:30 </div>
+                                    <div> <span> 11:00 </span>AM </div>
+                                    <div> 11:30 </div>
+                                    <div> <span> 12:00 </span>PM </div>
+                                    <div> 12:30 </div>
+                                    <div> <span> 1:00 </span>PM </div>
+                                    <div> 1:30 </div>
+                                    <div> <span> 2:00 </span>PM </div>
+                                    <div> 2:30 </div>
+                                    <div> <span> 3:00 </span>PM </div>
+                                    <div> 3:30 </div>
+                                    <div> <span> 4:00 </span>PM </div>
+                                    <div> 4:30 </div>
+                                    <div> <span> 5:00 </span>PM </div>
+                                    <div> 5:30 </div>
+                                    <div> <span> 6:00 </span>PM </div>
+                                    <div> 6:30 </div>
+                                    <div> <span> 7:00 </span>PM </div>
+                                    <div> 7:30 </div>
+                                    <div> <span> 8:00 </span>PM </div>
+                                    <div> 8:30 </div>
+                                    <div> <span> 9:00 </span>PM </div>
+                                </div>
+        
+                                <div class="days" id="events">
+                                    <div class="event" style="width: 600px; height: 120px;"><span class="agenda-title"> Sample Item
+                                        </span> <br><span class="location"> Sample Location </span></div>
+                                    <div class="event" style="width: 300px; height: 60px;"><span class="agenda-title"> Sample Item
+                                        </span> <br><span class="location"> Sample Location </span></div>
+                                    <div class="event" style="width: 300px; height: 60px;"><span class="agenda-title">
+                                            Sample Item </span> <br><span class="location"> Sample Location </span></div>
+                                    <div class="event" style="width: 300px; height: 60px;"><span class="agenda-title"> Sample Item
+                                        </span> <br><span class="location"> Sample Location </span></div>
+                                </div>
+                            </div>
+                
+        </div>
+        <script>        
+        
+        </script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script th:src="@{/scripts/mini-event-calendar.min.js}"></script>
+       <script>
+       
+		var sameDaylastWeek = new Date().setDate(new Date().getDate() - 7);
+		var someDaynextMonth = new Date().setDate(new Date().getDate() + 31);
+
+		// All dates should be provided in timestamps
+	    	var sampleEvents = [
+			{
+			    title: "Soulful sundays bay area",
+			    date: sameDaylastWeek, // Same day as today, last week
+			    link: "https://www.eventbrite.com/e/soulful-sundays-bay-area-edition-tickets-55214242285?aff=ehomecard"
+			},
+			{
+			    title: "London Comicon",
+			    date: new Date().getTime(), // Today
+			    link: "https://www.eventbrite.co.uk/e/london-film-comic-con-summer-2019-tickets-49472593860?aff=ebdssbdestsearch"
+			},
+			{
+			    title: "Youth Athletic Camp",
+			    date: someDaynextMonth, // Some day as today, next month
+			    link: "https://www.eventbrite.com/e/leaner-stronger-faster-tm-youth-athletic-camp-2021-tickets-38245970728?aff=ebdssbdestsearch"
+			}
+	    	];
+
+		$(document).ready(function(){
+			$("#calendar").MEC({
+				events: sampleEvents
+			});
+
+			// // Make calendar start on monday
+			// $("#calendar2").MEC({
+			// 	from_monday: true,
+			// 	events: sampleEvents
+			// });
+		});
+    
+
+    </script>
+    </div>
+</body>
+
+</html>

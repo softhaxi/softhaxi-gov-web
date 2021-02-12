@@ -16,7 +16,7 @@
 
 <body>
     <header th:replace="~{fragment/header :: header}">Header</header>
-    <div class="container-fluid">
+    <div class="container">
         <div class="card p-3 mb-2">
             <div class="card-body">
                 <div class="row">
@@ -40,13 +40,13 @@
                     <div class="col-md-9">
                         <div class="btn-toolbar" role="toolbar">
                             <div class="btn-group me-2" role="group">
-                                <button type="button" class="btn btn-sm btn-dark" style="background: #8678D9;">Tambah Agenda</button>
+                                <button type="button" class="btn btn-sm btn-dark" style="background: #8678D9;"><i class="las la-plus"></i> <span>Tambah</span></button>
                             </div>
                             <div class="btn-group me-2" role="group">
                                 <button type="button" class="btn btn-sm btn-outline-primary" data-action="move-prev">
                                     <i class="las la-chevron-left"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-action="move-today">Hari Ini</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-action="move-today"><i class="las la-calendar-day"></i></button>
                             
                                 <button type="button" class="btn btn-sm btn-outline-primary" data-action="move-next">
                                     <i class="las la-chevron-right"></i>

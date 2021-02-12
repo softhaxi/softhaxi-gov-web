@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -145,6 +146,25 @@ public class DispensationResful {
                 dispensation
             ),
             HttpStatus.CREATED   
+        );
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> history() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        LocalDate date = LocalDate.now().plusDays(1);
+        Collection<?> dispensations = dispensationRepo.findAllByUserAndBeforeDate(user, date);
+        logger.info("[History] Dispensation number..." + dispensations.size());
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                dispensations
+                ),
+            HttpStatus.OK
         );
     }
 }

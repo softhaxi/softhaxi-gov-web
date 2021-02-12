@@ -49,7 +49,7 @@
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/ticket/sysparam') ? 'active':''}" class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/sysparam') || #strings.contains(#httpServletRequest.requestURI, '/calendar') || #strings.contains(#httpServletRequest.requestURI, '/office') ? 'active':''}" class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Settings
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">

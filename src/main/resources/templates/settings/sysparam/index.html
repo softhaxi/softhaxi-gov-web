@@ -1,0 +1,164 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Parameter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <div class="card mb-3">
+            <div class="card-body p-4">
+                <h1 th:text="#{label.sysparam.title}"></h1>
+                <div class="table-wrapper table-responsive-sm">
+                    <!-- <div class="table-title">
+                        <div class="col-sm-12 text-center">
+                            <h3 th:text="#{label.sysparam.table.title}"></h3>
+                        </div>
+                    </div> -->
+                    <div class="row py-3 clearfix">
+                        <div class="col-sm-8 text-align-right">
+                            <form action="#" th:action="@{/sysparam/add}" th:object="${sysParam}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-success" data-toggle="modal">
+                                    <i class="las la-plus"></i> <span>Tambah</span>
+                                </button>
+                            </form>
+                            <!-- <a href="#deleteEmployeeModal" class="btn btn-danger  pull-right" data-toggle="modal"><i class="material-icons"></i> <span>Delete</span></a>						 -->
+                        </div>
+                        <div class="col-sm-4">
+                            <form th:action="@{/sysparam}">
+                                <div class="input-group input-group-sm mb-3">
+                                    <input type="text" class="form-control" name="paramCode" placeholder="Cari parameter" aria-label="search pegawai">
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="las la-search"></i></button>
+                                </div>
+                            </form>
+                            <!-- <form action="#" th:action="@{/sysparam}">
+    
+                                <input type="text" placeholder="Cari parameter..." name="paramCode"
+                                    class="col-sm-10">
+                                <button type="submit"><i class="las la-search"></i></button>
+                            </form> -->
+                        </div>
+                    </div>
+                    <table class="table table-condensed table-bordered w-auto ">
+                        <thead>
+                            <tr>
+                                <th class="text-center" scope="col" th:text="#{no}"></th>
+                                <th class="col-md-3 text-center" scope="col" th:text="#{label.sysparam.code}"></th>
+                                <th class="col-md-4 text-center" scope="col" th:text="#{label.sysparam.name}"></th>
+                                <!-- <th class="col-md-3" scope="col" th:text="#{label.sysparam.description}"></th> -->
+                                <th class="col-md-4 text-center" scope="col" th:text="#{label.sysparam.value}"></th>
+                                <!-- <th class="col-md-2" scope="col" th:text="#{label.sysparam.regex}"></th> -->
+                                <th class="col-md-1 text-center" scope="col" th:text="Action" />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="sysparam: ${sysparamList}" th:if="${sysparamList.numberOfElements > 0}">
+                                <td class="text-center" th:text="${sysparamStat.count + startIndex}" />
+                                <td th:text="${sysparam.code}" />
+                                <td th:text="${sysparam.name}" />
+                                <!-- <td th:text="${sysparam.decription}" /> -->
+                                <td th:text="${sysparam.value}" />
+                                <!-- <td th:text="${sysparam.regex}" /> -->
+                                <td class="text-center">
+                                    <form action="#" th:action="@{/sysparam/action}" th:object="${sysParam}" method="POST">
+                                        <button th:if="${sysparam.isSystem}" type="submit" name="btnAction" value="delete"
+                                            class="las la-trash bg-white text-danger shadow-none" style="border: none">
+                                        </button>
+                                        <button type="submit" name="btnAction" value="update"
+                                            class="las la-edit bg-white text-success shadow-none" style="border: none">
+                                        </button>
+                                        <input type="hidden" th:value="${sysparam.id}" name="id" />
+                                    </form>
+                                    <!-- <a href="#">
+                                            <span  class="fa fa-trash px-2 bg-white text-dark"></span>
+                                          </a>
+                                          <a href="#">
+                                                <span  class="fa fa-edit px-2 bg-white text-dark"></span>
+                                              </a> -->
+                                </td>
+                            </tr>
+                            <tr th:unless="${sysparamList.numberOfElements > 0}">
+                                <td colspan="6" class="text-center">Record not found</td>
+                            </tr>
+                    </table>
+                </div>
+                <nav aria-label="Page navigation example" th:if="${sysparamList.totalPages > 1}">
+                    <ul th:class="pagination" th:classappend="justify-content-end" id="pagination">
+    
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <th:block th:if="${search}">
+                                <a class="page-link" th:href="@{/sysparam(page=${currentPage-1}, search=${search})}"
+                                    aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </th:block>
+                            <th:block th:unless="${search}">
+                                <a class="page-link" th:href="@{/sysparam(page=${currentPage-1})}" aria-label="Previous"
+                                    title="Previous Page" data-toggle="tooltip">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </th:block>
+                        </li>
+                        <th:block th:each="pageNumber : ${pageNumbers}">
+                            <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active">
+                                <th:block th:if="${search}">
+                                    <a th:href="@{/sysparam(page=${pageNumber-1}, search=${search})}"
+                                        th:classappend="page-link">
+                                        <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                    </a>
+                                </th:block>
+                                <th:block th:unless="${search}">
+                                    <a th:href="@{/sysparam(page=${pageNumber-1})}" th:classappend="page-link">
+                                        <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                    </a>
+                                </th:block>
+                            </li>
+                        </th:block>
+                        <li class="page-item" th:classappend="${currentPage + 1 == sysparamList.totalPages} ? 'disabled'">
+                            <th:block th:if="${search}">
+                                <a class="page-link" th:href="@{/sysparam(page=${currentPage+1}, search=${search})}"
+                                    aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </th:block>
+                            <th:block th:unless="${search}">
+                                <a class="page-link" th:href="@{/sysparam(page=${currentPage+1})}" aria-label="Next"
+                                    title="Next Page" data-toggle="tooltip">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </th:block>
+                        </li>
+    
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://uicdn.toast.com/tui.code-snippet/v1.5.2/tui-code-snippet.min.js"></script>
+    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+    <script src="https://uicdn.toast.com/tui-calendar/latest/tui-calendar.js"></script>
+    <script>
+        (function () {
+            
+        })();
+
+    </script>
+</body>
+
+</html>

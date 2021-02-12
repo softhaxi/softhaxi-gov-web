@@ -53,7 +53,8 @@ public class SystemParameterController {
         try {
 
             if(!"".equals(strParamCode)){
-                sysParamList = new ArrayList<>(systemParameterRepository.findSysParamByCode(strParamCode));
+                sysParamList = new ArrayList<>(systemParameterRepository.findSysParamByCode(
+                    "%" + strParamCode.toLowerCase() + "%"));
             }else{
                 sysParamList = systemParameterRepository.findAll();
             }
@@ -78,7 +79,7 @@ public class SystemParameterController {
             model.addAttribute("pageNumbers", pageNumbers);
         }
 
-        return "common/setting/sysparam";
+        return "settings/sysparam/index";
     }
     
 

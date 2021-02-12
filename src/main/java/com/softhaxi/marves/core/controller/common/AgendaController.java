@@ -13,6 +13,6 @@ public class AgendaController {
     @GetMapping("/agenda")
     public String getAgenda(Model model){
 
-        return "common/agenda/agenda-bak";
+        return "common/agenda/index";
     }
 }

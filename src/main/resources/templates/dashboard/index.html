@@ -1,0 +1,216 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title"><h6>PRESENSI</h6></div>
+                        <!-- <div id="chart-loading" class="d-flex justify-content-center invisible">
+                            <div class="spinner-grow text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                            </div>
+                        </div> -->
+                        <div style="height: 30rem;">
+                            <canvas class="my-4" id="absence-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-body" style="height: 25rem;">
+                        <div class="card-title"><h6>MONITOR LOKASI</h6></div>
+                        <div id="map" class="rounded-bottom" style="height: 21rem;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-body" style="height: 25rem;">
+                        <div class="card-title"><h6>SUMMARY PRESENSI</h6></div>
+                        <div style="height: 20rem;">
+                            <canvas class="my-4" id="summary-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title">AKTIVITAS TERBARU</div>
+                        <div th:each="row : ${latestUpdated}" class="media text-muted pt-3">
+                            <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
+                            <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                              <div class="d-flex justify-content-between align-items-center w-100">
+                                <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${row.user.profile.fullName}">Full Name</strong></a>
+                                <span th:text="${#temporals.format(row.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}">Follow</span>
+                              </div>
+                              <span class="d-block" th:utext="#{${row.actionName}} + ' ' + #{${row.description}}">@username</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <script>
+        (function () {
+            var absenceCtx = document.getElementById("absence-chart").getContext("2d");
+            var absenceChart;
+            $.ajax({
+                url: '/dashboard/monthlyAbsence',
+                method: 'GET',
+                success: function(response) {
+                    console.log(response.data);
+                    var absenceData = {
+                        labels: response.data['dates'],
+                        datasets: [
+                            {
+                                label: "WFO",
+                                backgroundColor: "#FFC107",
+                                data: response.data['wfo']
+                            },
+                            {
+                                label: "WFH",
+                                backgroundColor: "#17A2B8",
+                                data: response.data['wfh']
+                            },
+                            {
+                                label: "DISPENSASI",
+                                backgroundColor: "#FC4D4D",
+                                data: response.data['dispensation']
+                            }
+                        ]
+                    };
+
+                    absenceChart = new Chart(absenceCtx, {
+                        type: 'bar',
+                        data: absenceData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                xAxes: [{
+                                    gridLines: {
+                                        display: false
+                                    }
+                                }],
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        precision: 0,
+                                        callback: function (value) {
+                                            valuek = value;
+                                            return valuek;
+                                        }
+                                    },
+                                }]
+                            },
+                            legend: {
+                                align: 'end',
+                                labels: {
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltips: {
+                                mode: 'label',
+                                callbacks: {
+                                    label: function (t, d) {
+                                        var dstLabel = d.datasets[t.datasetIndex].label;
+                                        var yLabel = t.yLabel;
+                                        return dstLabel + ': ' + yLabel + '';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            var summaryCtx = document.getElementById("summary-chart").getContext("2d");
+            var summaryData = {
+                labels: ["Datang Tepat Waktu", "Terlambat", "Pulang Tepat Waktu", "Pulang Cepat"],
+                datasets: [
+                    {
+                        //backgroundColor: "#FFC107",
+                        data: [700, 20, 100, 150],
+                        backgroundColor: ["#6C4FA1", "#9BBD57", "#5DC5F1", "#FF9356"]
+                    },
+                ]
+            };
+            var absenceChart = new Chart(summaryCtx, {
+                type: 'bar',
+                data: summaryData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: false
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                precision: 0,
+                                callback: function (value) {
+                                    valuek = value;
+                                    return valuek;
+                                }
+                            },
+                        }]
+                    },
+                    legend: {
+                        display: false,
+                    },
+                }
+            });
+
+            var map = L.map('map').setView([50.0875726, 14.4189987], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
+            }).addTo(map);
+        })();
+    </script>
+</body>
+
+</html>

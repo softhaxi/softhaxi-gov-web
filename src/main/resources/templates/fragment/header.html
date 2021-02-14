@@ -19,7 +19,7 @@
             <div id="navbarNav" class="navbar-collapse collapse w-100 order-1 order-md-0">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dashboard') ? 'active':''}"
+                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dashboard') || #strings.contains(#httpServletRequest.requestURI, '/activity')  ? 'active':''}"
                             class="nav-link" th:href="@{/dashboard}">Dashboard</a>
                     </li>
                     <li class="nav-item">

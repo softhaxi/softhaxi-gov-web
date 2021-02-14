@@ -1,0 +1,161 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Log Aktivitas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <h6>LOG AKTIVITAS</h6>
+                        </div>
+                        <div class="row mt-3 mb-1">
+                            <div class="col-md-4">
+                                <form action="#" th:action="@{/activity}" >
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" name="search" placeholder="Cari..." aria-label="search">
+                                        <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="las la-search"></i></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="table-wrapper table-responsive-sm">
+                            <table class="table table-condensed table-bordered w-auto ">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" scope="col" th:text="#{no}"></th>
+                                        <th class="col-md-3 text-center" scope="col"
+                                            th:text="#{label.activity.username}"></th>
+                                        <th class="col-md-5 text-center" scope="col"
+                                            th:text="#{label.activity.action_name}"></th>
+                                        <th class="col-md-1 text-center" scope="col"
+                                            th:text="#{lable.activity.ip.address}"></th>
+                                        <th class="col-md-3 text-center" scope="col"
+                                            th:text="#{label.activity.action_time}"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="activity: ${activities}" th:if="${activities.numberOfElements > 0}">
+                                        <td class="text-center" th:text="${activityStat.count + startIndex}" />
+                                        <td th:text="${activity.user.profile.fullName}" />
+                                        <td th:utext="#{${activity.actionName}} + ' ' + #{${activity.description}}" />
+                                        <td th:text="${activity.ipAddress}" />
+                                        <td
+                                            th:text="${#temporals.format(activity.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}" />
+                                    </tr>
+                                    <tr th:unless="${activities.numberOfElements > 0}">
+                                        <td colspan="6" class="text-center">Record not found</td>
+                                    </tr>
+                            </table>
+                            <nav aria-label="Page navigation example" th:if="${activities.totalPages > 1}">
+                                <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+
+                                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                        <th:block th:if="${search}">
+                                            <a class="page-link"
+                                                th:href="@{/activity(page=${currentPage-1}, search=${search})}"
+                                                aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </th:block>
+                                        <th:block th:unless="${search}">
+                                            <a class="page-link"
+                                                th:href="@{/activity(page=${currentPage-1})}"
+                                                aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </th:block>
+                                    </li>
+                                    <th:block th:each="pageNumber : ${pages}">
+                                        <li class="page-item active" th:if="${pageNumber==currentPage+1}" >
+                                            <a href="#" th:classappend="page-link">
+                                                <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled" th:if="${pageNumber} == -1">
+                                            <a class="page-link" href="#">...</a>
+                                        </li>
+                                        <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage+1}">
+                                            <th:block th:if="${search}">
+                                                <a th:href="@{/activity(page=${pageNumber-1}, search=${search})}" th:classappend="page-link">
+                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                </a>
+                                            </th:block>
+                                            <th:block th:unless="${search}">
+                                                <a th:href="@{/activity(page=${pageNumber-1})}" th:classappend="page-link">
+                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                </a>
+                                            </th:block>
+                                            <!-- <a class="page-link" th:text="${pageNumber}" th:href="${url} + '?page='+ ${pageNumber} + '&size=' + ${page.getSize()}"></a> -->
+                                        </li>
+                                        <!-- <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active">
+                                            <th:block th:if="${search}">
+                                                <a th:href="@{/activity(page=${pageNumber}, search=${search})}"
+                                                    th:classappend="page-link">
+                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                </a>
+                                            </th:block>
+                                            <th:block th:unless="${search}">
+                                                <a th:href="@{/activity(page=${pageNumber-1})}"
+                                                    th:classappend="page-link">
+                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                                </a>
+                                            </th:block>
+                                        </li> -->
+                                        
+                                    </th:block>
+                                    <li class="page-item"
+                                        th:classappend="${currentPage + 1 == activities.totalPages} ? 'disabled'">
+                                        <th:block th:if="${search}">
+                                            <a class="page-link"
+                                                th:href="@{/activity(page=${currentPage+1}, search=${search})}"
+                                                aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </th:block>
+                                        <th:block th:unless="${search}">
+                                            <a class="page-link"
+                                                th:href="@{/activity(page=${currentPage+1})}"
+                                                aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </th:block>
+                                    </li>
+
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script>
+        (function () {
+
+        })();
+
+    </script>
+</body>
+
+</html>

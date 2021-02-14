@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
+import com.softhaxi.marves.core.util.PagingUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +26,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * SystemParameterController
  */
 @Controller
+@RequestMapping("/sysparam")
 public class SystemParameterController {
 
     private static final Logger logger = LoggerFactory.getLogger(SystemParameterController.class);
@@ -41,8 +44,8 @@ public class SystemParameterController {
     @Value("${total.sysparam.perpage}")
     private int pageSize;
 
-    @GetMapping("/sysparam")
-    public String getAllSystemParameter(Model model, @RequestParam("paramCode") Optional<String> paramCode, @RequestParam("page") Optional<Integer> page){
+    @GetMapping()
+    public String index(Model model, @RequestParam("paramCode") Optional<String> paramCode, @RequestParam("page") Optional<Integer> page){
         int currentPage = page.orElse(0);
         String strParamCode = paramCode.orElse("");
         Pageable paging = PageRequest.of(currentPage, pageSize, Sort.by("code"));
@@ -73,17 +76,15 @@ public class SystemParameterController {
         model.addAttribute("startIndex", pageSize * currentPage);
         model.addAttribute("sysparamList", pagedResult);
 
-        int totalPages = pagedResult.getTotalPages();
-        if (totalPages > 0) {
-            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
-            model.addAttribute("pageNumbers", pageNumbers);
-        }
+        int[] pages = PagingUtil.generatePages(pagedResult.getTotalPages(), pagedResult.getNumber());
+
+        model.addAttribute("pages", pages);
 
         return "settings/sysparam/index";
     }
     
 
-    @PostMapping("/sysparam/add")
+    @PostMapping("/add")
     public String addNewSystemParameter(Model model, @ModelAttribute("sysParam") Optional<SystemParameter> systemParameter){
         SystemParameter sysParam = systemParameter.orElse(new SystemParameter());
         
@@ -92,7 +93,7 @@ public class SystemParameterController {
         return "common/setting/sysparam-input";
     }
 
-    @PostMapping("/sysparam/action")
+    @PostMapping("/action")
     public String actionSystemParameter(Model model, @ModelAttribute("id") Optional<UUID> sysParamId, @RequestParam("btnAction") Optional<String> btnAction){
         
         Optional<SystemParameter> systemParameter = systemParameterRepository.findById(sysParamId.get());
@@ -105,7 +106,7 @@ public class SystemParameterController {
         return "common/setting/sysparam-input";
     }
     
-    @PostMapping("/sysparam/confirm")
+    @PostMapping("/confirm")
     public String confirmSaveSystemParameter(Model model, @ModelAttribute("sysParam") SystemParameter systemParameter, 
         @RequestParam("btnAction") Optional<String> btnAction, @RequestParam("errorMessage") Optional<String> errorMessage){
         
@@ -126,7 +127,7 @@ public class SystemParameterController {
         return "common/setting/sysparam-input-confirm";
     }
 
-    @PostMapping("/sysparam/delete")
+    @PostMapping("/delete")
     public String deleteSystemParamter(Model model, @ModelAttribute ("sysParam")Optional<SystemParameter> systemParameter, 
     @RequestParam("btnAction") Optional<String> btnAction){
         String errorMessage = "";
@@ -162,7 +163,7 @@ public class SystemParameterController {
         return "common/setting/sysparam-delete-result";
     }
 
-    @PostMapping("/sysparam/submit")
+    @PostMapping("/submit")
     public String submitNewSystemParameter(Model model, @ModelAttribute("sysParam") Optional<SystemParameter> systemParameter, 
         @RequestParam("btnAction") Optional<String> btnAction){
         
@@ -215,7 +216,7 @@ public class SystemParameterController {
         return "common/setting/sysparam-input-result";
     }
 
-    @PostMapping("/sysparam/done")
+    @PostMapping("/done")
     public String saveSystemParameter(Model model, @RequestParam("btnAction") Optional<String> btnAction){
         
         if(btnAction.isPresent() && btnAction.get().equals("done")){

@@ -72,6 +72,10 @@
                               <span class="d-block" th:utext="#{${row.actionName}} + ' ' + #{${row.description}}">@username</span>
                             </div>
                         </div>
+
+                        <small class="d-block text-end mt-3">
+                            <a href="#" th:href="@{/activity}" class="card-link">Semua Aktivitas</a>
+                        </small>
                     </div>
                 </div>
             </div>

@@ -24,7 +24,7 @@
                     </li>
                     <li class="nav-item">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/covid') ? 'active':''}"
-                            class="nav-link" th:href="@{/covid}">Covid Tracker</a>
+                            class="nav-link" th:href="@{/covid}">CovidTracker</a>
                     </li>
                     <li class="nav-item">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/chat') ? 'active':''}"
@@ -54,17 +54,17 @@
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/sysparam') || #strings.contains(#httpServletRequest.requestURI, '/calendar') || #strings.contains(#httpServletRequest.requestURI, '/office') ? 'active':''}" class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Settings
+                            Pengaturan
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">
-                            <li><a class="dropdown-item" href="#">Office</a></li>
-                            <li><a class="dropdown-item" href="#">Corporate Calendar</a></li>
+                            <li><a class="dropdown-item" href="#">Kantor Utama</a></li>
+                            <li><a class="dropdown-item" href="#">Cuti Nasional</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" th:href="@{/sysparam}">System Parameter</a></li>
+                            <li><a class="dropdown-item" th:href="@{/sysparam}">Parameter</a></li>
                         </ul>
                       </li>
                     <li class="nav-item">
-                        <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
+                        <a class="nav-link text-danger" th:href="@{/logout}">Keluar</a>
                     </li>
                 </ul>
             </div>

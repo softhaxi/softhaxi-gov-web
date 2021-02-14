@@ -117,7 +117,7 @@ form.search input[type=text] {
   border-right:none;
   float: left;
   width: 90%;
-  background: #fff;
+  background-color: #F4F4F4;
   border-radius: 3px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;

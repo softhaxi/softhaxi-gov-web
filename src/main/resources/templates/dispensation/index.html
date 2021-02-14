@@ -196,38 +196,13 @@
         <div class="row">
             <ul class="nav nav-pills nav-fill px-2">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Semua</a>
+                    <a class="nav-link" th:classappend="${division == null ? 'active':''}" aria-current="page" href="#">Semua</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Deputi 1</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Deputi 2</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Deputi 3</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Deputi 4</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Deputi 5</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Roum</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Rokum</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Rosi</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Roren</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Ins</a>
-                </li>
+                <th:block th:each="map: ${divisions}">
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${division == map.get('id') ? 'active':''}" th:href="@{/dispensation(division=${map.get('id')})}" th:text="${map.get('code')}"></a>
+                    </li>
+                </th:block>
             </ul>
         </div>
         <div class="row py-2">

@@ -39,6 +39,10 @@
                             class="nav-link" th:href="@{/notification}">Notifikasi</a>
                     </li>
                     <li class="nav-item">
+                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dispensation') ? 'active':''}"
+                            class="nav-link" th:href="@{/dispensation}">Dispensasi</a>
+                    </li>
+                    <li class="nav-item">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/absence') ? 'active':''}"
                             class="nav-link" th:href="@{/absence}">Presensi</a>
                     </li>

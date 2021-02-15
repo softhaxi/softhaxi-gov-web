@@ -1,4 +1,4 @@
-package com.softhaxi.marves.core.restful.employement;
+package com.softhaxi.marves.core.restful.employee;
 
 import java.util.Map;
 import java.util.UUID;

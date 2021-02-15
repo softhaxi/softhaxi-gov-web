@@ -1,4 +1,4 @@
-package com.softhaxi.marves.core.restful.employement;
+package com.softhaxi.marves.core.restful.employee;
 
 import com.softhaxi.marves.core.model.request.LocationRequest;
 

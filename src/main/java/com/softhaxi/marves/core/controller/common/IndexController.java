@@ -1,5 +1,6 @@
 package com.softhaxi.marves.core.controller.common;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
@@ -54,7 +55,14 @@ public class IndexController {
         if (logout != null)
             model.addAttribute("msg", "info.logout.success");
 
-		return "common/index";
+		LocalDateTime time = LocalDateTime.now();
+
+		if(time.getHour() >= 18 && time.getHour() <= 5)
+		model.addAttribute("bgImage", "darknight");
+		else
+		model.addAttribute("bgImage", "daylight");
+
+		return "auth/login";
 	}
 
 	// @GetMapping("/dashboard")

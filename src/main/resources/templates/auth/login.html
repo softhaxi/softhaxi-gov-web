@@ -1,0 +1,75 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Log In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <!-- <link th:href="@{/styles/app.css}" rel="stylesheet" /> -->
+    <style>
+        .bg-image {
+            min-height: 100vh;
+            background: url('asset/[[#{${bgImage}}]].gif') no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+    </style>
+</head>
+
+<body class="bg-image">
+    <div class="container mt-4">
+        <div class="row d-flex flex-column min-vh-100 justify-content-center align-items-center">
+            <div class="col-md-4 bg-white rounded shadow-sm text-center p-4 my-4">
+                <img class="my-4" src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png"
+                    alt="" width="72" height="72">
+                <h1 class="h5 font-weight-normal">SELAMAT DATANG DI MARVES CORE</h1>
+                <div th:if="${errorMsg}">
+                    <div class="text-danger">
+                        <span>[[#{${errorMsg}}]]</span>
+                    </div>
+                </div>
+                <div th:if="${param.logout}">
+                    <div class="text-success">
+                        <span>[[#{${msg}}]]</span>
+                    </div>
+                </div>
+                <div class="container text-left my-4">
+                    <form class="form" th:action="@{/}" method="post">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="username" id="username"
+                                placeholder="username@domain.com" autocomplete="off" required="true">
+                            <label for="floatingInput">ID Pengguna</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" name="password" id="password"
+                                placeholder="Password" autocomplete="off" required="true">
+                            <label for="floatingPassword">Kata Sandi</label>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12 col-sm-offset-3">
+                                    <input type="submit" name="login-submit" id="login-submit"
+                                        class="form-control btn btn-outline-primary" value="MASUK">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <footer class="mt-4" th:insert="~{fragment/footer :: footer}">Footer</footer>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

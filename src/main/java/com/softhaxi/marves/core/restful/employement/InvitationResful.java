@@ -1,10 +1,13 @@
 package com.softhaxi.marves.core.restful.employement;
 
+import static java.util.Map.entry;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,10 +16,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +37,7 @@ import com.softhaxi.marves.core.repository.employee.InvitationMemberRepository;
 import com.softhaxi.marves.core.repository.employee.InvitationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
+import com.softhaxi.marves.core.service.message.MessageService;
 import com.softhaxi.marves.core.service.storage.FileStorageService;
 
 import org.slf4j.Logger;
@@ -76,6 +80,9 @@ public class InvitationResful {
 
     @Autowired
     private NotificationStatusRepository notificationStatusRepo;
+
+    @Autowired
+    private MessageService messageService;
 
     @GetMapping()
     public ResponseEntity<?> index(@RequestParam(name="email", required = false) String email,
@@ -196,18 +203,21 @@ public class InvitationResful {
                 .deepLink("core://marves.dev/invitation")
                 .referenceId(invitation.getId().toString())
                 .uri("/invitation");
+        notification.setUser(user);
         notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
         notification.setDateTime(ZonedDateTime.now());
         notificationRepo.save(notification);
         
         List<String> inviteeEmails = request.getInvitee() != null ? new LinkedList<>(Arrays.asList(request.getInvitee().split(";"))) : null;
         List<InvitationMember> invitees = new ArrayList<>();
+        List<String> oneSignalIds = new LinkedList<>();
+        List<NotificationStatus> oneSignalStatuses = new LinkedList<>();
+        List<NotificationStatus> statuses = new LinkedList<>();
         invitees.add(new InvitationMember()
             .invitation(invitation)
             .user(user)
             .organizer(true)
             .response("ACCEPT"));
-        List<NotificationStatus> statuses = new ArrayList<>();
         if(inviteeEmails != null && !inviteeEmails.isEmpty()) {
             for(String email: inviteeEmails) {
                 User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
@@ -222,12 +232,50 @@ public class InvitationResful {
                     invitees.add(new InvitationMember()
                         .invitation(invitation)
                         .user(invitee));
-                    statuses.add(new NotificationStatus(
-                        (Message) notification,
-                        invitee, false, false
-                    ));
+                    if(invitee.getOneSignalId() != null && !invitee.getOneSignalId().isEmpty()) {
+                        oneSignalStatuses.add(new NotificationStatus(
+                            notification,
+                            invitee, false, false
+                        ));
+                        if(!oneSignalIds.contains(invitee.getOneSignalId()))
+                            oneSignalIds.add(invitee.getOneSignalId());
+                    } else
+                        statuses.add(new NotificationStatus(notification, invitee, false, false));
                 }
             }
+        }
+        if(notification != null && oneSignalIds != null && !oneSignalIds.isEmpty()) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+            DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+            Locale locale = new Locale("in", "ID");
+            String date;
+            if(invitation.getStartDate().equals(invitation.getEndDate())) {
+                date = String.format("pada %s", invitation.getStartDate().format(dateFormatter.withLocale(locale)));
+            } else {
+                date = String.format("dari %s sampai %s", 
+                    invitation.getStartDate().format(dateFormatter.withLocale(locale)),
+                    invitation.getEndDate().format(dateFormatter.withLocale(locale)));
+            }
+
+            String time = String.format("pukul %s sampai %s",
+                invitation.getStartTime().format(timeFormat.withLocale(locale)),
+                invitation.getEndTime().format(timeFormat.withLocale(locale)));
+
+            Map<String, Object> body = new HashMap<>(Map.ofEntries(
+                entry("headings", Map.of("en", "Undangan Agenda")),
+                entry("contents", Map.of("en", String.format("Anda diundang untuk mengikuti agenda %s %s %s", 
+                    invitation.getTitle(), 
+                    date, time))),
+                entry("data", Map.of("deepLink", notification.getDeepLink(), 
+                    "view", "detail", 
+                    "refId", notification.getReferenceId())),
+                entry("include_player_ids", oneSignalIds),
+                entry("small_icon", "ic_stat_marves"),
+                entry("android_channel_id", "066ee9a7-090b-4a42-b084-0dcbbeb7f158"),
+                entry("android_accent_color", "FF19A472"),
+                entry("android_group", "invitation")
+            ));
+            messageService.sendPushNotification(notification, oneSignalStatuses, body);
         }
         invitationMemberRepo.saveAll(invitees);
         notificationStatusRepo.saveAll(statuses);
@@ -306,7 +354,10 @@ public class InvitationResful {
         //invitationRepo.save(invitation);
         
         List<InvitationMember> invitees = new LinkedList<>();
+        List<String> oneSignalIds = new LinkedList<>();
+        List<NotificationStatus> oneSignalStatuses = new LinkedList<>();
         List<NotificationStatus> statuses = new LinkedList<>();
+        Notification notification = null;
 
         if(request.getInvitee() != null && !request.getInvitee().isBlank()) {
             logger.info("[edit] invitees..." + request.getInvitee());
@@ -320,16 +371,20 @@ public class InvitationResful {
             invitation.getInvitees().forEach((member) -> inviteeEmails.remove(member.getUser().getEmail()));
 
             if(!inviteeEmails.isEmpty()) {
-                Notification notification = new Notification()
+                notification = notificationRepo.findOneByUserAndReferenceId(user, invitation.getId().toString())
+                    .orElse(new Notification()
                         .level("PRIVATE")
                         .assignee("SPECIFIC")
                         .category("TASK")
                         .deepLink("core://marves.dev/invitation")
                         .referenceId(invitation.getId().toString())
-                        .uri("/invitation");
-                notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
-                notification.setDateTime(ZonedDateTime.now());
-                notificationRepo.save(notification);
+                        .uri("/invitation"));
+                if(notification.getId() == null) { 
+                    notification.setUser(user);
+                    notification.setContent(String.format("%s|%s", invitation.getTitle(), invitation.getStartTime().toString()));
+                    notification.setDateTime(ZonedDateTime.now());
+                    notificationRepo.save(notification);
+                }
 
                 for(String email: inviteeEmails) {
                     User invitee = userRepo.findByUsernameOrEmailIgnoreCase(email).orElse(null);
@@ -345,13 +400,51 @@ public class InvitationResful {
                         invitees.add(new InvitationMember()
                             .invitation(invitation)
                             .user(invitee));
-                        statuses.add(new NotificationStatus(
-                            (Message) notification,
-                            invitee, false, false
-                        ));
+                        if(invitee.getOneSignalId() != null && !invitee.getOneSignalId().isEmpty()) {
+                            oneSignalStatuses.add(new NotificationStatus(
+                                notification,
+                                invitee, false, false
+                            ));
+                            if(!oneSignalIds.contains(invitee.getOneSignalId()))
+                                oneSignalIds.add(invitee.getOneSignalId());
+                        } else
+                            statuses.add(new NotificationStatus(notification, invitee, false, false));
                     }
                 }
             }
+        }
+        if(notification != null && oneSignalIds != null && !oneSignalIds.isEmpty()) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+            DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+            Locale locale = new Locale("in", "ID");
+            String date;
+            if(invitation.getStartDate().equals(invitation.getEndDate())) {
+                date = String.format("pada %s", invitation.getStartDate().format(dateFormatter.withLocale(locale)));
+            } else {
+                date = String.format("dari %s sampai %s", 
+                    invitation.getStartDate().format(dateFormatter.withLocale(locale)),
+                    invitation.getEndDate().format(dateFormatter.withLocale(locale)));
+            }
+
+            String time = String.format("pukul %s sampai %s",
+                invitation.getStartTime().format(timeFormat.withLocale(locale)),
+                invitation.getEndTime().format(timeFormat.withLocale(locale)));
+
+            Map<String, Object> body = new HashMap<>(Map.ofEntries(
+                entry("headings", Map.of("en", "Undangan Agenda")),
+                entry("contents", Map.of("en", String.format("Anda diundang untuk mengikuti agenda %s %s %s", 
+                    invitation.getTitle(), 
+                    date, time))),
+                entry("data", Map.of("deepLink", notification.getDeepLink(), 
+                    "view", "detail", 
+                    "refId", notification.getReferenceId())),
+                entry("include_player_ids", oneSignalIds),
+                entry("small_icon", "ic_stat_marves"),
+                entry("android_channel_id", "066ee9a7-090b-4a42-b084-0dcbbeb7f158"),
+                entry("android_accent_color", "FF19A472"),
+                entry("android_group", "invitation")
+            ));
+            messageService.sendPushNotification(notification, oneSignalStatuses, body);
         }
         invitationMemberRepo.saveAll(invitees);
         notificationStatusRepo.saveAll(statuses);

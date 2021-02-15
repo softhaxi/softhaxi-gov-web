@@ -25,7 +25,7 @@
                 <button class="btn btn-success"><i class="las la-download"></i> Download</button>
             </div>
         </div>
-        <div class="row row-cols-1 row-cols-md-4 g-4">
+        <div class="row row-cols-1 row-cols-md-5 g-5">
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #FFB800;">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="card-body text-center">
                         <p class="card-text">
-                        <h3>26 <small class="text-muted fs-6">orang</small></h3>
+                        <h3>[[#{${totalDispensation}}]] <small class="text-muted fs-6">orang</small></h3>
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: rgba(255, 184, 0, 0.5);">
@@ -50,7 +50,7 @@
                     </div>
                     <div class="card-body text-center">
                         <p class="card-text">
-                        <h3>7 <small class="text-muted fs-6">orang</small></h3>
+                        <h3>[[#{${totalAssignment}}]] <small class="text-muted fs-6">orang</small></h3>
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: rgba(90, 63, 140, 0.5);">
@@ -66,7 +66,7 @@
                     </div>
                     <div class="card-body text-center">
                         <p class="card-text">
-                        <h3>6 <small class="text-muted fs-6">orang</small></h3>
+                        <h3>[[#{${totalLeave}}]] <small class="text-muted fs-6">orang</small></h3>
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: #84C1F3;">
@@ -82,10 +82,26 @@
                     </div>
                     <div class="card-body text-center">
                         <p class="card-text">
-                        <h3>13 <small class="text-muted fs-6">orang</small></h3>
+                        <h3>[[#{${totalSick}}]] <small class="text-muted fs-6">orang</small></h3>
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: rgba(252, 77, 77, 0.5);">
+                        <small>Detail <i class="las la-arrow-right"></i></small>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-60">
+                    <div class="card-header text-center text-light" style="background-color: #FFB800;">
+                        <i class="las la-cubes la-3x"></i><br />
+                        <span>LAINNYA</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="card-text">
+                        <h3>[[#{${totalOthers}}]] <small class="text-muted fs-6">orang</small></h3>
+                        </p>
+                    </div>
+                    <div class="card-footer text-end" style="background-color: rgba(255, 184, 0, 0.5);">
                         <small>Detail <i class="las la-arrow-right"></i></small>
                     </div>
                 </div>
@@ -100,7 +116,7 @@
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" name="username" placeholder="Cari pegawai.."
                             aria-label="search pegawai">
-                        <button class="btn btn-outline-secondary bg-light border border-light" type="button"
+                        <button class="btn btn-outline-secondary bg-light" type="button"
                             id="button-addon2"><i class="las la-search"></i></button>
                     </div>
                     <!-- <input autocomplete="off" type="text" placeholder="Search.." name="username" id="input-search" class="dropdown-toggle">
@@ -116,7 +132,7 @@
                     <div class="col-sm">
                         <div class="dropdown">
                             <button class="btn bg-light dropdown-toggle" type="button" id="month-button"
-                                data-bs-toggle="dropdown" aria-expanded="false" th:value="${day}">
+                                data-bs-toggle="dropdown" aria-expanded="false" th:value="${#temporals.format(#temporals.createNow(), 'dd')}">
                                 14
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="presensi-month">
@@ -157,7 +173,7 @@
                     <div class="col-sm">
                         <div class="dropdown">
                             <button class="btn bg-light dropdown-toggle" type="button" id="month-button"
-                                data-bs-toggle="dropdown" aria-expanded="false" th:value="${month}">
+                                data-bs-toggle="dropdown" aria-expanded="false" th:value="${#temporals.format(#temporals.createNow(), 'MM')}">
                                 September
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="presensi-month">
@@ -180,7 +196,7 @@
                     <div class="col-sm">
                         <div class="dropdown">
                             <button class="btn bg-light dropdown-toggle" type="button" id="year-button"
-                                data-bs-toggle="dropdown" aria-expanded="false" th:value="${year}">
+                                data-bs-toggle="dropdown" aria-expanded="false" th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">
                                 2021
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="presensi-year">
@@ -193,10 +209,10 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <ul class="nav nav-pills nav-fill px-2">
+        <div class="row" style="padding: 0 4px;">
+            <ul class="nav nav-pills px-2">
                 <li class="nav-item">
-                    <a class="nav-link" th:classappend="${division == null ? 'active':''}" aria-current="page" href="#">Semua</a>
+                    <a class="nav-link" th:classappend="${division == null ? 'active':''}" aria-current="page" th:href="@{/dispensation}">Semua</a>
                 </li>
                 <th:block th:each="map: ${divisions}">
                     <li class="nav-item">
@@ -229,7 +245,7 @@
                             <td class="text-center">06/02/2021</td>
                             <td>Cuti</td>
                             <td>2 hari</td>
-                            <td><a href="#"><i class="las la-paperclip"></i> Surat Cuti.pdf</a></td>
+                            <td><span class="badge rounded-pill bg-danger"><i class="las la-paperclip"></i></span>&nbsp;<a class="flat-link" href="#">Surat Cuti.pdf</a></td>
                         </tr>
                     </tbody>
                 </table>

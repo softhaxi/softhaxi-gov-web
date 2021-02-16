@@ -101,8 +101,8 @@ public class InitialRunner implements CommandLineRunner {
             hOffice.setCode("HO0001");
             hOffice.setName("Kementerian Koordiantor Kemaritiman dan Investasi");
             hOffice.setType("HO");
-            hOffice.setLatitude(-6.184843);
-            hOffice.setLongitude(106.822793);
+            //hOffice.setLatitude(-6.184843);
+            //hOffice.setLongitude(106.822793);
             officeRepository.save(hOffice);
         }
 
@@ -117,7 +117,7 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(radiusLimit);
         }
 
-        SystemParameter houseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEP").orElse(new SystemParameter());
+        SystemParameter houseKeep = sysParamRepository.findByCode("HOUSE_KEEP_DAYS").orElse(new SystemParameter());
         if(houseKeep.getId() == null) {
             houseKeep.setCode("HOUSE_KEEP_DAYS");
             houseKeep.setName("House keeping days");
@@ -139,38 +139,38 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(excludeHouseKeep);
         }
 
-        SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVESHR_API_URL").orElse(new SystemParameter());
-        if(marvesHRAPI.getId() == null) {
-            marvesHRAPI.setCode("MARVESHR_API_URL");
-            marvesHRAPI.setName("Marves HR Restful Service");
-            marvesHRAPI.setValue("https://marveshr.maritim.go.id/webservice");
-            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            marvesHRAPI.setIsEditable(true);
-            marvesHRAPI.setIsSystem(false);
-            sysParamRepository.save(marvesHRAPI);
-        }
+        // SystemParameter marvesHRAPI = sysParamRepository.findByCode("MARVESHR_API_URL").orElse(new SystemParameter());
+        // if(marvesHRAPI.getId() == null) {
+        //     marvesHRAPI.setCode("MARVESHR_API_URL");
+        //     marvesHRAPI.setName("Marves HR Restful Service");
+        //     marvesHRAPI.setValue("https://marveshr.maritim.go.id/webservice");
+        //     //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+        //     marvesHRAPI.setIsEditable(true);
+        //     marvesHRAPI.setIsSystem(false);
+        //     sysParamRepository.save(marvesHRAPI);
+        // }
 
-        SystemParameter marvesLetterAPI = sysParamRepository.findByCode("MARVESLETTER_API_URL").orElse(new SystemParameter());
-        if(marvesLetterAPI.getId() == null) {
-            marvesLetterAPI.setCode("MARVESLETTER_API_URL");
-            marvesLetterAPI.setName("Marves Persuratan Restful Service");
-            marvesLetterAPI.setValue("https://persuratan.maritim.go.id/webservice");
-            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            marvesLetterAPI.setIsEditable(true);
-            marvesLetterAPI.setIsSystem(false);
-            sysParamRepository.save(marvesLetterAPI);
-        }
+        // SystemParameter marvesLetterAPI = sysParamRepository.findByCode("MARVESLETTER_API_URL").orElse(new SystemParameter());
+        // if(marvesLetterAPI.getId() == null) {
+        //     marvesLetterAPI.setCode("MARVESLETTER_API_URL");
+        //     marvesLetterAPI.setName("Marves Persuratan Restful Service");
+        //     marvesLetterAPI.setValue("https://persuratan.maritim.go.id/webservice");
+        //     //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+        //     marvesLetterAPI.setIsEditable(true);
+        //     marvesLetterAPI.setIsSystem(false);
+        //     sysParamRepository.save(marvesLetterAPI);
+        // }
 
-        SystemParameter covidTrackerAPI = sysParamRepository.findByCode("COVIDTRACKER_API_URL").orElse(new SystemParameter());
-        if(covidTrackerAPI.getId() == null) {
-            covidTrackerAPI.setCode("COVIDTRACKER_API_URL");
-            covidTrackerAPI.setName("Covid Tracker Restful Service");
-            covidTrackerAPI.setValue("https://covidtracker.maritim.go.id/api");
-            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-            covidTrackerAPI.setIsEditable(true);
-            covidTrackerAPI.setIsSystem(false);
-            sysParamRepository.save(covidTrackerAPI);
-        }
+        // SystemParameter covidTrackerAPI = sysParamRepository.findByCode("COVIDTRACKER_API_URL").orElse(new SystemParameter());
+        // if(covidTrackerAPI.getId() == null) {
+        //     covidTrackerAPI.setCode("COVIDTRACKER_API_URL");
+        //     covidTrackerAPI.setName("Covid Tracker Restful Service");
+        //     covidTrackerAPI.setValue("https://covidtracker.maritim.go.id/api");
+        //     //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+        //     covidTrackerAPI.setIsEditable(true);
+        //     covidTrackerAPI.setIsSystem(false);
+        //     sysParamRepository.save(covidTrackerAPI);
+        // }
 
         SystemParameter maxDispensationDay = sysParamRepository.findByCode("DISPENSATION_MAX_DAYS").orElse(new SystemParameter());
         if(maxDispensationDay.getId() == null) {
@@ -229,6 +229,16 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(maxClockOutFriday);
         }
 
+        SystemParameter paginationPageSize = sysParamRepository.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter());
+        if(paginationPageSize.getId() == null) {
+            paginationPageSize.setCode("PAGINATION_PAGE_SIZE");
+            paginationPageSize.setName("Number of record in page for table and size");
+            paginationPageSize.setValue("10");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            paginationPageSize.setIsEditable(true);
+            paginationPageSize.setIsSystem(false);
+            sysParamRepository.save(paginationPageSize);
+        }
 
         logger.info("[run] Finish at " + ZonedDateTime.now());
     }

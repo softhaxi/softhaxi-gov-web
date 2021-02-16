@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
+import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.util.PagingUtil;
 
@@ -37,6 +38,9 @@ public class ActivityController {
 
     @Autowired
     private ActivityLogRepository activityLogRepository;
+
+    @Autowired
+    private SystemParameterRepository parameterRepo;
 
     @Autowired
     protected UserService userService;
@@ -76,21 +80,7 @@ public class ActivityController {
         model.addAttribute("activities", pagedResult);
 
         int[] pages = PagingUtil.generatePages(pagedResult.getTotalPages(), pagedResult.getNumber());
-        // if (pagedResult.getTotalPages() > 6) {
-        //     int totalPages = pagedResult.getTotalPages();
-        //     int pageNumber = pagedResult.getNumber()+1;
-        //     int[] head = (pageNumber > 4) ? new int[]{1, -1} : new int[]{1,2,3};
-        //     int[] bodyBefore = (pageNumber > 4 && pageNumber < totalPages - 1) ? new int[]{pageNumber-2, pageNumber-1} : new int[]{};
-        //     int[] bodyCenter = (pageNumber > 3 && pageNumber < totalPages - 2) ? new int[]{pageNumber} : new int[]{};
-        //     int[] bodyAfter = (pageNumber > 2 && pageNumber < totalPages - 3) ? new int[]{pageNumber+1, pageNumber+2} : new int[]{};
-        //     int[] tail = (pageNumber < totalPages - 3) ? new int[]{-1, totalPages} : new int[] {totalPages-2, totalPages-1, totalPages};
-        //     pages = merge(head, bodyBefore, bodyCenter, bodyAfter, tail);
-        // } else {
-        //     pages = new int[pagedResult.getTotalPages()];
-        //     for (int i = 0; i < pagedResult.getTotalPages(); i++) {
-        //         pages[i] = 1+i;
-        //     }
-        // }
+
         model.addAttribute("pages", pages);
 
         return "activity/index";
@@ -99,10 +89,5 @@ public class ActivityController {
     public String detail() {
 
         return "activity/detail";
-    }
-
-    private int[] merge(int[]... intarrays) {
-        return Arrays.stream(intarrays).flatMapToInt(Arrays::stream)
-                .toArray();
     }
 }

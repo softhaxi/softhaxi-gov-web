@@ -101,23 +101,7 @@
                                                     <span aria-hidden="true" th:text="${pageNumber}"></span>
                                                 </a>
                                             </th:block>
-                                            <!-- <a class="page-link" th:text="${pageNumber}" th:href="${url} + '?page='+ ${pageNumber} + '&size=' + ${page.getSize()}"></a> -->
                                         </li>
-                                        <!-- <li class="page-item" th:classappend="${pageNumber==currentPage+1} ? active">
-                                            <th:block th:if="${search}">
-                                                <a th:href="@{/activity(page=${pageNumber}, search=${search})}"
-                                                    th:classappend="page-link">
-                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
-                                                </a>
-                                            </th:block>
-                                            <th:block th:unless="${search}">
-                                                <a th:href="@{/activity(page=${pageNumber-1})}"
-                                                    th:classappend="page-link">
-                                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
-                                                </a>
-                                            </th:block>
-                                        </li> -->
-                                        
                                     </th:block>
                                     <li class="page-item"
                                         th:classappend="${currentPage + 1 == activities.totalPages} ? 'disabled'">

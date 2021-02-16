@@ -59,7 +59,7 @@ public class DashboardController {
 
         LocalDate to = null;
         if(now.getYear() == from.getYear() && now.getMonthValue() == from.getMonthValue()) {
-            to = now;
+            to = now.plusDays(1);
         } else {
             to = from.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
         }

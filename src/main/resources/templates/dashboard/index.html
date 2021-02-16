@@ -24,7 +24,9 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="card-title"><h6>PRESENSI</h6></div>
+                        <div class="card-title">
+                            <h6>PRESENSI</h6>
+                        </div>
                         <!-- <div id="chart-loading" class="d-flex justify-content-center invisible">
                             <div class="spinner-grow text-primary" role="status">
                             <span class="sr-only">Loading...</span>
@@ -41,7 +43,9 @@
             <div class="col-md-7">
                 <div class="card">
                     <div class="card-body" style="height: 25rem;">
-                        <div class="card-title"><h6>MONITOR LOKASI</h6></div>
+                        <div class="card-title">
+                            <h6>MONITOR LOKASI</h6>
+                        </div>
                         <div id="map" class="rounded-bottom" style="height: 21rem;"></div>
                     </div>
                 </div>
@@ -49,7 +53,9 @@
             <div class="col-md-5">
                 <div class="card">
                     <div class="card-body" style="height: 25rem;">
-                        <div class="card-title"><h6>SUMMARY PRESENSI</h6></div>
+                        <div class="card-title">
+                            <h6>SUMMARY PRESENSI</h6>
+                        </div>
                         <div style="height: 20rem;">
                             <canvas class="my-4" id="summary-chart"></canvas>
                         </div>
@@ -63,13 +69,22 @@
                     <div class="card-body">
                         <div class="card-title">AKTIVITAS TERBARU</div>
                         <div th:each="row : ${latestUpdated}" class="media text-muted pt-3">
-                            <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
+                            <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32"
+                                xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"
+                                focusable="false" role="img" aria-label="Placeholder: 32x32">
+                                <title>Placeholder</title>
+                                <rect width="100%" height="100%" fill="#007bff" /><text x="50%" y="50%" fill="#007bff"
+                                    dy=".3em">32x32</text>
+                            </svg>
                             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                              <div class="d-flex justify-content-between align-items-center w-100">
-                                <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark" th:text="${row.user.profile.fullName}">Full Name</strong></a>
-                                <span th:text="${#temporals.format(row.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}">Follow</span>
-                              </div>
-                              <span class="d-block" th:utext="#{${row.actionName}} + ' ' + #{${row.description}}">@username</span>
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark"
+                                            th:text="${row.user.profile.fullName}">Full Name</strong></a>
+                                    <span
+                                        th:text="${#temporals.format(row.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}">Follow</span>
+                                </div>
+                                <span class="d-block"
+                                    th:utext="#{${row.actionName}} + ' ' + #{${row.description}}">@username</span>
                             </div>
                         </div>
 
@@ -91,13 +106,113 @@
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
     <script>
+        // var absenceOptions = {
+        //     responsive: true,
+        //     maintainAspectRatio: false,
+        //     scales: {
+        //         xAxes: [{
+        //             gridLines: {
+        //                 display: false
+        //             }
+        //         }],
+        //         yAxes: [{
+        //             ticks: {
+        //                 beginAtZero: true,
+        //                 precision: 0,
+        //                 callback: function (value) {
+        //                     valuek = value;
+        //                     return valuek;
+        //                 }
+        //             },
+        //         }]
+        //     },
+        //     legend: {
+        //         align: 'end',
+        //         labels: {
+        //             usePointStyle: true
+        //         }
+        //     },
+        //     tooltips: {
+        //         mode: 'label',
+        //         callbacks: {
+        //             label: function (t, d) {
+        //                 var dstLabel = d.datasets[t.datasetIndex].label;
+        //                 var yLabel = t.yLabel;
+        //                 return dstLabel + ': ' + yLabel + '';
+        //             }
+        //         }
+        //     }
+        // };
+        var absenceOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                align: 'end',
+                labels: {
+                    usePointStyle: true
+                }
+            },
+            tooltips: {
+                mode: 'label',
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        var type = data.datasets[tooltipItem.datasetIndex].label;
+                        var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        var total = 0;
+                        for (var i = 0; i < data.datasets.length; i++)
+                            total += data.datasets[i].data[tooltipItem.index];
+                        if (tooltipItem.datasetIndex !== data.datasets.length - 1) {
+                            return type + " : " + value.toFixed(0).replace(/(\d)(?=(\d{3})+\.)/g, '1,');
+                        } else {
+                            return [type + " : " + value.toFixed(0).replace(/(\d)(?=(\d{3})+\.)/g, '1,'), "TOTAL PRESENSI : " + total];
+                        }
+                    }
+                }
+            },
+            plugins: {
+                datalabels: {
+                    formatter: function (value, ctx) {
+                        let sum = 0;
+                        let dataArr = ctx.chart.data.datasets[0].data;
+                        dataArr.map(data => {
+                            sum += data;
+                        });
+                        let percentage = (value * 100 / sum).toFixed(0) + "%";
+                        return percentage;
+                    },
+                    font: {
+                        weight: "bold"
+                    },
+                    color: "#fff"
+                }
+            },
+            scales: {
+                xAxes: [{
+                    stacked: true,
+                    gridLines: {
+                        display: false
+                    }
+                }],
+                yAxes: [{
+                    stacked: true,
+                    ticks: {
+                        beginAtZero: true,
+                        precision: 0,
+                        callback: function (value) {
+                            valuek = value;
+                            return valuek;
+                        }
+                    }
+                }]
+            }
+        };
         (function () {
             var absenceCtx = document.getElementById("absence-chart").getContext("2d");
             var absenceChart;
             $.ajax({
                 url: '/dashboard/monthlyAbsence',
                 method: 'GET',
-                success: function(response) {
+                success: function (response) {
                     console.log(response.data);
                     var absenceData = {
                         labels: response.data['dates'],
@@ -123,43 +238,7 @@
                     absenceChart = new Chart(absenceCtx, {
                         type: 'bar',
                         data: absenceData,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                xAxes: [{
-                                    gridLines: {
-                                        display: false
-                                    }
-                                }],
-                                yAxes: [{
-                                    ticks: {
-                                        beginAtZero: true,
-                                        precision: 0,
-                                        callback: function (value) {
-                                            valuek = value;
-                                            return valuek;
-                                        }
-                                    },
-                                }]
-                            },
-                            legend: {
-                                align: 'end',
-                                labels: {
-                                    usePointStyle: true
-                                }
-                            },
-                            tooltips: {
-                                mode: 'label',
-                                callbacks: {
-                                    label: function (t, d) {
-                                        var dstLabel = d.datasets[t.datasetIndex].label;
-                                        var yLabel = t.yLabel;
-                                        return dstLabel + ': ' + yLabel + '';
-                                    }
-                                }
-                            }
-                        }
+                        options: absenceOptions
                     });
                 }
             });

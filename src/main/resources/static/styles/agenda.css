@@ -6,7 +6,7 @@
 .row{
     --bs-gutter-x: 0;
 }
-.new-agenda-btn{
+.new-agenda-btn, .delete-agenda-btn{
     background-color: #8678D9;
     color: #fff;
     border: none;
@@ -52,6 +52,7 @@
     margin-top: -17px;
     /* overflow-x: scroll; */
     font-size: .8em;
+    cursor: pointer;
 }
 .meeting{
     margin-left: 20px;
@@ -155,9 +156,10 @@
     width: 400px;
     top: 155px;
 }
-.modal-header{
+.modal-header, .modal-content{
     padding: 0;
 }
+
 .modal-title{
     background-color: #8678D9;
     color: #fff;
@@ -186,3 +188,46 @@
   :-moz-placeholder { /* Firefox 18- */
     font-size: .8em;
   }
+  .agenda-activity{
+    border: #000000 1px solid;
+    margin-top: -175px;
+    margin-left: 25px;
+    position: absolute;
+    color: #000000;
+    font-size: .8em;
+  }
+
+  #display-agenda-detail{
+    padding: 2px;
+  }
+
+  #delete-agenda{
+    font-size: .9em;
+  }
+
+  #delete-agenda .modal-footer{
+    display: block;
+    text-align: center;
+  }
+
+  .modal-agenda-title{
+    color: #000;
+    width: 100%;
+    text-align: center;
+    font-size: .8em;
+}
+
+.button-close, .button-edit, .button-delete{
+  box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    color: #000;
+    background-color: #fff;
+    border: 0;
+    border-radius: .25rem;
+
+}
+.btn-group, .btn-group-vertical {
+  position: relative;
+  display: block;
+}

@@ -684,7 +684,7 @@
                                                                     </svg>
                                                                     <span class="mx-1"></span>
                                                                 <th:block th:each="invitationMember : ${invitation.invitees}">
-                                                                    <span th:text="${invitationMember.user.profile.fullName}" class="participant"></span>
+                                                                    <span th:text="${invitationMember.user.profile}? ${invitationMember.user.profile.fullName} : ${invitationMember.user.email}" class="participant"></span>
                                                                     <span th:if="${invitationMemberStat.index +1 < invitationMemberStat.size}" class="participant">,</span>
                                                                 </th:block>
                                                             <br>

@@ -49,8 +49,6 @@ public class AgendaController {
         for (User user : userList) {
             invitations = invitationRepository.findAllUserDailyInvitationByCreated(user.getId().toString(), localDate);
             invitationList.addAll(invitations);
-            invitationList.addAll(invitations);
-            invitationList.addAll(invitations);
         }
         model.addAttribute("invitations", invitationList);
         return "common/agenda/agenda-bak";

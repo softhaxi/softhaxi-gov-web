@@ -56,8 +56,9 @@ public class IndexController {
             model.addAttribute("msg", "info.logout.success");
 
 		LocalDateTime time = LocalDateTime.now();
+		System.out.println(time.getHour());
 
-		if(time.getHour() >= 18 && time.getHour() <= 5)
+		if(time.getHour() >= 18 || time.getHour() <= 5)
 		model.addAttribute("bgImage", "darknight");
 		else
 		model.addAttribute("bgImage", "daylight");

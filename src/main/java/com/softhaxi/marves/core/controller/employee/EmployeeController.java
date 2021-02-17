@@ -1,11 +1,15 @@
 package com.softhaxi.marves.core.controller.employee;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.employee.Employee;
 import com.softhaxi.marves.core.repository.account.UserRepository;
@@ -24,13 +28,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author Raja Sihombing
  * @since 1
  */
 @Controller
+@RequestMapping("/employee")
 public class EmployeeController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeController.class);
@@ -47,7 +54,7 @@ public class EmployeeController {
     @Value("${total.activity.perpage}")
     private int pageSize;
 
-    @GetMapping("/employment")
+    @GetMapping()
     public String employment(Model model,@RequestParam("page") Optional<Integer> page, @RequestParam("search") Optional<String> username) {
         int currentPage = page.orElse(0);
         String strUserName = username.orElse("");
@@ -89,5 +96,32 @@ public class EmployeeController {
         }
         
         return "common/employee";
+    }
+
+    @GetMapping("/search")
+    public @ResponseBody String findUserByName(Model model, @RequestParam("name") Optional<String> name) {
+        String strName = name.orElse("");
+        
+        List<User> users = userRepository.findUserByUsernameLike(strName.toUpperCase());
+        List<Map<?, ?>> userList = new LinkedList<>();
+        
+        String json = "";
+        
+        try {
+            Map<String, String> userMap = new HashMap<>();
+            for (User user : users) {
+                userMap = new HashMap<>();
+                userMap.put("value", user.getId().toString());
+                userMap.put("label", user.getProfile().getFullName());
+                userList.add(userMap);
+            }
+            Gson gson = new Gson();
+            json = gson.toJson(userList);
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return json;
     }
 }

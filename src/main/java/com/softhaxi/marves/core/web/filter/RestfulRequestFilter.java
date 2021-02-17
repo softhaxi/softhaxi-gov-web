@@ -55,6 +55,8 @@ public class RestfulRequestFilter extends OncePerRequestFilter {
                     logger.error("Unable to get token", iaex);
                 } catch (ExpiredJwtException ejwtex) {
                     logger.error("Token has expired", ejwtex);
+                } catch(Exception ex) {
+                    logger.error("Exception ex", ex);
                 }
             } else {
                 logger.warn("Invalid access token format");

@@ -7,10 +7,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.logging.Session;
 import com.softhaxi.marves.core.model.request.UserRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
+import com.softhaxi.marves.core.repository.logging.SessionRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 
@@ -48,6 +50,9 @@ public class UserRestful {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SessionRepository sessionRepo;
+
     @GetMapping()
     public ResponseEntity<?> index(@RequestParam(name = "type", defaultValue = "mobile") String type) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -61,7 +66,7 @@ public class UserRestful {
                 "fullName", item.getProfile().getFullName()));
             }
         });
-
+ 
         return new ResponseEntity<>(
                 new GeneralResponse(
                     HttpStatus.OK.value(),
@@ -139,6 +144,12 @@ public class UserRestful {
             userRepo.save(user);
         }
         // logger.info("[updateNotification] User Id: " + user.getId().toString() + " OneSignal Id: " + user.getOneSignalId());
+
+        List<Session> sessions = (List<Session>) sessionRepo.findAllValidByUser(user);
+        sessions.forEach((session) -> {
+            session.setOneSignalId(request.getOneSignalId().trim());
+        });
+        sessionRepo.saveAll(sessions);
 
         return new ResponseEntity<>(
             new GeneralResponse(

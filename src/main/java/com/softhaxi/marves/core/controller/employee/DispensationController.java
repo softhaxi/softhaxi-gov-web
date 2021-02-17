@@ -66,6 +66,8 @@ public class DispensationController {
         model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         model.addAttribute("dateDisplay",
                 date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
+        model.addAttribute("division", division);
+        model.addAttribute("divisions", divisionService.findAll());
         model.addAttribute("totalDispensation", dispensationRepo.findStatisticByDate(now));
         model.addAttribute("totalAssignment", dispensationRepo.findStatisticByTypeAndDate("ASSIGNMENT", now));
         model.addAttribute("totalSick", dispensationRepo.findStatisticByTypeAndDate("SICK", now));
@@ -102,9 +104,6 @@ public class DispensationController {
         int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
 
         model.addAttribute("pages", pages);
-
-        model.addAttribute("division", division);
-        model.addAttribute("divisions", divisionService.findAll());
         return "dispensation/index";
     }
 

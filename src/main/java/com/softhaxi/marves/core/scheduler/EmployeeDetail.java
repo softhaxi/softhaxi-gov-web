@@ -2,6 +2,7 @@ package com.softhaxi.marves.core.scheduler;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 
 import com.softhaxi.marves.core.domain.account.User;
@@ -29,30 +30,36 @@ public class EmployeeDetail {
     @Autowired
     private EmployeeRepository employeeRepo;
 
-    @Scheduled(cron = "${cron.employeeDivision.batch}")
-    public void syncEmployeeDivision() {
-        logger.debug("[syncEmployeeDivision] Start at " + LocalDateTime.now());
+    @Scheduled(cron = "${cron.employee.batch}")
+    public void syncDetail() {
+        logger.debug("[syncDetail] Start at " + LocalDateTime.now());
         try {
             Collection<User> users = userRepo.findAllNonAdminUsers();
-            
+            Collection<Employee> employees = new LinkedList<>();
             users.stream().forEach((user) -> {
                 Map<?, ?> profileData = vitaeService.getPersonalInfo(user.getEmail());
                 Employee employee = null;
-                if(user.getEmployee() != null) {
+                if (user.getEmployee() != null) {
                     employee = user.getEmployee();
                 } else {
-                    employee = new Employee().user(user);
+                    employee = new Employee().user(new User().id(user.getId()));
                 }
-                if(profileData != null) {
-                    employee.setEmployeeNo(profileData.get("employeeNumber") != null ? profileData.get("employeeNumber").toString() : "");
-                    employee.setDivisionName(profileData.get("division") != null ? profileData.get("division").toString() : null);
-                    employeeRepo.save(employee);
+                if (profileData != null) {
+                    employee.setEmployeeNo(
+                            profileData.get("employeeNumber") != null ? profileData.get("employeeNumber").toString()
+                                    : "");
+                    employee.setPictureUrl(
+                            profileData.get("thumbnail") != null ? profileData.get("thumbnail").toString() : null);
+                    employee.setDivisionName(
+                            profileData.get("division") != null ? profileData.get("division").toString() : null);
+                    employees.add(employee);
                 }
             });
+            employeeRepo.saveAll(employees);
         } catch (Exception ex) {
-
+            logger.error("[syncDetail] Error " + ex.getMessage(), ex);
         } finally {
-            logger.debug("[syncEmployeeDivision] Finish at " + LocalDateTime.now());
+            logger.debug("[syncDetail] Finish at " + LocalDateTime.now());
         }
     }
 }

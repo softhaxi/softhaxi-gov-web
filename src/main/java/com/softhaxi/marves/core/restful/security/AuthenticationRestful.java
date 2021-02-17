@@ -1,19 +1,25 @@
 package com.softhaxi.marves.core.restful.security;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.access.UserRole;
 import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
+import com.softhaxi.marves.core.domain.logging.Session;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.access.UserRoleRepository;
 import com.softhaxi.marves.core.repository.account.ProfileRepository;
+import com.softhaxi.marves.core.repository.logging.SessionRepository;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
 import com.softhaxi.marves.core.service.logging.LoggerService;
@@ -30,6 +36,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,13 +81,17 @@ public class AuthenticationRestful {
     @Autowired
     private UserRoleRepository userRoleRepo;
 
+    @Autowired
+    private SessionRepository sessionRepo;
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest servlet) {
         User user = null;
         String description = "login.mobile";
+        String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
         try {
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
+                    new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
 
             user = userService.findByUsername(request.getUserid().trim()).orElse(null);
             Profile profile = null;
@@ -89,21 +101,22 @@ public class AuthenticationRestful {
             if (user == null) {
                 saveChat = true;
                 userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(request.getUserid().trim().toLowerCase());
-                //Employee employee = null;
+                // Employee employee = null;
                 user = new User();
-                if(userLdap != null) {
+                if (userLdap != null) {
                     logger.debug("[login] User ldap..." + userLdap.toString());
-                    profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(userLdap.get("email").toString().toLowerCase().trim());
-                    user.setUsername(userLdap.get("username").toString().trim().toUpperCase());  
+                    profileData = (Map<?, ?>) employeeVitaeService
+                            .getPersonalInfo(userLdap.get("email").toString().toLowerCase().trim());
+                    user.setUsername(userLdap.get("username").toString().trim().toUpperCase());
                     user.setIsLDAPUser(true);
-                    if(profileData != null) {
+                    if (profileData != null) {
                         user.setEmail(profileData.get("email").toString());
                         profile = new Profile().fullName(profileData.get("name").toString())
-                            .primaryEmail(profileData.get("email").toString()); 
+                                .primaryEmail(profileData.get("email").toString());
                     } else {
                         user.setEmail(userLdap.get("email").toString());
                         profile = new Profile().fullName(userLdap.get("fullName").toString())
-                            .primaryEmail(userLdap.get("email").toString());
+                                .primaryEmail(userLdap.get("email").toString());
                     }
                 }
                 user.setProfile(profile);
@@ -113,67 +126,100 @@ public class AuthenticationRestful {
                 description = "first.time.login.mobile";
             } else {
                 profile = profileRepo.findByUser(user).orElse(null);
-                if(profile == null) {
+                if (profile == null) {
                     saveChat = true;
                     userLdap = (Map<?, ?>) userService.retrieveUserLdapDetail(user.getEmail().trim().toLowerCase());
-                    profileData = (Map<?, ?>) employeeVitaeService.getPersonalInfo(user.getEmail().toLowerCase().trim());
-                    if(profileData != null) {
+                    profileData = (Map<?, ?>) employeeVitaeService
+                            .getPersonalInfo(user.getEmail().toLowerCase().trim());
+                    if (profileData != null) {
                         profile = new Profile().fullName(profileData.get("name").toString())
-                            .primaryEmail(profileData.get("email").toString()); 
+                                .primaryEmail(profileData.get("email").toString());
                     } else {
                         profile = new Profile().fullName(userLdap.get("fullName").toString())
-                            .primaryEmail(userLdap.get("email").toString());
+                                .primaryEmail(userLdap.get("email").toString());
                     }
                     user.setStatus("ACTIVE");
                     user.setOneSignalId(request.getOneSignalId());
                     profile.setUser(user);
                     profileRepo.save(profile);
                     Role role = roleRepo.findByName("MOBILE").orElse(null);
-                    if(role != null) {
+                    if (role != null) {
                         userRoleRepo.save(new UserRole(user, role));
                     }
                     description = "first.time.login.mobile";
                 } else {
-                    user.setOneSignalId(request.getOneSignalId()); 
+                    user.setOneSignalId(request.getOneSignalId());
                     saveChat = false;
                 }
             }
 
-            if(!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {
-                loggerService.saveAsyncActivityLog(
-                    new ActivityLog().user(user)
-                        .actionTime(ZonedDateTime.now())
-                        .actionName("log.in")
-                        .description(description)
-                        .uri("/user")
-                        .deepLink("core://marves.dev/user")
-                        .referenceId(user.getId().toString())
-                );
+            if (!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {
+                loggerService.saveAsyncActivityLog(new ActivityLog().user(user).actionTime(ZonedDateTime.now())
+                        .actionName("log.in").description(description).uri("/user").deepLink("core://marves.dev/user")
+                        .referenceId(user.getId().toString()).ipAddress(ipAddress));
 
-                if(saveChat)
+                if (saveChat)
                     chatService.sendWelcomeMessage(user);
             }
 
-            return new ResponseEntity<>(
-                new GeneralResponse(
-                HttpStatus.OK.value(), 
-                HttpStatus.OK.getReasonPhrase(), 
-                Map.of("type", "Bearer", "accessToken", accessTokenUtil.generateToken(user.getId().toString())))
-                , HttpStatus.OK);
-        } catch(DisabledException e) {
+            List<Session> sessions = (List<Session>) sessionRepo.findAllValidByUser(user);
+            if(sessions != null && !sessions.isEmpty()) {
+                sessions.forEach((session) -> {
+                    session.setStatus("INVALID");
+                });
+            }
+            sessionRepo.saveAll(sessions);
+            Session session = new Session()
+                .user(user)
+                .type("Bearer")
+                .accessToken(accessTokenUtil.generateToken(user.getId().toString()))
+                .status("VALID")
+                .oneSignalId(request.getOneSignalId());
+            sessionRepo.save(session);
+
+            return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+                    Map.of("type", session.getType(),
+                        "accessToken", session.getAccessToken())),
+                    HttpStatus.OK);
+        } catch (DisabledException e) {
             logger.error(e.getMessage(), e);
-            return new ResponseEntity<>(
-                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                    "Invalid userid and password"
-                ), HttpStatus.BAD_REQUEST);
-        } catch(BadCredentialsException e) {
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), "Invalid userid and password"), HttpStatus.BAD_REQUEST);
+        } catch (BadCredentialsException e) {
             logger.error(e.getMessage(), e);
-            return new ResponseEntity<>(
-                new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                    "Invalid userid and password"
-                ), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), "Invalid userid and password"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest servlet) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
+        
+        try {
+            List<Session> sessions = (List<Session>) sessionRepo.findAllValidByUser(user);
+            if(sessions != null && !sessions.isEmpty()) {
+                sessions.forEach((session) -> {
+                    session.setStatus("INVALID");
+                });
+            }
+            sessionRepo.saveAll(sessions);
+
+            loggerService.saveAsyncActivityLog(new ActivityLog().user(user).actionTime(ZonedDateTime.now())
+                        .actionName("log.out").description("logout.from.mobile").uri("/user").deepLink("core://marves.dev/user")
+                        .referenceId(user.getId().toString()).ipAddress(ipAddress));
+
+            return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), 
+                HttpStatus.OK.getReasonPhrase(),
+                    "logout.successful"),
+                    HttpStatus.OK);
+        } catch(Exception ex) {
+            logger.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), "unable.to.logout"), HttpStatus.BAD_REQUEST);
         }
     }
 }

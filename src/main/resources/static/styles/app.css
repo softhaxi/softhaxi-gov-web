@@ -2,3 +2,30 @@ body {
     padding-top: 4.5rem;
     background-color: #E5E5E5;
 }
+
+.flat-link {
+    /* color: #757575; */
+    color: black;
+    text-decoration: none;
+}
+
+.thumbnail {
+    width: 64px; 
+    height: 64px;
+    object-fit: cover;
+}
+
+/* a:visited {
+    color: #757575;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #757575;
+    text-decoration: none;
+}
+
+a:active {
+    color: #757575;
+    text-decoration: none;
+} */

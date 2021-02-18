@@ -9,6 +9,9 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 @Configuration
 public class WebAssetConfiguration implements WebMvcConfigurer {
 
+    @Value("${app.web.asset}")
+    private String webAsset;
+
     @Value("${app.mobile.asset}")
     private String mobileAsset;
 
@@ -17,13 +20,16 @@ public class WebAssetConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        if(!uploadPath.endsWith("/"))
-            uploadPath += "/";
+        if(!webAsset.endsWith("/"))
+            webAsset += "/";
         if(!mobileAsset.endsWith("/"))
             mobileAsset += "/";
+            if(!uploadPath.endsWith("/"))
+                uploadPath += "/";
         registry.addResourceHandler("/asset/**")
-            .addResourceLocations(String.format("file:%s", uploadPath), 
-                String.format("file:%s", mobileAsset))
+            .addResourceLocations(String.format("file:%s", webAsset), 
+                String.format("file:%s", mobileAsset), 
+                String.format("file:%s", uploadPath))
             .setCachePeriod(3600)
             .resourceChain(true)
             .addResolver(new PathResourceResolver());

@@ -9,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.softhaxi.marves.core.domain.logging.Session;
+import com.softhaxi.marves.core.repository.logging.SessionRepository;
 import com.softhaxi.marves.core.util.AccessTokenUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class RestfulRequestFilter extends OncePerRequestFilter {
     @Autowired
     private AccessTokenUtil accessTokenUtil;
 
+    @Autowired
+    private SessionRepository sessionRepo;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -50,7 +55,8 @@ public class RestfulRequestFilter extends OncePerRequestFilter {
             if(requestTokenHeader != null && requestTokenHeader.startsWith("Bearer")) {
                 token = requestTokenHeader.substring(7);
                 try {
-                    userid = accessTokenUtil.getUsernameFromToken(token);
+                    Session session = sessionRepo.findAllValidByAccessToken(token).orElseThrow();
+                    userid = accessTokenUtil.getUsernameFromToken(session.getAccessToken());
                 } catch(IllegalArgumentException iaex) {
                     logger.error("Unable to get token", iaex);
                 } catch (ExpiredJwtException ejwtex) {

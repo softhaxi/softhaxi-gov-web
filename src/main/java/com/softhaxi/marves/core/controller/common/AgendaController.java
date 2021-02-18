@@ -51,7 +51,7 @@ public class AgendaController {
             invitationList.addAll(invitations);
         }
         model.addAttribute("invitations", invitationList);
-        return "common/agenda/agenda-bak";
+        return "agenda/index";
     }
 
     @PostMapping("/agenda/search-employee")

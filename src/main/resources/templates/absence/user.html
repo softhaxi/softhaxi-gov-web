@@ -1,0 +1,244 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Presensi Pegawai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+        integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw=="
+        crossorigin="anonymous" />
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="align-text-bottom">LOG PRESENSI</h4>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-success"><i class="las la-download"></i> Download</button>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 2rem;">
+            <div class="col-md-1">
+                <img th:if="${user.employee != null && user.employee.pictureUrl != null }"
+                    th:src="${user.employee.pictureUrl}" class="thumbnail rounded-circle z-depth-2" width="100"
+                    data-holder-rendered="true" />
+                <img th:unless="${user.employee != null && user.employee.pictureUrl != null }"
+                    class="thumbnail rounded-circle z-depth-2" alt="thumbnail"
+                    src="https://randomuser.me/api/portraits/men/1.jpg" data-holder-rendered="true">
+            </div>
+            <div class="col-md-11">
+                <h1 class="h4 align-text-bottom" th:text="${user.profile.fullName}">Fullname</h1>
+                <h3 class="h6 text-muted" th:text="${user.email}">Email address</h3>
+            </div>
+
+            <div class="container">
+                <hr />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>ID Pegawai</td>
+                            <td class="col-md-1 text-center align-middle" scope="col">:</td>
+                            <td th:if="${user.employee != null }" th:text="${user.employee.employeeNo}"></td>
+                            <td th:unless="${user.employee != null }">-</td>
+                        </tr>
+                        <tr>
+                            <td>Unit Kerja</td>
+                            <td>:</td>
+                            <td th:if="${user.employee != null }" th:text="${user.employee.divisionName}"></td>
+                            <td th:unless="${user.employee != null }">-</td>
+                        </tr>
+                        <tr>
+                            <td>Terlambat Masuk</td>
+                            <td>:</td>
+                            <td th:text="${totalLate + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>Cepat Pulang</td>
+                            <td>:</td>
+                            <td th:text="${totalEarly + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>WFO</td>
+                            <td>:</td>
+                            <td th:text="${totalWFO + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>WFH</td>
+                            <td>:</td>
+                            <td th:text="${totalWFH + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>Fake Locator</td>
+                            <td>:</td>
+                            <td th:text="${totalFake + ' hari'}">0 hari</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td colspan="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>Sakit</td>
+                            <td>:</td>
+                            <td th:text="${totalSick + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>Cuti</td>
+                            <td>:</td>
+                            <td th:text="${totalLeave + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>Tugas</td>
+                            <td>:</td>
+                            <td th:text="${totalAssignment + ' hari'}">0 hari</td>
+                        </tr>
+                        <tr>
+                            <td>Lainnya</td>
+                            <td>:</td>
+                            <td th:text="${totalOthers + ' hari'}">0 hari</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row ">
+            <div class="col-md-3 offset-md-9 justify-content-end">
+                <input type="hidden" id="user-id" name="userId" th:value="${user.id}" />
+                <input id="date-selection" type="text" class="form-control text-center" data-provide="datepicker"
+                    th:value="${dateDisplay}">
+            </div>
+        </div>
+        <div class="row py-2">
+            <div class="table-responsive">
+                <table class="table table-borderless bg-light">
+                    <thead class="text-white" style="background-color: #0983E7;">
+                        <tr>
+                            <th rowspan="2" class="text-center align-middle" scope="col">Tanggal</th>
+                            <th colspan="3" class="text-center" scope="col">Masuk</th>
+                            <th colspan="3" class="text-center" scope="col">Pulang</th>
+                            <th rowspan="2" class="text-center align-middle" scope="col">Durasi Kerja</th>
+                            <th rowspan="2" class="text-center align-middle" scope="col">Status</th>
+                            <th rowspan="2" class="text-center align-middle" scope="col">Fake Locator</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center" scope="col">Waktu</th>
+                            <th class="text-center" scope="col">IP Address</th>
+                            <th class="text-center" scope="col">Terlambat Masuk</th>
+                            <th class="text-center" scope="col">Waktu</th>
+                            <th class="text-center" scope="col">IP Address</th>
+                            <th class="text-center" scope="col">Cepat Pulang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
+                            <td class="text-center" th:text="${#temporals.format(row.date, 'dd-MM-yyyy')}" />
+                            <td class="text-center" th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
+                            <td class="text-center" th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
+                            <td class="text-center">-</td>
+                            <td class="text-center" th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
+                            <td class="text-center" th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
+                            <td class="text-center">-</td>
+                            <td class="text-center" th:text="${row.workingDuration != null ? row.workingDuration : '-'}">-</td>
+                            <td class="text-center" th:text="${row.status != null ? row.status : '-'}">Status</td>
+                            <td th:if="${row.isFakeLocator==true}" class="text-danger">On</td>
+                            <td th:unless="${row.isFakeLocator==true}">-</td>
+
+                        </tr>
+                        <tr th:unless="${data.numberOfElements > 0}"> 
+                            <td colspan="10" class="text-center">Tidak ada data</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation example" th:if="${data.totalPages > 1}">
+                    <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" 
+                                th:href="@{/absence/user(id=${user.id}, month=${month}, year=${year}, page=${currentPage-1})}"
+                                aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <th:block th:each="pageNumber : ${pages}">
+                            <li class="page-item active" th:if="${pageNumber==currentPage+1}">
+                                <a href="#" th:classappend="page-link">
+                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled" th:if="${pageNumber} == -1">
+                                <a class="page-link" href="#">...</a>
+                            </li>
+                            <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage+1}">
+                                <a th:href="@{/absence/user(id=${user.id}, month=${month}, year=${year}, page=${pageNumber-1})}"
+                                    th:classappend="page-link">
+                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                </a>
+                            </li>
+                        </th:block>
+                        <li class="page-item" th:classappend="${currentPage + 1 == data.totalPages} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/absence/user(id=${user.id}, month=${month}, year=${year},  page=${currentPage+1})}"
+                                aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
+        integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ=="
+        crossorigin="anonymous"></script>
+    <script th:src="@{/scripts/app.js}"></script>
+    <script>
+        (function () {
+            $('#date-selection').datepicker({
+                startView: 1,
+                minViewMode: 1,
+                language: 'id',
+                autoclose: true,
+                format: "MM yyyy",
+
+            }).on('changeDate', function (e) {
+                console.log(e.date);
+                window.location.href = '/absence/user?id=' + $('#user-id').val() + "&month=" + (e.date.getMonth() + 1) + "&year=" + e.date.getFullYear();
+            });
+        })();
+
+    </script>
+</body>
+
+</html>

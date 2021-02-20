@@ -31,8 +31,8 @@
                             class="nav-link" th:href="@{/create-chat}">Chat</a>
                     </li>
                     <li class="nav-item">
-                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/ticket/open-ticket') ? 'active':''}"
-                            class="nav-link" th:href="@{/ticket/open-ticket}">Open Ticket</a>
+                        <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/openticket') ? 'active':''}"
+                            class="nav-link" th:href="@{/openticket}">Open Ticket</a>
                     </li>
                     <li class="nav-item">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/notification') ? 'active':''}"
@@ -58,7 +58,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">
                             <li><a class="dropdown-item" href="#">Kantor Utama</a></li>
-                            <li><a class="dropdown-item" href="#">Cuti Nasional</a></li>
+                            <li><a class="dropdown-item" th:href="@{/calendar}">Kalendar Tahunan</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" th:href="@{/sysparam}">Parameter</a></li>
                         </ul>

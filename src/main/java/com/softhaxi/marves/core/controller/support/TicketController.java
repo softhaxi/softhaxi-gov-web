@@ -1,35 +1,50 @@
 package com.softhaxi.marves.core.controller.support;
 
-import java.util.ArrayList;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.gson.Gson;
-import com.softhaxi.marves.core.domain.employee.Employee;
+import static java.util.Map.entry;
+
+import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.logging.ActivityLog;
+import com.softhaxi.marves.core.domain.messaging.Notification;
+import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
 import com.softhaxi.marves.core.domain.support.Ticket;
+import com.softhaxi.marves.core.domain.support.TicketComment;
 import com.softhaxi.marves.core.repository.account.UserRepository;
-import com.softhaxi.marves.core.repository.employee.EmployeeRepository;
+import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
+import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
+import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
+import com.softhaxi.marves.core.repository.support.TicketCommentRepository;
+import com.softhaxi.marves.core.repository.support.TicketRepository;
+import com.softhaxi.marves.core.service.logging.LoggerService;
+import com.softhaxi.marves.core.service.message.MessageService;
 import com.softhaxi.marves.core.service.support.TicketService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.ldap.userdetails.LdapUserDetails;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PostMapping;
 
 
 @Controller
-@RequestMapping("/ticket")
+@RequestMapping("/openticket")
 public class TicketController {
 
     Logger logger = LoggerFactory.getLogger(TicketController.class);
@@ -37,42 +52,202 @@ public class TicketController {
     @Autowired
     private TicketService ticketService;
 
+    @Autowired
+    private LoggerService loggerService;
+
+    @Autowired
+    private TicketRepository ticketRepo;
+
+    @Autowired
+    private TicketCommentRepository commentRepo;
+
+    @Autowired
+    private ActivityLogRepository activityRepo;
+
     @Autowired 
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepo;
+
+    @Autowired
+    private NotificationStatusRepository notifStatusRepo;
+
+    @Autowired
+    private MessageService messageService;
 
     @GetMapping()
-    public String index(
+    public String index(Model model,
         @RequestParam(value="page", required = false, defaultValue = "1") int page,
-        @RequestParam(value="status", required = false, defaultValue = "open") String status,
-        @RequestParam(value="id", required = false) String id,
-        Model model) {
-        if(id != null) {
-            return "ticket/detail";
-        }
+        @RequestParam(value="status", required = false, defaultValue = "open") String status) {
 
-        //Page<Ticket> pagination = ticketService.findAllPaginated(page, 10);
-        //Collection<Ticket> data = pagination.getContent();
+        return "ticket/index";
+    }
 
-        // model.addAttribute("currentPage", page);
-        // model.addAttribute("totalPages", pagination.getTotalPages());
-        // model.addAttribute("totalItems", pagination.getTotalElements());
-        // model.addAttribute("status", status);
-        model.addAttribute("data", ticketService.findAllOrderByDateTimeDesc());
+    @GetMapping("/list")
+    public String list(Model model,
+        @RequestParam(value="id", required = false) String id) {
+        List<Ticket> tickets = (List<Ticket>) ticketRepo.findAllNonClosed();
+        List<Ticket> closedTickets = (List<Ticket>) ticketRepo.findAllClosed();
+        if(tickets.isEmpty()) tickets = closedTickets;
+        else tickets.addAll(closedTickets);
+        
+        if(id != null)
+            model.addAttribute("initialId", id);
+        else
+            model.addAttribute("initialId", tickets.get(0).getId());
+        model.addAttribute("data", tickets);
 
         return "ticket/list";
     }
 
     @GetMapping("/{id}")
-    public String action(@PathVariable String id,
-        @RequestParam(value="action", defaultValue="detail") String action,
-        Model model) {
+    public String action(Model model, @PathVariable String id,
+        @RequestParam(value="action", defaultValue="detail") String action) {
         
-        Ticket ticket = new Ticket().id(UUID.fromString(id));
+        Ticket ticket = ticketRepo.findById(UUID.fromString(id)).orElse(null);
+        if(ticket == null) {
+            model.addAttribute("error", "Tidak ada tiket");
+            return "ticket/index";
+        }
 
-        ticketService.performAction(ticket, action);
+        model.addAttribute("data", ticket);
+        model.addAttribute("action", action);
+        model.addAttribute("activities", activityRepo.findAllByRefIdOrderByActionTimeDesc(ticket.getId().toString()));
+        model.addAttribute("comments", commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket));
+        // ticketService.performAction(ticket, action);
         
-        model.addAttribute("data", ticketService.findAllOrderByDateTimeDesc());
-        return "ticket/list";
+        // model.addAttribute("data", ticketService.findAllOrderByDateTimeDesc());
+        return "ticket/action";
+    }
+
+    @PostMapping("/status")
+    public String status(Model model,
+        @RequestParam(name = "id") String id, 
+        @RequestParam(name = "status") String newStatus) {
+        
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = null;
+        if(principal != null) {
+            if(principal instanceof LdapUserDetailsImpl) {
+                LdapUserDetails ldapUser = (LdapUserDetailsImpl) principal;
+                userId = ldapUser.getUsername();
+            }
+        } else {
+            userId = principal.toString();
+        }
+        
+        Ticket ticket = ticketRepo.findById(UUID.fromString(id)).orElse(null);
+        if(ticket == null) {
+            model.addAttribute("error", "Tidak ada tiket");
+            return "ticket/index";
+        }
+        ticket.setStatus(newStatus.toUpperCase());
+        ticketRepo.save(ticket);
+
+        loggerService.saveAsyncActivityLog(
+            new ActivityLog().deepLink("core://marves.dev/openticket")
+            .uri("/openticket")
+            .referenceId(ticket.getId().toString())
+            .actionTime(ZonedDateTime.now())
+            .actionName(newStatus.toLowerCase() + ".ticket")
+            .description(ticket.getStatusDisplay())
+            .user(new User().id(UUID.fromString(userId)))
+        );
+
+        if(newStatus.equalsIgnoreCase("start") ||
+            newStatus.equalsIgnoreCase("finish")) {
+            Notification notification = new Notification()
+                .level("PRIVATE")
+                .assignee("SPECIFIC")
+                .category("TASK")
+                .deepLink("core://marves.dev/openticket")
+                .referenceId(ticket.getId().toString())
+                .uri("/openticket");
+            notification.setUser(ticket.getUser());
+            notification.setDateTime(ZonedDateTime.now());
+            if(newStatus.equalsIgnoreCase("start")) {
+                notification.setContent("Isu/error yang anda kirim sudah kami terima. Kami akan segera memperbaikinya.");
+            } else {
+                notification.setContent("Perbaikan sudah selesai. Jika ada kendala, sampaikan di kolom feedback.");
+            }
+            notificationRepo.save(notification);
+
+            NotificationStatus notifStatus = new NotificationStatus(notification, ticket.getUser(), false, false);
+
+            if(ticket.getUser().getOneSignalId() != null && 
+                !ticket.getUser().getOneSignalId().isEmpty()) {
+                Map<String, Object> body = new HashMap<>(Map.ofEntries(
+                    entry("headings", Map.of("en", "Open Ticket")),
+                    entry("contents", Map.of("en", notification.getContent())),
+                    entry("data", Map.of("deepLink", notification.getDeepLink(), 
+                        "view", "detail", 
+                        "refId", notification.getReferenceId())),
+                    entry("include_player_ids", Arrays.asList(ticket.getUser().getOneSignalId())),
+                    entry("small_icon", "ic_stat_marves"),
+                    entry("android_channel_id", "066ee9a7-090b-4a42-b084-0dcbbeb7f158"),
+                    entry("android_accent_color", "FF19A472"),
+                    entry("android_group", "openticket")
+                ));
+                messageService.sendPushNotification(notification, Arrays.asList(notifStatus), body);
+            } else {
+                notifStatusRepo.save(notifStatus);
+            }
+        }
+        
+        model.addAttribute("data", ticket);
+        model.addAttribute("action", newStatus);
+        model.addAttribute("activities", activityRepo.findAllByRefIdOrderByActionTimeDesc(ticket.getId().toString()));
+        model.addAttribute("comments", commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket));
+        
+        return "ticket/action";
+    }
+
+    @PostMapping("/comment")
+    public String comment(Model model,
+        @RequestParam(name = "id") String id, 
+        @RequestParam(name = "comment") String content) {
+        
+        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = null;
+        if(principal != null) {
+            if(principal instanceof LdapUserDetailsImpl) {
+                LdapUserDetails ldapUser = (LdapUserDetailsImpl) principal;
+                userId = ldapUser.getUsername();
+            }
+        } else {
+            userId = principal.toString();
+        }
+        User user = userRepository.findById(UUID.fromString(userId)).orElse(new User().id(UUID.fromString(userId)));
+        
+        Ticket ticket = ticketRepo.findById(UUID.fromString(id)).orElse(null);
+        if(ticket == null) {
+            model.addAttribute("error", "Tidak ada tiket");
+            return "ticket/index";
+        }
+        TicketComment comment = new TicketComment()
+            .ticket(ticket)
+            .content(content);
+        comment.setUser(user);
+        comment.dateTime(ZonedDateTime.now());
+        commentRepo.save(comment);
+
+        // loggerService.saveAsyncActivityLog(
+        //     new ActivityLog().deepLink("core://marves.dev/openticket")
+        //     .uri("/openticket")
+        //     .referenceId(ticket.getId().toString())
+        //     .actionTime(ZonedDateTime.now())
+        //     .actionName(newStatus.toLowerCase() + ".ticket")
+        //     .description(ticket.getStatusDisplay())
+        //     .user(new User().id(UUID.fromString(userId)))
+        // );
+        
+        model.addAttribute("data", ticket);
+        model.addAttribute("action", "comment");
+        model.addAttribute("activities", activityRepo.findAllByRefIdOrderByActionTimeDesc(ticket.getId().toString()));
+        model.addAttribute("comments", commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket));
+        
+        return "ticket/action";
     }
 
     @GetMapping("/open-ticket")

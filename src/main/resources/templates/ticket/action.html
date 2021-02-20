@@ -1,0 +1,95 @@
+<div xmlns:th="http://www.thymeleaf.org" id="detail-content" class="container p-4">
+    <div class="row">
+        <div class="col-md-4 me-auto">
+            <h4 class="text-primary" th:text="${data.code}"></h4>
+        </div>
+        <div class="col-md-8">
+            <div class="float-end">
+                <span class="align-middle">Status saat ini: <span class="h6 text-success me-3"
+                        th:text="${data.statusDisplay}"></span></span>
+                <button id="btn-start" type="button" class="btn btn-sm btn-danger"
+                    th:if="${data.status.toUpperCase() == 'OPEN' || data.status.toUpperCase() == 'REOPEN'}"
+                    th:onclick="changeStatus([[${data.id}]], 'start');">Kerjakan</button>
+                <button id="btn-finish" type="button" class="btn btn-sm btn-warning"
+                    th:if="${data.status.toUpperCase() == 'START'}"
+                    th:onclick="changeStatus([[${data.id}]], 'finish');">Selesai</button>
+                <button type="button" class="btn btn-sm btn-success"
+                    th:if="${data.status.toUpperCase() == 'ACCEPT' || data.status.toUpperCase() == 'FINISH'}"
+                    th:onclick="changeStatus([[${data.id}]], 'closed');">Tutup Tiket</button>
+                <!-- <button type="button" class="btn btn-sm btn-danger" th:if="${data.status.toUpperCase() == 'CLOSED'}"
+                    th:onclick="changeStatus([[${data.id}]], 'reopen');">Buka Kembali</button> -->
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-md-2" th:if="${data.photoUrl != null}">
+            <img id="image" class="img-fluid img-thumbnail rounded mx-auto d-block detail-thumbnail"
+                th:src="${data.photoUrl}" onclick="showPreview()"></span>
+        </div>
+        <div th:classappend="${data.photoUrl == null ? 'col-md-12' : 'col-md-10' }">
+            <h6 th:text="${data.user.profile.fullName}"></h6>
+            <p class="text-justify" style="font-size: 10pt;" th:text="${data.content}"></p>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-5">
+            <h6 class="text-muted">Riwayat Pengerjaan</h6>
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action" th:each="activity: ${activities}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <p class="mb-1"
+                            th:text="${activity.actionName == 'open.ticket' ? 'Open' : activity.description}">Some
+                            placeholder content in a paragraph.</p>
+                        <small class="align-bottom" style="font-size: 8pt;"
+                            th:text="${#temporals.format(activity.actionTime, 'dd/MM/yy HH:mm')}">3 days ago</small>
+                    </div>
+                    <small
+                        th:text="${activity.user.profile == null ? 'Administrator' : activity.user.profile.fullName}">And
+                        some small print.</small>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-7">
+            <h6 class="text-muted">Komentar</h6>
+            <div class="mb-3">
+                <textarea class="form-control" id="comment" rows="2" style="resize: none;"
+                    placeholder="masukkan komentar" required></textarea>
+            </div>
+            <div class="text-end">
+                <button class="btn btn-sm btn-outline-success" th:onclick="submitComment([[${data.id}]]);">Kirim <i class="lar la-paper-plane"></i> </button>
+            </div>
+            <div th:if="${comments.empty}" class="alert alert-secondary text-center mt-2" role="alert">
+                Tidak ada komentar
+            </div>
+            <div th:unless="${comments.empty}" class="mt-2">
+                <ul class="list-unstyled">
+                    <li class="comment-panel p-2" th:each="comment : ${comments}">
+                        <div class="comment-body">
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <img src="https://randomuser.me/api/portraits/men/1.jpg" class="thumbnail-mini rounded-circle z-depth-2"/>
+                                </div>
+                                <div class="col-md-11">
+                                    <h6 class="text-muted" style="font-size: 8pt;" th:text="${comment.user.profile != null ? comment.user.profile.fullName : comment.user.email}"></h6>
+                                    <p class="text-muted" style="font-size: 8pt;margin-bottom: 1px;" th:text="${#temporals.format(comment.dateTime, 'dd/MM/yy HH:mm')}"></p>
+                                </div>
+                            </div>
+                            <p class="align-middle" style="font-size: 10pt;margin-bottom: 0;" th:text="${comment.content}"></p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="image-preview" tabindex="-1" role="dialog" aria-labelledby="image-preview"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img class="img-fluid" src="" id="image-src" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,141 +1,17 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" 
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-    layout:decorate="~{layout/authenticated}">
+<div xmlns:th="http://www.thymeleaf.org" class="row list-item" th:each="row : ${data}" th:id="${row.id}">
+    <div class="col-md-8">
+        <h5 th:text="${row.code}" th:classappend="${row.status.toUpperCase() == 'CLOSED' ? 'text-decoration-line-through' : ''}">Ticket Code</h5>
+        <span class="h6 text-muted fw-lighter text-nowrap" th:if="${row.user.profile != null}"
+            th:text="${row.user.profile.fullName}">Ticket Reporter</span>
+        <span class="h6 text-muted fw-lighter text-nowrap" th:unless="${row.user.profile != null}"
+            th:text="${row.user.email}">Ticket Reporter</span>
+    </div>
+    <div class="col-md-4 text-end">
+        <span class="fs-6 text-muted"
+            th:text="${#temporals.format(row.createdAt, 'dd-MM-yyyy')}">Ticket date</span><br />
+        <small class="text-muted fw-lighter"
+            th:text="${#temporals.format(row.createdAt, 'HH:MM zzz')}">Ticket time</small>
+    </div>
 
-    <head th:fragment="common_head(meta,title,links,script)">
-        <title>[[#{app.name}]] - [[#{open.ticket}]]</title>
-        <script>
-            function showPreview(src) {
-                //src = src.replace('\\', '\/');
-                console.log(src);
-                $('#image').attr('src', src).attr('src');
-                $('#image-preview').modal('show')
-            }
-
-            function onChangeAction(id, action) {
-                window.location = '/ticket/' + id + '?action=' + action;
-            }
-        </script>
-    </head>
-    <body class="bg-light">
-        <header>
-            <div layout:fragment="first-navbar" class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-                <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                      <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Dashboard</a>
-                      </li>
-                      <li class="nav-item">
-                        <a class="nav-link" th:href="@{/employement}">Employment</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="nav-link" th:href="@{/letter}">Letter</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="nav-link" th:href="@{/report}">Report</a>
-                      </li>
-                    </ul>
-                    <ul class="navbar-nav d-flex">
-                      <li class="nav-item dropdown mr-4">
-                        <a class="nav-link dropdown-toggle" href="#" id="settings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          Settings
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="settings">
-                          <li><a class="dropdown-item" href="#">Office Master</a></li>
-                          <!-- <li><hr class="dropdown-divider"></li> -->
-                          <li><a class="dropdown-item" href="#">System Parameter</a></li>
-                        </ul>
-                      </li>
-                        <li class="nav-item text-nowrap">
-                            <a class="nav-link text-danger" th:href="@{/logout}">Log Out</a>
-                        </li>
-                    </ul>
-                  </div>
-            </div>
-            <div layout:fragment="second-navbar" class="nav-scroller bg-white box-shadow">
-                <nav class="nav nav-underline">
-                    <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
-                    <a class="nav-link active" th:href="@{/ticket}">
-                      Open Ticket
-                      <!-- <span class="badge badge-pill bg-light align-text-bottom">0</span> -->
-                    </a>
-                    <a class="nav-link" href="#">Covid Tracker</a>
-                </nav>
-            </div>
-        </header>
-        <div layout:fragment="content" class="container-fluid">
-            <div class="row pt-2">
-                <div class="col-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <ul class="nav flex-column">
-                                <div class="sidebar-heading">
-                                    Ticket by Status
-                                </div>
-                                <li class="nav-item">
-                                  <a class="nav-link active" href="#">OPEN</a>
-                                </li>
-                                <li class="nav-item">
-                                  <a class="nav-link" href="#">RESOLVED</a>
-                                </li>
-                                <li class="nav-item">
-                                  <a class="nav-link" href="#">CLOSED</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-9">
-                    <div class="card">
-                        <div class="card-body">
-                            <table class="table">
-                                <thead>
-                                  <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Ticket</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Report Date</th>
-                                    <th scope="col"></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr th:each="item, iter: ${data}">
-                                    <th scope="row">[[${iter.index+1}]]</th>
-                                    <td><a th:href="@{/ticket + ${item.id}}">[[${item.code}]]</a></td>
-                                    <td>[[${item.content}]]</td>
-                                    <td>[[${#strings.toUpperCase(item.status)}]]</td>
-                                    <td>[[${#temporals.format(item.dateTime, 'dd MMM yyyy HH:mm')}]]</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                              Action
-                                            </button>
-                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "start")'>Start</a></li>
-                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "finish")'>Finish</a></li>
-                                                <li><button class="dropdown-item" th:onclick='onChangeAction([[${item.id}]], "close")'>Close</a></li>
-                                            </ul>
-                                          </div>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div> 
-            
-            <div class="modal fade" id="image-preview" tabindex="-1" role="dialog" aria-labelledby="image-preview" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-body">
-                            <img src="" id="image"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
+    <input type="hidden" id="initial-id" th:value="${initialId}"/>
+</div>

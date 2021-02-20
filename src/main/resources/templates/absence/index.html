@@ -173,23 +173,30 @@
                         <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
                             <td class="text-center" th:text="${rowStat.count + startIndex}" />
                             <td class="text-start">
-                                <a th:href="@{/absence/user(id=${row.userId})}" class="flat-link"
-                                    th:text="${row.fullName}"></a>
+                                <a th:if="${row.fullName != null}" th:href="@{/absence/user(id=${row.userId})}"
+                                    class="flat-link" th:text="${row.fullName}"></a>
+                                <a th:unless="${row.fullName != null}" th:href="@{/absence/user(id=${row.userId})}"
+                                    class="flat-link" th:text="${row.email}"></a>
                             </td>
                             <!-- <td th:if="${row.user.employee != null}" class="text-center"
                                 th:text="${row.user.employee.divisionName}"><em class="text-warning">to be
                                     implemented</em></td>
                             <td th:unless="${row.user.employee != null}" class="text-center">-</td> -->
-                            <td class="text-center" th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
-                            <td class="text-center" th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
+                            <td class="text-center"
+                                th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
+                            <td class="text-center"
+                                th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
                             <td class="text-center">-</td>
-                            <td class="text-center" th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
-                            <td class="text-center" th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
+                            <td class="text-center"
+                                th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
+                            <td class="text-center"
+                                th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
                             <td class="text-center">-</td>
-                            <td class="text-center" th:text="${row.workingDuration != null ? row.workingDuration : '-'}">-</td>
+                            <td class="text-center"
+                                th:text="${row.workingDuration != null ? row.workingDuration : '-'}">-</td>
                             <td class="text-center" th:text="${row.status != null ? row.status : '-'}">Status</td>
-                            <td th:if="${row.isFakeLocator==true}" class="text-danger">On</td>
-                            <td th:unless="${row.isFakeLocator==true}">-</td>
+                            <td class="text-center text-danger" th:if="${row.isFakeLocator==true}">On</td>
+                            <td class="text-center" th:unless="${row.isFakeLocator==true}">-</td>
 
                         </tr>
                         <tr th:unless="${data.numberOfElements > 0}">

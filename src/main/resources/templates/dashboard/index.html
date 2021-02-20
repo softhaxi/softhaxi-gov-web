@@ -79,7 +79,7 @@
                             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                                 <div class="d-flex justify-content-between align-items-center w-100">
                                     <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark"
-                                            th:text="${row.user.profile.fullName}">Full Name</strong></a>
+                                            th:text="${row.user.profile != null ? row.user.profile.fullName : row.user.email}">Full Name</strong></a>
                                     <span
                                         th:text="${#temporals.format(row.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}">Follow</span>
                                 </div>

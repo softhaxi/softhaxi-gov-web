@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import com.softhaxi.marves.core.model.request.TicketRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
+import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 import com.softhaxi.marves.core.repository.support.TicketCommentRepository;
 import com.softhaxi.marves.core.repository.support.TicketRepository;
 import com.softhaxi.marves.core.service.logging.LoggerService;
@@ -32,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,6 +67,9 @@ public class TicketRestful {
     @Autowired
     private LoggerService loggerService;
 
+    @Autowired
+    private ActivityLogRepository activityRepo;
+
     @GetMapping()
     public ResponseEntity<?> index(@RequestParam(value = "status", required = false) String status) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -75,8 +81,14 @@ public class TicketRestful {
                             ticketRepo.findAllByUserAndStatusOrderByCreatedAt(user, status.toLowerCase())),
                     HttpStatus.OK);
         }
+        
+        List<Ticket> tickets = (List<Ticket>) ticketRepo.findAllNonClosedByUser(user);
+        List<Ticket> closedTickets = (List<Ticket>) ticketRepo.findAllClosedByUser(user);
+        if(tickets.isEmpty()) tickets = closedTickets;
+        else tickets.addAll(closedTickets);
+
         return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
-                ticketRepo.findAllByUserOrderByCreatedAt(user)), HttpStatus.OK);
+                tickets), HttpStatus.OK);
 
     }
 
@@ -155,6 +167,115 @@ public class TicketRestful {
                 HttpStatus.CREATED.getReasonPhrase(),
                 ticket), 
             HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> get(@PathVariable String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        Ticket ticket = ticketRepo.findOneByUserAndId(user, UUID.fromString(id)).orElse(null);
+        if(ticket == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        var comments = commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket);
+        var activities = activityRepo.findAllByRefIdOrderByActionTimeDesc(ticket.getId().toString());
+        ticket.setComments(comments);
+        ticket.setActivities(activities);
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                ticket
+             ),
+            HttpStatus.OK
+        );
+    }
+
+
+    @GetMapping("/comment")
+    public ResponseEntity<?> comments(@RequestParam(name = "id") String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        
+        Ticket ticket = ticketRepo.findOneByUserAndId(user, UUID.fromString(id)).orElse(null);
+        if(ticket == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+        var comments = commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket);
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                comments
+             ),
+            HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/status")
+    public ResponseEntity<?> status(@RequestBody TicketRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+        
+        Ticket ticket = ticketRepo.findById(UUID.fromString(request.getId())).orElse(null);
+
+        if(ticket == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(), 
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "item.not.found"), 
+                HttpStatus.BAD_REQUEST);
+        }
+
+        if(!ticket.getUser().equals(user)) {
+            return new ResponseEntity<>(
+                new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(), 
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "item.not.found"), 
+                HttpStatus.BAD_REQUEST);
+        }
+
+        ticket.setStatus(request.getStatus().toUpperCase());
+        ticketRepo.save(ticket);
+
+        loggerService.saveAsyncActivityLog(
+            new ActivityLog().deepLink("core://marves.dev/openticket")
+            .uri("/openticket")
+            .referenceId(ticket.getId().toString())
+            .actionTime(ZonedDateTime.now())
+            .actionName(request.getStatus().toLowerCase() + ".ticket")
+            .description(ticket.getStatusDisplay())
+            .user(user)
+        );
+
+        var comments = commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket);
+        var activities = activityRepo.findAllByRefIdOrderByActionTimeDesc(ticket.getId().toString());
+        ticket.setComments(comments);
+        ticket.setActivities(activities);
+        
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(), 
+                HttpStatus.OK.getReasonPhrase(),
+                ticket), 
+            HttpStatus.OK);
     }
 
     @PostMapping("/comment")

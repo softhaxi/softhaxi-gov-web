@@ -52,7 +52,7 @@
                                 <tbody>
                                     <tr th:each="activity: ${activities}" th:if="${activities.numberOfElements > 0}">
                                         <td class="text-center" th:text="${activityStat.count + startIndex}" />
-                                        <td th:text="${activity.user.profile.fullName}" />
+                                        <td th:text="${activity.user.profile != null ? activity.user.profile.fullName : activity.user.email }" />
                                         <td th:utext="#{${activity.actionName}} + ' ' + #{${activity.description}}" />
                                         <td th:text="${activity.ipAddress}" />
                                         <td

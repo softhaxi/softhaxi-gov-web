@@ -11,26 +11,52 @@
         integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <link rel="stylesheet"
         href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+    integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
     <link th:href="@{/styles/app.css}" rel="stylesheet" />
-
+    <link th:href="@{/styles/main.css}" rel="stylesheet" />
     <link th:href="@{/asset/vendor/dhtmlx/dhtmlxscheduler_material.css?v=5.3.11}" rel="stylesheet" />
 </head>
 
 <body>
     <header th:replace="~{fragment/header :: header}">Header</header>
-    <div class="container">
+    <div class="container py-5">
         <div class="row pb-2">
             <div class="col-md-6">
                 <h5 class="align-text-bottom">AGENDA</h5>
-            </div>
+        </div>
             <div class="col-md-6 text-end">
                 <button class="btn btn-success" style="background-color: #8678D9;"><i class="las la-plus"></i>
-                    Download</button>
+                    Tambahkan Agenda Baru</button>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-3">
                 <div id="cal_here"></div>
+                <div class="search-container py-3 my-5">
+                    <form class="search" action="#">
+                        <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off">
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="agenda-type p-3">
+                    <label class="agenda-container">Semua
+                        <input type="checkbox" checked="checked">
+                        <span class="semua"></span>
+                    </label>
+                    <label class="agenda-container">Daring
+                        <input type="checkbox">
+                        <span class="daring"></span>
+                    </label>
+                    <label class="agenda-container">Di Kantor
+                        <input type="checkbox" checked="checked">
+                        <span class="kantor"></span>
+                    </label>
+                    <label class="agenda-container">Perjalanan Dinas
+                        <input type="checkbox">
+                        <span class="dinas"></span>
+                    </label>
+                </div>
             </div>
             <div class="col-md-9">
                 <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100vh;'>
@@ -44,61 +70,121 @@
                         <div class="dhx_cal_tab" name="month_tab"></div>
                     </div>
                     <div class="dhx_cal_header"></div>
-                    <div class="dhx_cal_data"></div>
+                    <div class="dhx_cal_data">a</div>
                 </div>
             </div>
         </div>
 
         <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
     <script th:src="@{/asset/vendor/dhtmlx/dhtmlxscheduler.js?v=5.3.11}"></script>
     <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_minical.js?v=5.3.11}"></script>
     <script th:src="@{/asset/vendor/dhtmlx/locale/locale_id.js?v=5.3.11}"></script>
-    <script>
-        (function () {
-            scheduler.config.header = [
-                "date",
-                "prev",
-                "today",
-                "next"
-            ];
-            scheduler.config.dblclick_create = false;
-            scheduler.config.drag_resize = false;
-            scheduler.config.drag_move = false;
-            scheduler.config.drag_create = false;
-            scheduler.config.icons_select=[];
-            scheduler.attachEvent('onClick', function(id, e) {
-                console.log(e);
-                console.log(id);
-            });
-
-            scheduler.init("scheduler_here", new Date(), "day");
+    <script th:inline="javascript">
+        
+        /*<![CDATA[*/
+        var message = '[[${invitationObject}]]';
+          /*]]>*/
+        
+        var json = JSON.parse(message);
+        for(var i = 0; i < json.length; i++) {
+            var obj = json[i];
             
-            scheduler.parse([
-                { id:"1", text: "Meeting", start_date: "2021-02-18 08:00", end_date: "2021-02-18 10:00", color: "#EAC600" },
-                { id:"2", text: "Meeting 2", start_date: "2021-02-18 07:30", end_date: "2021-02-18 09:30", color: "#4AC8F1" },
-                { id:"3", text: "Meeting 3", start_date: "2021-02-18 09:30", end_date: "2021-02-18 11:00", color: "#FB852F" },
-                { id:"4", text: "Conference", start_date: "2021-04-18 12:00", end_date: "2021-02-18 19:00" },
-                { id:"5", text: "Interview", start_date: "2021-02-18 09:00", end_date: "2021-02-18 10:00" }
-            ], "json");
+            var startTimeString = new Date(obj.startTime);
+            var hour = parseInt(startTimeString.getHours())<10? '0'+startTimeString.getHours():startTimeString.getHours();
+            var minute = parseInt(startTimeString.getMinutes())<10? '0'+startTimeString.getMinutes():startTimeString.getMinutes();
+            var month = ("0" + (startTimeString.getMonth() + 1)).slice(-2); 
+            var date = ("0" + startTimeString.getDate()).slice(-2); 
+            
+            var startTime = startTimeString.getFullYear()+"-"+month+"-"+date+" "+hour+ ":" +minute ;
 
+            var endTimeString = new Date(obj.endTime);
+            var endHour = parseInt(endTimeString.getHours())<10? '0'+endTimeString.getHours():endTimeString.getHours();
+            var endMinute = parseInt(endTimeString.getMinutes())<10? '0'+startTimeString.getMinutes():endTimeString.getMinutes();
+            var endMonth = ("0" + (endTimeString.getMonth() + 1)).slice(-2); 
+            var endDate = ("0" + endTimeString.getDate()).slice(-2); 
+            
+            
+            var endTime = endTimeString.getFullYear()+"-"+endMonth+"-"+endDate+" "+endHour+ ":" +endMinute ;
+            
+            var member = obj.members;
+            var name='';
+            var memberName = [];
+            for(var j = 0; j < member.length; j++) {
+                memberName.push(member[j].fullName==''?member[j].email:member[j].fullName);
+            }
+            name = memberName.join(",");
+            
+            var body='';
+            body = '<span>' + name + '</span><br>'
+            + '<span>' + obj.title+'</span><br>' 
+            + '<span>' + obj.location+'</span><br>' 
+            + '<span>'  +hour+ ":" +minute  +' - '+ endHour+ ":" +endMinute  +'</span><br>'
+            + '<a href="'+obj.attachmentUrl+' "download>' + 'Download Attachment' + '</a>' ;
+            
+            var color='';
+            switch (obj.category) {
+                case 'INOFFICE':
+                    color='#4AC8F1';
+                    break;
+                case 'OUTOFFICE':
+                    color='#FB852F';
+                    break
+                case 'ONLINE':
+                    color='#EAC600';
+                    break
+                default:
+                    color='#EAC600';
+                    break;
+            }
+
+            console.log("color: "+color);
+
+            (function () {
+                scheduler.config.header = [
+                    "date",
+                    "prev",
+                    "today",
+                    "next"
+                ];
+                scheduler.config.dblclick_create = false;
+                scheduler.config.drag_resize = false;
+                scheduler.config.drag_move = false;
+                scheduler.config.drag_create = false;
+                scheduler.config.icons_select=[];
+                scheduler.attachEvent('onClick', function(id, e) {
+                    console.log(e);
+                    console.log(id);
+                });
+
+                scheduler.init("scheduler_here", new Date(), "day");
+                
+                scheduler.parse([
+                    { id:obj.id, text: body, start_date: startTime, end_date: endTime, color: color}
+                ], "json");
+            })()
+        }
+        (function(){
             var calendar = scheduler.renderCalendar({
-                container: "cal_here",
-                navigation: true,
-                handler: function (date) {
-                    scheduler.setCurrentView(date, scheduler.getState().mode);
-                }
-            });
-            scheduler.linkCalendar(calendar);
-            // scheduler.attachEvent("onDblClick", function(id, e){ console.log("doubleClick"); return false; });
+                    container: "cal_here",
+                    navigation: true,
+                    handler: function (date) {
+                        scheduler.setCurrentView(date, scheduler.getState().mode);
+                    }
+                });
+                scheduler.linkCalendar(calendar);
+                // scheduler.attachEvent("onDblClick", function(id, e){ console.log("doubleClick"); return false; });
 
-            scheduler.setCurrentView();
-        })();
+                scheduler.setCurrentView();
+        }
+        )();
 
     </script>
+    
 </body>
 
 </html>

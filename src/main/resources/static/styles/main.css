@@ -112,7 +112,7 @@ label.error{
 form.search input[type=text] {
 
   padding: 5px;
-  font-size: 17px;
+  font-size: .9em;
   border: 1px solid #eceaea;
   border-right:none;
   float: left;
@@ -129,11 +129,11 @@ form.search button {
   padding: 5px;
   border-radius: 3px;
   color: #000;
-  font-size: 17px;
+  font-size: .9em;
   border: 1px solid #eceaea;
   border-left: none;
   cursor: pointer;
-  background: #fff;
+  background-color: #F4F4F4;
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
 }
@@ -173,3 +173,79 @@ form.search::after {
 .bg-input-form { background: #F4F4F4; border:none; padding: 5px;}
 .bg-button { background: #42BC6F; border: none;}
 .text-blue{color: #0983E7;}
+
+/* The container */
+.agenda-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.agenda-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.semua, .daring, .kantor, .dinas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+.agenda-container:hover input ~ .semua, .agenda-container:hover input ~ .daring, .agenda-container:hover input ~ .kantor, .agenda-container:hover input ~ .dinas{
+  background-color: #ccc;
+}
+
+ /* When the checkbox is checked, add a blue background */
+.agenda-container input:checked ~ .semua {
+  background-color: #8678D9;
+}
+.agenda-container input:checked ~ .daring {
+  background-color: #EAC600;
+}
+.agenda-container input:checked ~ .kantor {
+  background-color: #4AC8F1;
+}
+.agenda-container input:checked ~ .dinas {
+  background-color: #FB852F;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.semua:after, .daring:after,.kantor:after,.dinas:after{
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.agenda-container input:checked ~ .semua:after, .agenda-container input:checked ~ .daring:after,.agenda-container input:checked ~ .kantor:after,.agenda-container input:checked ~ .dinas:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.agenda-container .semua:after, .agenda-container .daring:after, .agenda-container .kantor:after, .agenda-container .dinas:after {
+  left: 9px;
+  top: 3px;
+  width: 7px;
+  height: 15px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}

@@ -1,6 +1,7 @@
 package com.softhaxi.marves.core.web.filter;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class RestfulRequestFilter extends OncePerRequestFilter {
                 token = requestTokenHeader.substring(7);
                 try {
                     Session session = sessionRepo.findAllValidByAccessToken(token).orElseThrow();
+                    session.setLastUsed(ZonedDateTime.now());
+                    sessionRepo.save(session);
                     userid = accessTokenUtil.getUsernameFromToken(session.getAccessToken());
                 } catch(IllegalArgumentException iaex) {
                     logger.error("Unable to get token", iaex);

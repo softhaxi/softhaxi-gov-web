@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 //https://github.com/amrkhaledccd/One-to-One-WebSockets-Chat
@@ -301,6 +302,47 @@ public class ChatRestful {
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 chats
+            ), 
+            HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/room/message/{id}")
+    public ResponseEntity<?> roomMessage(@PathVariable String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        Collection<ChatRoom> chatRooms = chatRoomRepo.findAllByUser(user);
+
+        Chat chat = chatRepo.findById(UUID.fromString(id)).orElse(null);
+        if(chat == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        ChatRoom room = chatRooms.stream()
+            .filter(item -> item.equals(chat.getChatRoom()))
+            .findFirst().orElse(null);
+        if(room == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    "item.not.found"
+                ),
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                chat
             ), 
             HttpStatus.OK
         );

@@ -22,8 +22,9 @@
             padding: 0 !important;
             margin: 0 !important;
             overflow-y: auto;
+            overflow-x: hidden;
             border: 1px solid #f7f7f7;
-            height: calc(100vh - 3.5rem);
+            height: calc(100vh - 7rem);
         }
 
         .rooms-item {
@@ -38,16 +39,15 @@
         .chats-wrapper {
             padding: 0 !important;
             margin: 0 !important;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-transition: left 0.3s ease;
-            transition: left 0.3s ease;
+            overflow: hidden;
             height: calc(100vh - 3.5rem);
         }
 
-        .chats-container {
-            height: calc(100vh - 7rem);
+        .chats-message {
             overflow-y: scroll;
+            -webkit-transition: left 0.3s ease;
+            transition: left 0.3s ease;
+            height: calc(100vh - 10.5rem);
         }
 
         .chat-container {
@@ -100,7 +100,17 @@
     </noscript>
     <div class="container border-1 border-light">
         <div class="row">
-            <div class="col-md-4 rooms-wrapper">
+            <div class="col-md-4 pe-0">
+                <div class="rooms-search p-2 border border-white" style="height: 3.5rem; background-color: #f1f1f1;">
+                    <form>
+                        <div class="input-group">
+                            <input id="search-room" type="text" class="form-control" name="name"
+                                placeholder="Cari pengguna..." autocomplete="off" aria-label="cari nama">
+                            <span class="input-group-text bg-light"><i class="las la-search"></i></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="rooms-wrapper"></div>
             </div>
             <div class="col-md-8 chats-wrapper">
                 <div class="row d-flex flex-column justify-content-center align-items-center"
@@ -127,6 +137,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
         integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
         crossorigin="anonymous"></script>
+    <script th:src="@{/scripts/autocomplete.js}"></script>
     <script th:inline="javascript">
         // var loading = false;
         // function showPreview() {
@@ -144,7 +155,7 @@
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
                 stompClient.subscribe('/user/' + email + '/queue/message', function (message) {
-                    console.log(message);
+                    // console.log(message);
                     updateRooms();
                 });
             });
@@ -157,7 +168,7 @@
             console.log("Disconnected");
         }
 
-        function updateRooms(id) {
+        function updateRooms(id, detail = true) {
             $.ajax({
                 type: "GET",
                 url: id == null ? "/chat/rooms" : "/chat/rooms?id=" + id,
@@ -165,6 +176,7 @@
                     // disconnect();
                     $('.rooms-wrapper').empty();
                     $('.rooms-wrapper').html(data);
+                    $('.rooms-wrapper').stop().animate({ scrollTop: 0 }, 1000);
 
                     $('.rooms-item').on('click', function (e) {
                         $('.rooms-item').css("background-color", "#FFF");
@@ -178,7 +190,8 @@
 
                     if (id != null) {
                         $('#' + id).css("background-color", "#B8D5EB");
-                        changeDetail(id);
+                        if (detail)
+                            changeDetail(id);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -194,10 +207,15 @@
                 success: function (data) {
                     $('.chats-wrapper').empty();
                     $('.chats-wrapper').html(data);
-                    $('.chats-container').stop().animate({ scrollTop: $('.chats-container')[0].scrollHeight }, 1000);
-                    stompClient.subscribe('/user/' + id + '.' + email +'/queue/message', function (message) {
-                        console.log(message);
-                        changeDetail(id);
+                    try {
+                        $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, 1000);
+                    } catch (e) {
+                        console.log(e);
+                    }
+                    stompClient.subscribe('/user/' + id + '.' + email + '/queue/message', function (message) {
+                        // console.log(message);
+                        // changeDetail(id);
+                        getMessage(message.body.replace(/["']/g, ""));
                     });
                 },
                 error: function (xhr, status, error) {
@@ -206,7 +224,30 @@
             });
         }
 
-        function sendMessage(id) {
+        function getMessage(id) {
+            $.ajax({
+                type: "GET",
+                url: "/chat/room/message/" + id,
+                success: function (response) {
+                    console.log(response.data);
+                    var data = response.data;
+                    var newMessage = '<div class="d-flex mb-1 justify-content-start">' +
+                        '<div class="chat-container d-flex flex-row bd-highlight">' +
+                        '<div class="chat-received">' +
+                        '<p class="text-wrap text-break mb-0" style="font-size: 10pt;">' + data.content + '</p></div>' +
+                        '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                        '</div></div>';
+                    $(newMessage).appendTo($('.chats-message'));
+                    $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, 1000);
+                    updateRooms(id, false);
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        }
+
+        function sendMessage(id, recipient) {
             var message = $('#message');
             if (message.val().trim() == '') {
                 alert('Silahkan masukan pesan anda');
@@ -219,10 +260,21 @@
                 url: "/chat",
                 data: {
                     id: id,
+                    recipient: recipient,
                     message: message.val().trim()
                 },
-                success: function (data) {
-                    updateRooms(id);
+                success: function (response) {
+                    // console.log(response.data);
+                    var data = response.data;
+                    var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
+                        '<div class="chat-container d-flex flex-row bd-highlight">' +
+                        '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                        '<div class="chat-sent">' +
+                        '<p class="text-wrap text-break mb-0" style="font-size: 10pt;">' + data.content + '</p></div></div></div>';
+                    $(newMessage).appendTo($('.chats-message'));
+                    message.val(null);
+                    $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, 1000);
+                    updateRooms(id, false);
                 },
                 error: function (xhr, status, error) {
                     alert(error);
@@ -233,6 +285,32 @@
         (function () {
             updateRooms();
             socketConnect();
+
+            var nameAutocomplete = new Autocomplete(document.getElementById('search-room'), {
+                data: [],
+                maximumItems: 5,
+                treshold: 1,
+                onSelectItem: ({ label, value }) => {
+                    console.log("selected:", label, value);
+                    $('#search-room').val(null);
+                    changeDetail(value);
+                    // window.location.href = '/dispensation/user?id=' + value;
+                }
+            });
+            $('#search-room').keyup(function (e) {
+                if ($('#search-room').val().length >= 1 && $('#search-room').val() != "") {
+                    console.log
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/chat/room/search",
+                        data: 'name=' + $('#search-room').val(),
+                        success: function (data) {
+                            nameAutocomplete.setData(data);
+                        }
+                    });
+                }
+            });
         })();
 
     </script>

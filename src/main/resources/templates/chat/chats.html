@@ -1,24 +1,28 @@
-<div xmlns:th="http://www.thymeleaf.org" >
-    <div class="p-4 chats-container">
+<div class="mx-0" xmlns:th="http://www.thymeleaf.org" >
+    <div class="rooms-search p-3 border border-white" style="height: 3.5rem; background-color: #f1f1f1;">
+        <span class="h5 fw-bold" th:text="${room.name}"></span>
+    </div>
+    <div class="py-4 px-2 chats-message">
         <div class="d-flex mb-1" th:each="row : ${data}" th:classappend="${!row.myself ? 'justify-content-start' : 'justify-content-end'}">
             <!-- <div class="thumbnail">
             <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
                 class="rounded-circle user_img_msg">
         </div> -->
             <div class="chat-container d-flex flex-row bd-highlight">
-                <span class="chat-time px-1" th:if="${row.myself}" th:text="${#temporals.format(row.dateTime, 'dd/MM/yy HH:mm')}">8:40 AM, Today</span>
+                <span class="chat-time px-1" th:if="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM, Today</span>
                 <div th:classappend="${!row.myself ? 'chat-received' : 'chat-sent'}">
                     <p class="text-wrap text-break mb-0" style="font-size: 10pt;" th:text="${row.content}">
                     Hi, how are you samim? This should be good if i test using long message. How about you?
                     Do we have same mind? I think shoud be better to check both longest and shortest</p></div>
-                <span class="chat-time px-1" th:unless="${row.myself}" th:text="${#temporals.format(row.dateTime, 'dd/MM/yy HH:mm')}">8:40 AM, Today</span>
+                <span class="chat-time px-1" th:unless="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM, Today</span>
 
             </div>
         </div>
     </div>
     <div class="py-1 px-1" style="height: 3.5rem; background-color: #f5f5f5;">
         <form class="row">
-            <input type="hidden" th:value="${id}" id="roomId"/>
+            <input type="hidden" th:value="${room.id}" id="roomId"/>
+            <input type="hidden" th:value="${room.recipient}" id="recipientEmail"/>
             <div class="col-md-12">
                 <div class="input-group">
                     <div class="input-group-append">
@@ -30,7 +34,7 @@
                         rows="1"></textarea>
                     <div class="input-group-append">
                         <button id="button-addon2" type="button" class="btn btn-light text-muted"> <i
-                                class="la la-paper-plane la-2x" th:onclick="sendMessage([[${id}]]);"></i></button>
+                                class="la la-paper-plane la-2x" th:onclick="sendMessage([[${room.id}]], [[${room.recipient}]]);"></i></button>
                     </div>
                 </div>
             </div>

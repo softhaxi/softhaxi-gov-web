@@ -132,6 +132,8 @@ public class TicketController {
             if(principal instanceof LdapUserDetailsImpl) {
                 LdapUserDetails ldapUser = (LdapUserDetailsImpl) principal;
                 userId = ldapUser.getUsername();
+            } else {
+                userId = principal.toString();
             }
         } else {
             userId = principal.toString();
@@ -214,6 +216,8 @@ public class TicketController {
             if(principal instanceof LdapUserDetailsImpl) {
                 LdapUserDetails ldapUser = (LdapUserDetailsImpl) principal;
                 userId = ldapUser.getUsername();
+            } else {
+                userId = principal.toString();
             }
         } else {
             userId = principal.toString();

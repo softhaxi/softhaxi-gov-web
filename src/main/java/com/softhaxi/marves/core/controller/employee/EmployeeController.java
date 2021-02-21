@@ -99,7 +99,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/search")
-    public @ResponseBody String findUserByName(Model model, @RequestParam("name") Optional<String> name) {
+    public @ResponseBody String search(Model model, @RequestParam("name") Optional<String> name) {
         String strName = name.orElse("");
         
         List<User> users = userRepository.findUserByUsernameLike(strName.toUpperCase());

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+    <style>
+        body {
+            padding-top: 3.5rem;
+            background-color: white;
+            height: 100vh;
+        }
+
+        .rooms-wrapper {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow-y: auto;
+            border: 1px solid #f7f7f7;
+            height: calc(100vh - 3.5rem);
+        }
+
+        .rooms-item {
+            position: relative;
+            padding: 10px !important;
+            border-bottom: 1px solid #f7f7f7;
+            height: 72px;
+            margin: 0 !important;
+            cursor: pointer;
+        }
+
+        .chats-wrapper {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-transition: left 0.3s ease;
+            transition: left 0.3s ease;
+            height: calc(100vh - 3.5rem);
+        }
+
+        .chats-container {
+            height: calc(100vh - 7rem);
+            overflow-y: scroll;
+        }
+
+        .chat-container {
+            margin-top: auto;
+            margin-bottom: auto;
+            position: relative;
+            max-width: calc(100% - 16rem);
+        }
+
+        .chat-received {
+            max-width: 85% !important;
+            padding: 10px;
+            margin-left: 10px;
+            border-radius: 0 25px 25px 25px;
+            background-color: #B3F2DB;
+        }
+
+        .chat-sent {
+            max-width: 85% !important;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 25px 25px 0 25px;
+            background-color: #66D3AC;
+        }
+
+        .chat-time {
+            position: relative;
+            bottom: 0;
+            font-size: 10px;
+        }
+
+        .text-small {
+            font-size: 0.9rem;
+        }
+
+        .ellipsis {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <noscript>
+        <h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+            enabled. Please enable
+            Javascript and reload this page!</h2>
+    </noscript>
+    <div class="container border-1 border-light">
+        <div class="row">
+            <div class="col-md-4 rooms-wrapper">
+            </div>
+            <div class="col-md-8 chats-wrapper">
+                <div class="row d-flex flex-column justify-content-center align-items-center"
+                    style="height: calc(100vh - 3.5rem);">
+                    <div class="col-md-12 text-center p-4 my-4">
+                        <img class="my-4"
+                            src="https://upload.wikimedia.org/wikipedia/commons/3/38/LogoKemenkoMaritim.png" alt=""
+                            width="72" height="72">
+                        <h4 class="h5 text-muted mb-4">Marves Core Chat</h4>
+                        <p class="text-muted">Untuk memulai percakapan, silahkan pilih pengguna pada samping kiri.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"
+        integrity="sha512-5yJ548VSnLflcRxWNqVWYeQZnby8D8fJTmYRLyvs445j1XmzR8cnWi85lcHx3CUEeAX+GrK3TqTfzOO6LKDpdw=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
+        integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
+        crossorigin="anonymous"></script>
+    <script th:inline="javascript">
+        // var loading = false;
+        // function showPreview() {
+        //     $('#image-src').attr('src', $('#image').attr('src')).attr('src');
+        //     $('#image-preview').modal('show')
+        // }
+        var stompClient = null;
+        /*<![CDATA[*/
+        var email = /*[[${email}]]*/ 'email';
+        /*]]>*/
+
+        function socketConnect() {
+            var socket = new SockJS('/socket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/user/' + email + '/queue/message', function (message) {
+                    console.log(message);
+                    updateRooms();
+                });
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function updateRooms(id) {
+            $.ajax({
+                type: "GET",
+                url: id == null ? "/chat/rooms" : "/chat/rooms?id=" + id,
+                success: function (data) {
+                    // disconnect();
+                    $('.rooms-wrapper').empty();
+                    $('.rooms-wrapper').html(data);
+
+                    $('.rooms-item').on('click', function (e) {
+                        $('.rooms-item').css("background-color", "#FFF");
+                        $(this).css("background-color", "#B8D5EB");
+                        var id = $(this).attr('id');
+                        changeDetail(id);
+                    });
+
+                    // $('#'+ $('#initial-id').val()).css("background-color", "#B8D5EB");
+                    // changeDetail($('#initial-id').val());
+
+                    if (id != null) {
+                        $('#' + id).css("background-color", "#B8D5EB");
+                        changeDetail(id);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        }
+
+        function changeDetail(id) {
+            $.ajax({
+                type: "GET",
+                url: "/chat/chats?id=" + id,
+                success: function (data) {
+                    $('.chats-wrapper').empty();
+                    $('.chats-wrapper').html(data);
+                    $('.chats-container').stop().animate({ scrollTop: $('.chats-container')[0].scrollHeight }, 1000);
+                    stompClient.subscribe('/user/' + id + '.' + email +'/queue/message', function (message) {
+                        console.log(message);
+                        changeDetail(id);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        }
+
+        function sendMessage(id) {
+            var message = $('#message');
+            if (message.val().trim() == '') {
+                alert('Silahkan masukan pesan anda');
+                message.focus();
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/chat",
+                data: {
+                    id: id,
+                    message: message.val().trim()
+                },
+                success: function (data) {
+                    updateRooms(id);
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            });
+        }
+
+        (function () {
+            updateRooms();
+            socketConnect();
+        })();
+
+    </script>
+</body>
+
+</html>

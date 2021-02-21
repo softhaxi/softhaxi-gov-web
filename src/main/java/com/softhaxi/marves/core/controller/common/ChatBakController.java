@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
  * ChatController
  */
 @Controller
-public class ChatController {
+public class ChatBakController {
 
-    Logger logger = LoggerFactory.getLogger(ChatController.class);
+    Logger logger = LoggerFactory.getLogger(ChatBakController.class);
 
     @GetMapping("/create-chat")
     public String createChat(Model model){

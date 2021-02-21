@@ -249,3 +249,61 @@ form.search::after {
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
+
+.modal-dialog{
+  width: 400px;
+  top: 155px;
+}
+.modal-header, .modal-content{
+  padding: 0;
+}
+
+.modal-title{
+  background-color: #8678D9;
+  color: #fff;
+  width: 100%;
+  text-align: center;
+}
+.modal-body{
+  font-size: .8em;
+}
+.new-agenda-btn, .delete-agenda-btn{
+  background-color: #8678D9;
+  color: #fff;
+  border: none;
+
+}
+.new-agenda-form input[type=text], .new-agenda-form textarea{
+  background-color: #F4F4F4;
+  border-radius: 0;
+  border: none;
+  padding: 5px 4px;
+}
+
+.dropdown-email{
+  position: absolute;
+  margin-top: 3px;
+  display: block;
+  width: 270px;
+  background-color: white;
+  
+}
+
+.dropdown-email a {
+  color: inherit; /* blue colors for links too */
+  text-decoration: inherit; /* no underline */
+  display: block;
+  padding: 2px 7px;
+}
+
+.dropdown-email a:hover {
+  background-color: #555;
+  color: #fff;
+}
+
+.email-list{
+    padding: 3px 5px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(129, 129, 129);
+}

@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.ldap.userdetails.LdapUserDetails;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -138,9 +140,22 @@ public class AgendaController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
             LocalDateTime startDateTime = LocalDateTime.parse(startDate.get()+" " + startTime.get() + ":00", formatter);
             LocalDateTime endDateTime = LocalDateTime.parse(endDate.get()+" " + endTime.get() + ":00", formatter);
-                
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String userId = null;
+            if(principal != null) {
+                if(principal instanceof LdapUserDetailsImpl) {
+                    LdapUserDetails ldapUser = (LdapUserDetailsImpl) principal;
+                    userId = ldapUser.getUsername();
+                } else {
+                    userId = principal.toString();
+                }
+            } else {
+                userId = principal.toString();
+            }
+            User user = userRepository.findById(UUID.fromString(userId)).orElse(new User().id(UUID.fromString(userId)));
+        
+
             try {
               
                 Invitation invitation = new Invitation()

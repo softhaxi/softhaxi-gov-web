@@ -280,7 +280,7 @@ form.search::after {
   padding: 5px 4px;
 }
 
-.dropdown-email{
+.dropdown-email, .dropdown-employee{
   position: absolute;
   margin-top: 3px;
   display: block;
@@ -289,19 +289,19 @@ form.search::after {
   
 }
 
-.dropdown-email a {
+.dropdown-email a,.dropdown-employee a {
   color: inherit; /* blue colors for links too */
   text-decoration: inherit; /* no underline */
   display: block;
   padding: 2px 7px;
 }
 
-.dropdown-email a:hover {
+.dropdown-email a:hover, .dropdown-employee a{
   background-color: #555;
   color: #fff;
 }
 
-.email-list{
+.email-list, .employee-list{
     padding: 3px 5px;
     border-bottom-style: solid;
     border-bottom-width: 1px;

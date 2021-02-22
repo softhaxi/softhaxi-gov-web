@@ -271,32 +271,43 @@
             </div>
         </div>
         <div class="row mb-3 py-3">
-            <div class="col-md-3">
-                <div id="cal_here"></div>
-                <div class="search-container pt-5">
-                    <form class="search" action="#">
-                        <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off">
-                        <button type="submit"><i class="fa fa-search"></i></button>
-                    </form>
-                </div>
-                <div class="agenda-type p-1 py-3">
-                    <label class="agenda-container">Semua
-                        <input type="checkbox" checked="checked">
-                        <span class="semua"></span>
-                    </label>
-                    <label class="agenda-container">Daring
-                        <input type="checkbox" checked="checked">
-                        <span class="daring"></span>
-                    </label>
-                    <label class="agenda-container">Di Kantor
-                        <input type="checkbox" checked="checked">
-                        <span class="kantor"></span>
-                    </label>
-                    <label class="agenda-container">Perjalanan Dinas
-                        <input type="checkbox" checked="checked">
-                        <span class="dinas"></span>
-                    </label>
-                </div>
+                
+                <div class="col-md-3">
+                    <div id="cal_here"></div>
+                    <form class="search" th:action="@{/agenda}" method="GET">
+                        <div class="row">
+                            <div class="search-container pt-5">
+                                    <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off">
+                                    <input type="hidden" name="id">
+                                    <input type="hidden" name="category">
+                                    <button type="submit" class="btn-search"><i class="fa fa-search"></i></button>
+                                    
+                                <br>
+                                <div class="dropdown dropdown-employee" id="dropdown-employee" style="z-index: 1000; display: none;">
+                                        <ul class="list-unstyled" id="list-employee" aria-labelledby="dropdownMenuButton2">
+                                        </ul>
+                                    </div>
+                            </div>
+                            <div class="agenda-type p-1 py-3">
+                                <label class="agenda-container">Semua
+                                    <input type="checkbox" class="category" value="ALL">
+                                    <span class="semua"></span>
+                                </label>
+                                <label class="agenda-container">Daring
+                                    <input type="checkbox" class="category" value="ONLINE">
+                                    <span class="daring"></span>
+                                </label>
+                                <label class="agenda-container">Di Kantor
+                                    <input type="checkbox" class="category" value="INOFFICE">
+                                    <span class="kantor"></span>
+                                </label>
+                                <label class="agenda-container">Perjalanan Dinas
+                                    <input type="checkbox" class="category" value="OUTOFFICE">
+                                    <span class="dinas"></span>
+                                </label>
+                            </div>
+                        </div>
+                </form>
             </div>
             <div class="col-md-9">
                 <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100vh;'>
@@ -454,7 +465,7 @@
             $('#dropdown-email').hide();
             $('#dropdown-email ul').empty();
             if ($('input[id=email-tokenfield]').val().length >= 1 && $('input[id=email-tokenfield]').val() != "") {
-                console.log($('input[id=email-tokenfield]').val());
+                
                 $.ajax({
                     type: "GET",
                     dataType: "json",
@@ -483,9 +494,68 @@
         }
         );
 
+        $('input[name=search]').keyup(function (e) {
+            $('#dropdown-employee').hide();
+            $('#dropdown-employee ul').empty();
+            if ($(this).val().length >= 1 && $(this).val() != "") {
+                console.log($(this).val);
+                $.ajax({
+                    type: "GET",
+                    dataType: "json",
+                    url: "/employee/search",
+                    data: 'name=' + $(this).val(),
+                    success: function (data) {
+                        var selOpts = "";
+                        if (data != null && data.length != 0) {
+                            $.each(data, function (k, v) {
+                                var value = data[k].value;
+                                var label = data[k].label;
+                                selOpts += '<li><a href=\'#\' class=\'employee-list\' title="' + value + '">' + label + '</a></li>';
+                                console.log(data);
+                            });
+                            $('#dropdown-employee ul').append(selOpts);
+                            $('#dropdown-employee').show();
+                        }
+                    }
+                });
+            }
+        });
+
+        $('ul#list-employee').on("click", "li", function () {
+            $('#dropdown-employee').hide();
+            $('input[name=id]').val($(this).children('a').attr('title'));
+            $('input[name=search]').val($(this).children('a').text());
+        });
+
+        var category = '';
+        $('.agenda-container > span').click(function() {
+            console.log(this.parent().children().find('.category').val());
+            if (this.checked) {
+                category.push(this.sibling().find('.category').val());
+            } else {
+                category.slice(this.val());
+            }
+            console.log("category: "+category);
+        });
+        /*$('.btn-search').on('click', function (e) {
+            var category = [];
+            $('.category:checked').each(function(){
+                category.push($(this).val());
+            });
+            console.log();
+            e.preventDefault();
+            $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "/search-agenda",
+                    data: 'id=' + $('input[name=id]').val()+'&category='+category,
+                    success: function (data) {
+                        $('#cal_here').replace
+                    }
+            })
+        });*/
     //$('#email').tokenfield();
     </script>
-
 </body>
 
 </html>

@@ -17,13 +17,14 @@
         body {
             padding-top: 3.5rem;
         }
+
         .dhx_now .dhx_month_head {
-            background-color:#0288d1 !important;
-            color:white !important;
+            background-color: #0288d1 !important;
+            color: white !important;
         }
+
         .dhx_month_head.dhx_year_event {
-            background-color:red !important;
-            /* color:white !important; */
+            background-color: red !important;
         }
     </style>
 </head>
@@ -31,46 +32,163 @@
 <body>
     <header th:replace="~{fragment/header :: header}">Header</header>
     <!-- <div class="container"> -->
-        <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100vh;'>
-            <div class="dhx_cal_navline">
-                <div class="dhx_cal_prev_button">&nbsp;</div>
-                <div class="dhx_cal_next_button">&nbsp;</div>
-                <div class="dhx_cal_today_button"></div>
-                <div class="dhx_cal_date"></div>
-                <div class="dhx_cal_tab" name="day_tab"></div>
-                <div class="dhx_cal_tab" name="week_tab"></div>
-                <div class="dhx_cal_tab" name="month_tab"></div>
-            </div>
-            <div class="dhx_cal_header"></div>
-            <div class="dhx_cal_data"></div>
+    <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height: calc(100vh - 3.5rem);'>
+        <div class="dhx_cal_navline">
+            <div class="dhx_cal_prev_button">&nbsp;</div>
+            <div class="dhx_cal_next_button">&nbsp;</div>
+            <div class="dhx_cal_today_button"></div>
+            <div class="dhx_cal_date"></div>
+            <div class="dhx_cal_tab" name="day_tab"></div>
+            <div class="dhx_cal_tab" name="week_tab"></div>
+            <div class="dhx_cal_tab" name="month_tab"></div>
         </div>
-        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+        <div class="dhx_cal_header"></div>
+        <div class="dhx_cal_data"></div>
+    </div>
+    <div class="modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="btn-close" aria-label="Close" onclick="closeForm()"></button>
+                </div>
+                <div class="modal-body">
+                    testing
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeForm()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="closeForm()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <footer th:insert="~{fragment/footer :: footer}">Footer</footer> -->
     <!-- </div> -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+        crossorigin="anonymous"></script>
     <script th:src="@{/asset/vendor/dhtmlx/dhtmlxscheduler.js?v=5.3.11}"></script>
     <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_minical.js?v=5.3.11}"></script>
-    <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_year_view.js?v=5.3.11}" type="text/javascript" charset="utf-8"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_year_view.js?v=5.3.11}" type="text/javascript"
+        charset="utf-8"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_collision.js?v=5.3.11}" type="text/javascript"
+        charset="utf-8"></script>
     <script th:src="@{/asset/vendor/dhtmlx/locale/locale_id.js?v=5.3.11}"></script>
     <script>
+
+        function loadEvents(year) {
+            $.ajax({
+                type: 'GET',
+                url: year == null ? '/calendar/event/search' : '/calendar/event/search?year=' + year,
+                success: function (data) {
+                    scheduler.parse(data, 'json');
+                },
+                error: function (xhr, status, error) {
+                    alert('Koneksi ke server terkendala');
+                }
+            });
+        }
+
+        // var modal = document.getElementById('exampleModal');
+
+        // function closeForm(id) {
+        //     scheduler.endLightbox(id, modal);
+        // }
+
         (function () {
+            // scheduler.xy.nav_height = 0;
+            scheduler.xy.margin_top = 5;
             scheduler.config.header = [
                 "date",
                 "prev",
-                "today",
                 "next"
             ];
-            scheduler.config.readonly = true;
+            // scheduler.config.readonly = true;
+            // scheduler.config.displayed_event_color="#00FF00";
             // scheduler.config.dblclick_create = false;
             // scheduler.config.drag_resize = false;
             // scheduler.config.drag_move = false;
             // scheduler.config.drag_create = false;
-            scheduler.init('scheduler_here',new Date(),"year");
-            scheduler.parse([
-                { id:"1", text: "Hari Raya Imlek", start_date: "2021-02-12", end_date: "2021-02-12"}
-            ], "json");
+            scheduler.config.collision_limit = 1;
+            scheduler.config.full_day = true;
+            scheduler.config.event_duration = 24 * 60;
+
+            scheduler.attachEvent('onLightbox', function(id) {
+                var mode = scheduler.getState().mode;
+                console.log(mode);
+            })
+            scheduler.attachEvent('onEventAdded', function (id, event) {
+                //console.log(event);
+                $.ajax({
+                    type: "POST",
+                    url: "/calendar/event",
+                    data: {
+                        "name": event.text,
+                        "date": moment(event.start_date).format("YYYY-MM-DD")
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        scheduler.changeEventId(id, data.id);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Koneksi ke server terkendala');
+                        scheduler.deleteEvent(id);
+                    }
+                });
+            });
+
+            // scheduler.attachEvent('onEventChanged', function (id, event) {
+            //     console.log(event);
+            //     $.ajax({
+            //         type: "POST",
+            //         url: "/calendar/event/action",
+            //         data: {
+            //             "name": event.text,
+            //             "date": moment(event.start_date).format("YYYY-MM-DD")
+            //         },
+            //         success: function (data) {
+            //             console.log(data);
+            //         },
+            //         error: function (xhr, status, error) {
+            //             alert('Koneksi ke server terkendala');
+            //             scheduler.deleteEvent(id);
+            //         }
+            //     });
+            // });
+
+            scheduler.attachEvent('onEventDeleted', function (id) {
+                $.ajax({
+                    type: "POST",
+                    url: "/calendar/event/action",
+                    data: {
+                        "id": id,
+                        "action": 'delete'
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        // scheduler.changeEventId(id, data.id);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Koneksi ke server terkendala');
+                        // scheduler.deleteEvent(id);
+                    }
+                });
+                // eventService.delete(id);
+            });
+            scheduler.init('scheduler_here', new Date(), "year");
+            loadEvents();
+
+            // scheduler.showLightbox = function (id) {
+            //     var event = scheduler.getEvent(id);
+            //     console.log(event);
+            //     scheduler.startLightbox(id, modal);
+            //     // scheduler.hideCover();
+            //     // modal.show();
+            // }
         })();
 
     </script>

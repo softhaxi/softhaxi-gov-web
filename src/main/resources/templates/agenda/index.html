@@ -278,9 +278,9 @@
                         <div class="row">
                         <form class="search" th:action="@{/agenda}" method="GET">
                             <div class="search-container pt-5" style="position: relative;">
-                                    <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off" th:value="*{name}">
-                                    <input type="hidden" name="id">
-                                    <input type="hidden" name="category">
+                                    <input type="text" placeholder="Cari nama pegawai" th:name="search" autocomplete="off" th:value="${name}">
+                                    <input type="hidden" name="id" th:value="${id}">
+                                    <input type="hidden" name="category" value="${category}">
                                     <button type="submit" class="btn-search"><i class="fa fa-search"></i></button>
                                 <br>
                                 <div class="dropdown dropdown-employee" id="dropdown-employee" style="z-index: 1000; display: none;">
@@ -295,15 +295,15 @@
                                     <span class="semua"></span>
                                 </label> -->
                                 <label class="agenda-container">Daring
-                                    <input type="checkbox" class="category" value="ONLINE">
+                                    <input type="checkbox" class="category" value="ONLINE" th:checked="${#lists.contains(category, 'ONLINE')}">
                                     <span class="daring"></span>
                                 </label>
                                 <label class="agenda-container">Di Kantor
-                                    <input type="checkbox" class="category" value="INOFFICE">
+                                    <input type="checkbox" class="category" value="INOFFICE" th:checked="${#lists.contains(category, 'INOFFICE')}">
                                     <span class="kantor"></span>
                                 </label>
                                 <label class="agenda-container">Perjalanan Dinas
-                                    <input type="checkbox" class="category" value="OUTOFFICE">
+                                    <input type="checkbox" class="category" value="OUTOFFICE" th:checked="${#lists.contains(category, 'OUTOFFICE')}">
                                     <span class="dinas"></span>
                                 </label>
                             </div>

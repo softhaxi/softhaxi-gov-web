@@ -74,11 +74,11 @@ public class AgendaController {
 
     @GetMapping("/agenda")
     public String getAgenda(Model model, @RequestParam("date") Optional<Date> date,
-    @RequestParam("id") Optional<String> id, @RequestParam("name") Optional<String> name, @RequestParam("category") Optional<List<String>> category) {
+    @RequestParam("id") Optional<String> id, @RequestParam("search") Optional<String> name, @RequestParam("category") Optional<List<String>> category) {
         Date startDate = date.orElse(new Date());
         String strId = id.orElse("");
         String strName = name.orElse("");
-        
+        logger.debug("strId: " + strId);
         List<String> categoryList = category.isEmpty()?new ArrayList<>():category.get();
         
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -97,9 +97,9 @@ public class AgendaController {
 
         for (User user : userList) {
             if(categoryList.isEmpty())
-                invitations = invitationRepository.findAllUserDailyInvitationByCreated(user.getId().toString(), localDate);
+                invitations = invitationRepository.findAllUserDailyInvitationByCreated(!strId.equals("")?strId:user.getId().toString(), localDate);
             else
-                invitations = invitationRepository.findAllUserDailyInvitationByCategory(user.getId().toString(), categoryList, localDate);
+                invitations = invitationRepository.findAllUserDailyInvitationByCategory(!strId.equals("")?strId:user.getId().toString(), categoryList, localDate);
 
             
             agendaService.setMember(invitations);
@@ -113,7 +113,9 @@ public class AgendaController {
             
             invitationList.addAll(invitations);
         }
+        model.addAttribute("category", categoryList);
         model.addAttribute("name", strName);
+        model.addAttribute("id", strId);
         
         model.addAttribute("invitationObject", jsonArray.toList());
 

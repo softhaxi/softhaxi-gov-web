@@ -274,25 +274,26 @@
                 
                 <div class="col-md-3">
                     <div id="cal_here"></div>
-                    <form class="search" th:action="@{/agenda}" method="GET">
+                    
                         <div class="row">
-                            <div class="search-container pt-5">
-                                    <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off">
+                        <form class="search" th:action="@{/agenda}" method="GET">
+                            <div class="search-container pt-5" style="position: relative;">
+                                    <input type="text" placeholder="Cari nama pegawai" name="search" autocomplete="off" th:value="*{name}">
                                     <input type="hidden" name="id">
                                     <input type="hidden" name="category">
                                     <button type="submit" class="btn-search"><i class="fa fa-search"></i></button>
-                                    
                                 <br>
                                 <div class="dropdown dropdown-employee" id="dropdown-employee" style="z-index: 1000; display: none;">
                                         <ul class="list-unstyled" id="list-employee" aria-labelledby="dropdownMenuButton2">
                                         </ul>
                                     </div>
                             </div>
+                        </form>
                             <div class="agenda-type p-1 py-3">
-                                <label class="agenda-container">Semua
+                                <!-- <label class="agenda-container">Semua
                                     <input type="checkbox" class="category" value="ALL">
                                     <span class="semua"></span>
-                                </label>
+                                </label> -->
                                 <label class="agenda-container">Daring
                                     <input type="checkbox" class="category" value="ONLINE">
                                     <span class="daring"></span>
@@ -307,7 +308,7 @@
                                 </label>
                             </div>
                         </div>
-                </form>
+                
             </div>
             <div class="col-md-9">
                 <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height:100vh;'>
@@ -346,6 +347,7 @@
         /*<![CDATA[*/
         var message = '[[${invitationObject}]]';
         /*]]>*/
+        
         var json = JSON.parse(message);
 
         var agenda = [];
@@ -527,15 +529,18 @@
             $('input[name=search]').val($(this).children('a').text());
         });
 
-        var category = '';
-        $('.agenda-container > span').click(function() {
-            console.log(this.parent().children().find('.category').val());
-            if (this.checked) {
-                category.push(this.sibling().find('.category').val());
-            } else {
-                category.slice(this.val());
+    
+        var category = [];
+        $(".category").change(function() {
+            if(this.checked) {
+                category.push($(this).attr("value"));
+
+            }else{
+                if ((index = category.indexOf($(this).val())) !== -1) {
+                    category.splice(index, 1);
+                }
             }
-            console.log("category: "+category);
+            $('input[name=category]').val(category.join());
         });
         /*$('.btn-search').on('click', function (e) {
             var category = [];

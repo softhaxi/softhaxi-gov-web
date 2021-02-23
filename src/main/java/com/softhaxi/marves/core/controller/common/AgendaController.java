@@ -31,8 +31,10 @@ import com.softhaxi.marves.core.repository.employee.InvitationMemberRepository;
 import com.softhaxi.marves.core.repository.employee.InvitationRepository;
 import com.softhaxi.marves.core.service.AgendaService;
 import com.softhaxi.marves.core.service.account.UserService;
+import com.softhaxi.marves.core.util.JSONUtil;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,11 +74,12 @@ public class AgendaController {
 
     @GetMapping("/agenda")
     public String getAgenda(Model model, @RequestParam("date") Optional<Date> date,
-    @RequestParam("id") Optional<String> id, @RequestParam("category") Optional<List<String>> category) {
+    @RequestParam("id") Optional<String> id, @RequestParam("name") Optional<String> name, @RequestParam("category") Optional<List<String>> category) {
         Date startDate = date.orElse(new Date());
         String strId = id.orElse("");
-        logger.debug("category: "+category.orElse(new ArrayList<>()));
-        String strCategory = category.isEmpty()?"":category.get().get(0);
+        String strName = name.orElse("");
+        
+        List<String> categoryList = category.isEmpty()?new ArrayList<>():category.get();
         
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         Collection<User> userList = new ArrayList<>();
@@ -93,65 +96,26 @@ public class AgendaController {
         JSONArray jsonArray = new JSONArray();
 
         for (User user : userList) {
-            if(strCategory.isEmpty() || strCategory.equals("ALL"))
+            if(categoryList.isEmpty())
                 invitations = invitationRepository.findAllUserDailyInvitationByCreated(user.getId().toString(), localDate);
             else
-                invitations = invitationRepository.findAllUserDailyInvitationByCategory(user.getId().toString(), strCategory, localDate);
+                invitations = invitationRepository.findAllUserDailyInvitationByCategory(user.getId().toString(), categoryList, localDate);
 
             
             agendaService.setMember(invitations);
 
             for (Iterator<Invitation> iterator = invitations.iterator(); iterator.hasNext();) {
-                jsonArray.put(iterator.next());
+                Invitation invitation = iterator.next();
+                invitation.setDescription(JSONUtil.escape(invitation.getDescription()));
+                invitation.setTitle(JSONUtil.escape(invitation.getTitle()));
+                jsonArray.put(invitation);
             }
+            
             invitationList.addAll(invitations);
         }
-
-        model.addAttribute("invitationObject", jsonArray.toList());
-
-        return "agenda/index";
-    }
-
-    @PostMapping("/search-agenda")
-    public String searchAgenda(Model model, @RequestParam("date") Optional<Date> date,
-    @RequestParam("id") Optional<String> id, @RequestParam("category") Optional<List<String>> category) {
-        Date startDate = date.orElse(new Date());
-        String strId = id.orElse("");
-        logger.debug("user: " + strId);
-        logger.debug("category: "+category.orElse(new ArrayList<>()));
-        String strCategory = category.isEmpty()?"":category.get().get(0);
+        model.addAttribute("name", strName);
         
-        LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        Collection<User> userList = new ArrayList<>();
-        if(!strId.isEmpty()){
-            User user = userRepository.getOne(UUID.fromString(strId));
-            userList.add(user);
-        }else{
-            userList = userService.findAllIncludeAdmin();
-        }
-
-        Collection<Invitation> invitations = new ArrayList<>();
-        List<Invitation> invitationList = new ArrayList<>();
-
-        JSONArray jsonArray = new JSONArray();
-
-        for (User user : userList) {
-            if(strCategory.isEmpty() || strCategory.equals("ALL"))
-                invitations = invitationRepository.findAllUserDailyInvitationByCreated(user.getId().toString(), localDate);
-            else
-                invitations = invitationRepository.findAllUserDailyInvitationByCategory(user.getId().toString(), strCategory, localDate);
-            
-            agendaService.setMember(invitations);
-
-            for (Iterator<Invitation> iterator = invitations.iterator(); iterator.hasNext();) {
-                jsonArray.put(iterator.next());
-            }
-            invitationList.addAll(invitations);
-        }
-
         model.addAttribute("invitationObject", jsonArray.toList());
-
-        // model.addAttribute("invitations", invitationList);
 
         return "agenda/index";
     }
@@ -266,4 +230,15 @@ public class AgendaController {
         return json;
     }
     
+    private static String escape(String raw) {
+        String escaped = raw;
+        escaped = escaped.replace("\\", "\\\\");
+        escaped = escaped.replace("\"", "\\\"");
+        escaped = escaped.replace("\b", "\\b");
+        escaped = escaped.replace("\f", "\\f");
+        escaped = escaped.replace("\n", "\\n");
+        escaped = escaped.replace("\r", "\\r");
+        escaped = escaped.replace("\t", "\\t");
+        return escaped;
+    }
 }

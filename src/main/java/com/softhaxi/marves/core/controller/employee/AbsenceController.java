@@ -84,12 +84,6 @@ public class AbsenceController {
             date = now;
         }
 
-        model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        model.addAttribute("dateDisplay",
-                date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
-        model.addAttribute("division", division);
-        model.addAttribute("divisions", divisionService.findAll());
-
         ZonedDateTime from = now.atStartOfDay(ZoneId.systemDefault());
         ZonedDateTime to = now.plusDays(1).atStartOfDay(ZoneId.systemDefault());
 
@@ -112,68 +106,88 @@ public class AbsenceController {
         for (User user : users) {
             emails.add(user.getEmail());
         }
-        model.addAttribute("totalEmployee", userRepo.findAllActiveMobileUser().size());
-        model.addAttribute("totalFakeLocator", dailyRepo.findStatisticFakeLocatorByDate(from, to));
-        model.addAttribute("totalLogin", sessionRepo.findStatisticValidSession());
-        model.addAttribute("totalClockIn", dailyRepo.findStatisticClockInByDate(from, to));
-        model.addAttribute("totalClockOut", dailyRepo.findStatisticClockOutByDate(from, to));
-        model.addAttribute("totalDispensation", dispensationRepo.findStatisticByDate(now));
 
         from = date.atStartOfDay(ZoneId.systemDefault());
         to = date.plusDays(1).atStartOfDay(ZoneId.systemDefault());
         Collection<DailyAttendance> attendances = dailyRepo.findAllByEmailsAndDate(emails, from, to);
         Collection<Dispensation> dispensations = dispensationRepo.findAllByDateAndEmails(date, emails);
 
-        AtomicReference<List<Absence>> data = new AtomicReference<>();
+        AtomicReference<List<Absence>> attends = new AtomicReference<>();
+        AtomicReference<List<Absence>> dispens = new AtomicReference<>();
+        AtomicReference<List<Absence>> nonAttends = new AtomicReference<>();
+
+        attends.set(new LinkedList<>());
+        dispens.set(new LinkedList<>());
+        nonAttends.set(new LinkedList<>());
         users.forEach((user) -> {
-            List<Absence> list = data.get();
-            if (list == null)
-                list = new LinkedList<>();
             DailyAttendance attendance = attendances.stream().filter(item -> item.getUser().equals(user)).findFirst()
+                    .orElse(null);
+            Dispensation dispensation = dispensations.stream().filter(item -> item.getUser().equals(user)).findFirst()
                     .orElse(null);
 
             if (attendance == null) {
-                Dispensation dispensation = dispensations.stream().filter(item -> item.getUser().equals(user))
-                        .findFirst().orElse(null);
                 if (dispensation != null) {
-                    list.add(new Absence().userId(user.getId()).email(user.getEmail())
+                    var temp = dispens.get();
+                    temp.add(new Absence().userId(user.getId()).email(user.getEmail())
                             .fullName(user.getProfile() != null ? user.getProfile().getFullName() : null)
                             .divisionName(user.getEmployee() != null ? user.getEmployee().getDivisionName() : null)
                             .dispensationId(dispensation.getId()).dispensation(dispensation.getType())
                             .dispensationReason(dispensation.getDescription()));
+                    dispens.set(temp);
                 } else {
-                    list.add(new Absence().userId(user.getId()).email(user.getEmail())
+                    var temp = nonAttends.get();
+                    temp.add(new Absence().userId(user.getId()).email(user.getEmail())
                             .fullName(user.getProfile() != null ? user.getProfile().getFullName() : null)
                             .divisionName(user.getEmployee() != null ? user.getEmployee().getDivisionName() : null));
                 }
             } else {
-                
-                list.add(new Absence().userId(user.getId()).email(user.getEmail())
+                Absence absence = new Absence().userId(user.getId()).email(user.getEmail())
                         .fullName(user.getProfile() != null ? user.getProfile().getFullName() : null)
                         .divisionName(user.getEmployee() != null ? user.getEmployee().getDivisionName() : null)
                         .workFrom(attendance.getWorkFrom()).clockInTime(attendance.getDateTime())
                         .clockInIpAddress(attendance.getIpAddress()).clockInMockLocation(attendance.isMockLocation())
                         .clockOutTime(attendance.getOutDateTime()).clockOutIpAddress(attendance.getOutIpAddress())
-                        .clockOutMockLocation(attendance.isOutMockLocation()));
+                        .clockOutMockLocation(attendance.isOutMockLocation());
+                if(dispensation != null) {
+                    absence.setDispensationId(dispensation.getId());
+                    absence.setDispensation(dispensation.getType());
+                    absence.setDispensationReason(dispensation.getDescription());
+                }
+                var temp = attends.get();
+                temp.add(absence);
+                attends.set(temp);
             }
-            data.set(list);
         });
+        List<Absence> absences = attends.get();
+        absences.addAll(dispens.get());
+        absences.addAll(nonAttends.get());
+
         int pageSize = Integer.parseInt(
                 parameterRepo.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter().value("10")).getValue());
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<Absence> pagination = new PageImpl<>(new LinkedList<>());
-        List<Absence> absences = data.get();
         if (null != absences && !absences.isEmpty()) {
             int start = (int) pageable.getOffset();
             int end = (start + pageable.getPageSize()) > absences.size() ? absences.size()
                     : (start + pageable.getPageSize());
             pagination = new PageImpl<Absence>((absences).subList(start, end), pageable, absences.size());
         }
+        int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
+
+        model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        model.addAttribute("dateDisplay",
+                date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
+        model.addAttribute("division", division);
+        model.addAttribute("divisions", divisionService.findAll());
+        model.addAttribute("totalEmployee", userRepo.findAllActiveMobileUser().size());
+        model.addAttribute("totalFakeLocator", dailyRepo.findStatisticFakeLocatorByDate(from, to));
+        model.addAttribute("totalLogin", sessionRepo.findStatisticStatusSession("VALID", from, to));
+        model.addAttribute("totalClockIn", dailyRepo.findStatisticClockInByDate(from, to));
+        model.addAttribute("totalClockOut", dailyRepo.findStatisticClockOutByDate(from, to));
+        model.addAttribute("totalDispensation", dispensationRepo.findStatisticByDate(now));
         model.addAttribute("currentPage", page);
         model.addAttribute("startIndex", pageSize * page);
         model.addAttribute("data", pagination);
-        int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
-
         model.addAttribute("pages", pages);
 
         return "absence/index";
@@ -199,16 +213,14 @@ public class AbsenceController {
             to = from.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
         }
         final long days = from.until(to, ChronoUnit.DAYS);
-        List<LocalDate> dateRange = Stream.iterate(from, 
-            d -> d.plusDays(1))
-            .limit(days)
-            .collect(Collectors.toList());
+        List<LocalDate> dateRange = Stream.iterate(from, d -> d.plusDays(1)).limit(days).collect(Collectors.toList());
 
         List<Dispensation> dispensations = (List<Dispensation>) dispensationRepo.findByUserAndBetweenDates(user, from,
                 to);
-        List<DailyAttendance> attendances = (List<DailyAttendance>) dailyRepo
-                .findAllByEmailsAndDate(Arrays.asList(user.getEmail()), from.atStartOfDay(ZoneId.systemDefault()), to.atStartOfDay(ZoneId.systemDefault()));
-        
+        List<DailyAttendance> attendances = (List<DailyAttendance>) dailyRepo.findAllByEmailsAndDate(
+                Arrays.asList(user.getEmail()), from.atStartOfDay(ZoneId.systemDefault()),
+                to.atStartOfDay(ZoneId.systemDefault()));
+
         AtomicReference<List<Absence>> data = new AtomicReference<>();
         AtomicReference<Integer> wfo = new AtomicReference<>();
         AtomicReference<Integer> wfh = new AtomicReference<>();
@@ -221,44 +233,42 @@ public class AbsenceController {
             List<Absence> list = data.get();
             if (list == null)
                 list = new LinkedList<>();
-            DailyAttendance attendance = attendances.stream().filter(item -> item.getDateTime().toLocalDate().equals(date))
-                .findFirst()
-                .orElse(null);
-                if (attendance == null) {
-                    Dispensation dispensation = dispensations.stream().filter(item -> item.getStartDate().equals(date) ||
-                    (item.getStartDate().isBefore(date) && item.getEndDate().isAfter(date)) ||
-                    item.getEndDate().equals(date))
-                            .findFirst().orElse(null);
-                    if (dispensation != null) {
-                        list.add(new Absence()
-                                .date(date)
-                                .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)
-                                .dispensationId(dispensation.getId()).dispensation(dispensation.getType())
-                                .dispensationReason(dispensation.getDescription()));
-                    } else {
-                        list.add(new Absence()
-                            .date(date)
-                            .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY));
-                    }
+            DailyAttendance attendance = attendances.stream()
+                    .filter(item -> item.getDateTime().toLocalDate().equals(date)).findFirst().orElse(null);
+            if (attendance == null) {
+                Dispensation dispensation = dispensations.stream()
+                        .filter(item -> item.getStartDate().equals(date)
+                                || (item.getStartDate().isBefore(date) && item.getEndDate().isAfter(date))
+                                || item.getEndDate().equals(date))
+                        .findFirst().orElse(null);
+                if (dispensation != null) {
+                    list.add(new Absence().date(date)
+                            .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY
+                                    || date.getDayOfWeek() == DayOfWeek.SATURDAY)
+                            .dispensationId(dispensation.getId()).dispensation(dispensation.getType())
+                            .dispensationReason(dispensation.getDescription()));
                 } else {
-                    if(attendance.getWorkFrom().equalsIgnoreCase("wfo")) {
-                        wfo.set(wfo.get() + 1);
-                    } else if(attendance.getWorkFrom().equalsIgnoreCase("wfh")) {
-                        wfh.set(wfh.get() + 1);
-                    }
-
-                    if(attendance.isMockLocation() || attendance.isOutMockLocation()) {
-                        fake.set(fake.get() + 1);
-                    }
-                    list.add(new Absence()
-                            .date(date)
-                            .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)
-                            .workFrom(attendance.getWorkFrom()).clockInTime(attendance.getDateTime())
-                            .clockInIpAddress(attendance.getIpAddress()).clockInMockLocation(attendance.isMockLocation())
-                            .clockOutTime(attendance.getOutDateTime()).clockOutIpAddress(attendance.getOutIpAddress())
-                            .clockOutMockLocation(attendance.isOutMockLocation()));
+                    list.add(new Absence().date(date).weekend(
+                            date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY));
                 }
-                data.set(list);
+            } else {
+                if (attendance.getWorkFrom().equalsIgnoreCase("wfo")) {
+                    wfo.set(wfo.get() + 1);
+                } else if (attendance.getWorkFrom().equalsIgnoreCase("wfh")) {
+                    wfh.set(wfh.get() + 1);
+                }
+
+                if (attendance.isMockLocation() || attendance.isOutMockLocation()) {
+                    fake.set(fake.get() + 1);
+                }
+                list.add(new Absence().date(date)
+                        .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)
+                        .workFrom(attendance.getWorkFrom()).clockInTime(attendance.getDateTime())
+                        .clockInIpAddress(attendance.getIpAddress()).clockInMockLocation(attendance.isMockLocation())
+                        .clockOutTime(attendance.getOutDateTime()).clockOutIpAddress(attendance.getOutIpAddress())
+                        .clockOutMockLocation(attendance.isOutMockLocation()));
+            }
+            data.set(list);
         });
 
         AtomicReference<Long> sick = new AtomicReference<>();
@@ -286,6 +296,19 @@ public class AbsenceController {
             }
         });
 
+        int pageSize = Integer.parseInt(
+                parameterRepo.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter().value("10")).getValue());
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Absence> pagination = new PageImpl<>(new LinkedList<>());
+        List<Absence> absences = data.get();
+        if (null != absences && !absences.isEmpty()) {
+            int start = (int) pageable.getOffset();
+            int end = (start + pageable.getPageSize()) > absences.size() ? absences.size()
+                    : (start + pageable.getPageSize());
+            pagination = new PageImpl<Absence>((absences).subList(start, end), pageable, absences.size());
+        }
+        int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
+
         model.addAttribute("month", from.getMonthValue());
         model.addAttribute("year", from.getYear());
         model.addAttribute("dateDisplay",
@@ -300,25 +323,11 @@ public class AbsenceController {
         model.addAttribute("totalSick", sick.get());
         model.addAttribute("totalLeave", leave.get());
         model.addAttribute("totalOthers", others.get());
-
-        int pageSize = Integer.parseInt(
-                parameterRepo.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter().value("10")).getValue());
-        Pageable pageable = PageRequest.of(page, pageSize);
-        Page<Absence> pagination = new PageImpl<>(new LinkedList<>());
-        List<Absence> absences = data.get();
-        if (null != absences && !absences.isEmpty()) {
-            int start = (int) pageable.getOffset();
-            int end = (start + pageable.getPageSize()) > absences.size() ? absences.size()
-                    : (start + pageable.getPageSize());
-            pagination = new PageImpl<Absence>((absences).subList(start, end), pageable, absences.size());
-        }
         model.addAttribute("currentPage", page);
         model.addAttribute("startIndex", pageSize * page);
         model.addAttribute("data", pagination);
-        int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
-
         model.addAttribute("pages", pages);
-        
+
         return "absence/user";
     }
 }

@@ -43,7 +43,7 @@
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: #83CC86;">
-                        <small>Detail <i class="las la-arrow-right"></i></small>
+                        <a th:href="@{/auth/session(filter='latest')}" class="flat-link"> <small>Detail <i class="las la-arrow-right"></i></small></a>
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: rgba(255, 184, 0, 0.5);">
-                        <small>Detail <i class="las la-arrow-right"></i></small>
+                        <a th:href="@{/dispensation}" class="flat-link"> <small>Detail <i class="las la-arrow-right"></i></small></a>
                     </div>
                 </div>
             </div>
@@ -178,10 +178,6 @@
                                 <a th:unless="${row.fullName != null}" th:href="@{/absence/user(id=${row.userId})}"
                                     class="flat-link" th:text="${row.email}"></a>
                             </td>
-                            <!-- <td th:if="${row.user.employee != null}" class="text-center"
-                                th:text="${row.user.employee.divisionName}"><em class="text-warning">to be
-                                    implemented</em></td>
-                            <td th:unless="${row.user.employee != null}" class="text-center">-</td> -->
                             <td class="text-center"
                                 th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
                             <td class="text-center"

@@ -1,0 +1,159 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Aktif Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+        integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw=="
+        crossorigin="anonymous" />
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <div class="row py-2">
+            <div class="col-md-6">
+                <h5 class="align-text-bottom text-uppercase">Daftar Session</h5>
+            </div>
+            <!-- <div class="col-md-6 text-end">
+                <button class="btn btn-primary border-0" style="background-color: #42BC6F;" data-bs-toggle="modal"
+                    data-bs-target="#new-notification"><i class="las la-plus"></i>
+                    Notifikasi Baru</button>
+            </div> -->
+        </div>
+        <div class="row py-2">
+            <div class="col-md-2 btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input th:if="${filter == 'all'}" type="radio" class="btn-check" name="btnradio" id="all"
+                    autocomplete="off" checked>
+                <input th:unless="${filter == 'all'}" type="radio" class="btn-check" name="btnradio" id="all"
+                    autocomplete="off">
+                <label class="btn btn-outline-primary" for="all">Semua</label>
+
+                <input th:if="${filter == 'latest'}" type="radio" class="btn-check" name="btnradio" id="latest"
+                    autocomplete="off" checked>
+                <input th:unless="${filter == 'latest'}" type="radio" class="btn-check" name="btnradio" id="latest"
+                    autocomplete="off">
+                <label class="btn btn-outline-primary" for="latest">Terkini</label>
+            </div>
+            <!-- <div class="col-md-3 offset-md-6 justify-content-end">
+                <input id="date-selection" type="text" class="form-control text-center border-0"
+                    data-provide="datepicker" th:value="${dateDisplay}">
+            </div> -->
+        </div>
+        <div class="mb-3">
+            <div class="table-responsive">
+                <table class="table table-borderless bg-light">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
+                            <td class="col-md-4 text-center align-middle" scope="col">Nama Pengguna</td>
+                            <td class="col-md-4 text-center align-middle" scope="col">Tanggal Login</td>
+                            <td class="col-md-4 text-center align-middle" scope="col">Terakhir Digunakan</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
+                            <td class="text-center" th:text="${rowStat.count + startIndex}" />
+                            <td class="text-start">
+                                <a th:href="@{/dispensation/user(id=${row.user.id})}" class="flat-link"
+                                    th:text="${row.user.profile.fullName}"></a>
+                            </td>
+                            <td class="text-center"
+                                th:text="${#temporals.format(row.createdAt, 'dd MMM yyyy HH:mm:ss')}" />
+                            <td th:if="${row.lastUsed != null}" class="text-center"
+                                th:text="${#temporals.format(row.lastUsed, 'dd MMM yyyy HH:mm:ss')}"></td>
+                            <td th:unless="${row.lastUsed != null}" class="text-center">-</td>
+                        </tr>
+                        <tr th:unless="${data.numberOfElements > 0}">
+                            <td colspan="5" class="text-center">Tidak ada data</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation example" th:if="${data.totalPages > 1}">
+                    <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auth/session(page=${currentPage-1}, date=${date}, filter=${filter})}"
+                                aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <th:block th:each="pageNumber : ${pages}">
+                            <li class="page-item active" th:if="${pageNumber==currentPage}">
+                                <a href="#" th:classappend="page-link">
+                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled" th:if="${pageNumber} == -1">
+                                <a class="page-link" href="#">...</a>
+                            </li>
+                            <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage}">
+                                <a th:href="@{/auth/session(page=${pageNumber}, date=${date}, filter=${filter})}"
+                                    th:classappend="page-link">
+                                    <span aria-hidden="true" th:text="${pageNumber}"></span>
+                                </a>
+                            </li>
+                        </th:block>
+                        <li class="page-item" th:classappend="${currentPage == data.totalPages} ? 'disabled'">
+                            <a class="page-link"
+                                th:href="@{/auth/session(page=${currentPage+1}, date=${date}, filter=${filter})}"
+                                aria-label="Next" title="Next Page" data-toggle="tooltip">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
+        integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ=="
+        crossorigin="anonymous"></script>
+    <script th:src="@{/scripts/app.js}"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var filter = /*[[${filter}]]*/ 'all';
+        /*]]>*/
+        (function () {
+            $('#all').change(function () {
+                window.location.href = '/auth/session';
+            });
+            $('#latest').change(function () {
+                window.location.href = '/auth/session?filter=latest';
+            });
+            // $('#date-selection').datepicker({
+            //     startView: 1,
+            //     minViewMode: 1,
+            //     language: 'id',
+            //     autoclose: true,
+            //     format: "MM yyyy",
+
+            // }).on('changeDate', function (e) {
+            //     console.log(e.date);
+            //     window.location.href = '/auth/session?filter=' + filter + "&date=" + moment(e.date).format("YYYY-MM-DD");
+            // });
+        })();
+
+    </script>
+</body>
+
+</html>

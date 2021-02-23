@@ -2,6 +2,9 @@ package com.softhaxi.marves.core.restful.support;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -10,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.domain.messaging.Message;
 import com.softhaxi.marves.core.domain.messaging.MessageStatus;
 import com.softhaxi.marves.core.domain.messaging.Notification;
@@ -17,12 +21,17 @@ import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
+import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
@@ -54,6 +63,9 @@ public class NotificationRestful {
 
     @Autowired
     private NotificationStatusRepository notificationStatusRepo;
+
+    @Autowired
+    private SystemParameterRepository parameterRepo;
     
     @GetMapping()
     public ResponseEntity<?> index(
@@ -66,8 +78,11 @@ public class NotificationRestful {
 
         if (date == null)
             date = LocalDate.now();
+        ZonedDateTime from = date.with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay(ZoneId.systemDefault());
+        ZonedDateTime to = date.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).atStartOfDay(ZoneId.systemDefault());
 
-        Collection<Notification> notifications = notificationRepo.findAllByUser(user);
+        Collection<Notification> notifications = notificationRepo.findAllByUserAndDateRange(user, from, to);
+        // logger.debug("[index] Number of notification before filtered..." +notifications);
         List<Notification> filtered = notifications.stream()
                 .filter((item) -> item.getDateTime() != null && (item.getDateTime().toLocalDate().equals(user.getCreatedAt().toLocalDate())
                         || item.getDateTime().toLocalDate().isAfter(user.getCreatedAt().toLocalDate())))
@@ -97,7 +112,18 @@ public class NotificationRestful {
         // if(!statuses.isEmpty())
         //     notificationStatusRepo.saveAll(statuses);
 
-        logger.debug("[index] Number of notification..." +filtered.size());
+        // logger.debug("[index] Number of notification..." +filtered.size());
+        // int pageSize = Integer.parseInt(
+        //         parameterRepo.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter().value("10")).getValue());
+        // Pageable pageable = PageRequest.of(page - 1, pageSize);
+        // Page<Notification> pagination = new PageImpl<>(new LinkedList<>());
+        // if (null != filtered && filtered.size() > 0) {
+        //     int start = (int) pageable.getOffset();
+        //     int end = (start + pageable.getPageSize()) > notifications.size() ? notifications.size()
+        //             : (start + pageable.getPageSize());
+        //     pagination = new PageImpl<Notification>((filtered).subList(start, end), pageable, filtered.size());
+        // }
+        // logger.debug("[index] Number of notification page..." +pagination.getTotalPages());
         
         return new ResponseEntity<>(
             new GeneralResponse(

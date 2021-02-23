@@ -1,0 +1,73 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="table" id="pagination-table" class="row py-2">
+    <div class="py-2">
+        <div class="col-md-3 offset-md-9 justify-content-end">
+            <input id="date-selection" type="text" class="form-control text-center border-0"
+                data-provide="datepicker" th:value="${dateDisplay}">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-borderless bg-light">
+            <thead style="background-color: #BBEED0;">
+                <tr>
+                    <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
+                    <td class="col-md-2 text-center align-middle" scope="col">Kepada</td>
+                    <td class="col-md-2 text-center align-middle" scope="col">Perihal</td>
+                    <td class="col-md-5 text-center align-middle" scope="col">Pesan</td>
+                    <td class="col-md-2 text-center align-middle" scope="col">Tanggal Kirim</td>
+                    <td class="col-md-1 text-center align-middle" scope="col">Waktu Kirim</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
+                    <td class="text-center" th:text="${rowStat.count + startIndex}" />
+                    <td th:if="${row.assignee == 'ALL'}" class="text-center">Semua Pegawai</td>
+                    <td th:unless="${row.assignee == 'ALL'}" class="text-center" th:text="${row.assigneeName}">Divisi</td>
+                    <td th:text="${row.categoryDisplay}" />
+                    <td th:text="${row.content}"  style="white-space: pre-line"/>
+                    <td class="text-center" th:text="${#temporals.format(row.dateTime, 'dd/MM/yyyy')}" />
+                    <td class="text-center" th:text="${#temporals.format(row.dateTime, 'HH:mm:ss')}" />
+
+                </tr>
+                <tr th:unless="${data.numberOfElements > 0}">
+                    <td colspan="5" class="text-center">Tidak ada data</td>
+                </tr>
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation example" th:if="${data.totalPages > 1}">
+            <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link"
+                        th:href="@{/notification(month=${month}, year=${year}, page=${currentPage-1})}"
+                        aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <th:block th:each="pageNumber : ${pages}">
+                    <li class="page-item active" th:if="${pageNumber==currentPage}">
+                        <a href="#" th:classappend="page-link">
+                            <span aria-hidden="true" th:text="${pageNumber}"></span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled" th:if="${pageNumber} == -1">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage}">
+                        <a th:href="@{/notification(month=${month}, year=${year}, page=${pageNumber})}"
+                            th:classappend="page-link">
+                            <span aria-hidden="true" th:text="${pageNumber}"></span>
+                        </a>
+                    </li>
+                </th:block>
+                <li class="page-item" th:classappend="${currentPage == data.totalPages} ? 'disabled'">
+                    <a class="page-link"
+                        th:href="@{/notification(month=${month}, year=${year},  page=${currentPage+1})}"
+                        aria-label="Next" title="Next Page" data-toggle="tooltip">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+</div>

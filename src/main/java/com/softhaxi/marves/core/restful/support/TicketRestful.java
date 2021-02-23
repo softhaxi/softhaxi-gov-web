@@ -83,9 +83,9 @@ public class TicketRestful {
         }
         
         List<Ticket> tickets = (List<Ticket>) ticketRepo.findAllNonClosedByUser(user);
-        List<Ticket> closedTickets = (List<Ticket>) ticketRepo.findAllClosedByUser(user);
-        if(tickets.isEmpty()) tickets = closedTickets;
-        else tickets.addAll(closedTickets);
+        // List<Ticket> closedTickets = (List<Ticket>) ticketRepo.findAllClosedByUser(user);
+        // if(tickets.isEmpty()) tickets = closedTickets;
+        // else tickets.addAll(closedTickets);
 
         return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
                 tickets), HttpStatus.OK);

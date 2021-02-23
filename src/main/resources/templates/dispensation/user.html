@@ -128,8 +128,9 @@
                             <td th:if="${row.type == 'OTHERS'}" class="text-start" th:text="${row.description}" />
                             <td class="text-center" th:text="${row.takingDays + ' hari'}">2 hari</td>
                             <th:block th:if="${row.fileName != null}">
-                                <td><span class="badge rounded-pill bg-danger"><i
-                                            class="las la-paperclip"></i></span>&nbsp;<a class="flat-link" href="#"
+                                <td><span class="badge rounded-pill bg-danger">
+                                    <i class="las la-paperclip"></i></span>
+                                    <a class="flat-link" th:href="${row.attachmentUrl}" target="_blank"
                                         th:text="${row.fileName}">Surat
                                         Cuti.pdf</a></td>
                             </th:block>

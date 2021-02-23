@@ -178,7 +178,7 @@
                             <td class="text-center" th:text="${row.takingDays + ' hari'}">2 hari</td>
                             <td class="text-start" th:if="${row.fileName != null}"><span
                                     class="badge rounded-pill bg-danger"><i class="las la-paperclip"></i></span>&nbsp;<a
-                                    class="flat-link" href="#" th:text="${row.fileName}">Surat
+                                    class="flat-link" th:href="${row.attachmentUrl}" target="_blank" th:text="${row.fileName}">Surat
                                     Cuti.pdf</a></td>
                             <td th:unless="${row.fileName != null}" class="text-center">-</td>
 

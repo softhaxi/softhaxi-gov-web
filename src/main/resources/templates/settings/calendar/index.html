@@ -107,58 +107,35 @@
                 "prev",
                 "next"
             ];
-            // scheduler.config.readonly = true;
-            // scheduler.config.displayed_event_color="#00FF00";
-            // scheduler.config.dblclick_create = false;
-            // scheduler.config.drag_resize = false;
-            // scheduler.config.drag_move = false;
-            // scheduler.config.drag_create = false;
-            scheduler.config.collision_limit = 1;
+            // scheduler.config.collision_limit = 2;
             scheduler.config.full_day = true;
             scheduler.config.event_duration = 24 * 60;
 
-            scheduler.attachEvent('onLightbox', function(id) {
-                var mode = scheduler.getState().mode;
-                console.log(mode);
-            })
+            // scheduler.attachEvent('onLightbox', function(id) {
+            //     var mode = scheduler.getState().mode;
+            //     console.log(mode);
+            // })
             scheduler.attachEvent('onEventAdded', function (id, event) {
-                //console.log(event);
-                $.ajax({
-                    type: "POST",
-                    url: "/calendar/event",
-                    data: {
-                        "name": event.text,
-                        "date": moment(event.start_date).format("YYYY-MM-DD")
-                    },
-                    success: function (data) {
-                        console.log(data);
-                        scheduler.changeEventId(id, data.id);
-                    },
-                    error: function (xhr, status, error) {
-                        alert('Koneksi ke server terkendala');
-                        scheduler.deleteEvent(id);
-                    }
-                });
+                if (event != null) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/calendar/event",
+                        data: {
+                            "name": event.text,
+                            "date": moment(event.start_date).format("YYYY-MM-DD")
+                        },
+                        success: function (data) {
+                            console.log(data);
+                            // scheduler.changeEventId(id, data.id);
+                            loadEvents();
+                        },
+                        error: function (xhr, status, error) {
+                            alert('Koneksi ke server terkendala');
+                            scheduler.deleteEvent(id);
+                        }
+                    });
+                }
             });
-
-            // scheduler.attachEvent('onEventChanged', function (id, event) {
-            //     console.log(event);
-            //     $.ajax({
-            //         type: "POST",
-            //         url: "/calendar/event/action",
-            //         data: {
-            //             "name": event.text,
-            //             "date": moment(event.start_date).format("YYYY-MM-DD")
-            //         },
-            //         success: function (data) {
-            //             console.log(data);
-            //         },
-            //         error: function (xhr, status, error) {
-            //             alert('Koneksi ke server terkendala');
-            //             scheduler.deleteEvent(id);
-            //         }
-            //     });
-            // });
 
             scheduler.attachEvent('onEventDeleted', function (id) {
                 $.ajax({
@@ -170,25 +147,14 @@
                     },
                     success: function (data) {
                         console.log(data);
-                        // scheduler.changeEventId(id, data.id);
                     },
                     error: function (xhr, status, error) {
                         alert('Koneksi ke server terkendala');
-                        // scheduler.deleteEvent(id);
                     }
                 });
-                // eventService.delete(id);
             });
             scheduler.init('scheduler_here', new Date(), "year");
             loadEvents();
-
-            // scheduler.showLightbox = function (id) {
-            //     var event = scheduler.getEvent(id);
-            //     console.log(event);
-            //     scheduler.startLightbox(id, modal);
-            //     // scheduler.hideCover();
-            //     // modal.show();
-            // }
         })();
 
     </script>

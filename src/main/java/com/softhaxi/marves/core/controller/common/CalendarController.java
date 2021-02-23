@@ -29,21 +29,18 @@ public class CalendarController {
 
     @Autowired
     private CalendarEventRepository calendarEventRepo;
-    
+
     @GetMapping
     public String index() {
         return "settings/calendar/index";
     }
 
     @PostMapping("/event")
-    public @ResponseBody String postEvent(
-        @RequestParam(name = "name") String name, 
-        @RequestParam(name = "date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
-        CalendarEvent event = new CalendarEvent()
-            .date(date)
-            .name(name.trim());
+    public @ResponseBody String postEvent(@RequestParam(name = "name") String name,
+            @RequestParam(name = "date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
+        CalendarEvent event = new CalendarEvent().date(date).name(name.trim());
         calendarEventRepo.save(event);
-        
+
         Map<String, Object> map = new HashMap<>();
         map.put("id", event.getId());
         map.put("action", "inserted");
@@ -56,30 +53,39 @@ public class CalendarController {
     public @ResponseBody String actionEvent(
         @RequestParam(name = "id") String id,
         @RequestParam(name = "action") String action) {
-        CalendarEvent event = calendarEventRepo.findById(UUID.fromString(id)).orElseThrow();
-        
         Map<String, Object> map = new HashMap<>();
+        Gson gson = new Gson();
+    
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch(IllegalArgumentException ex) {
+            map.put("id", id);
+            map.put("action", "deleted");
+            return gson.toJson(map);
+        }
+        CalendarEvent event = calendarEventRepo.findById(uuid).orElseThrow();
+        
         map.put("id", event.getId());
-
         if(action.equalsIgnoreCase("delete")) {
             event.setDeleted(true);
             map.put("action", "deleted");
         } 
         calendarEventRepo.save(event);
 
-        Gson gson = new Gson();
+        
         return gson.toJson(map);
     }
 
     @GetMapping("/event/search")
     public @ResponseBody String searchEvents(@RequestParam(name = "year", required = false) String paramYear) {
         int year = LocalDate.now().getYear();
-        if(paramYear != null) 
+        if (paramYear != null)
             year = Integer.parseInt(paramYear);
-        
+
         Collection<CalendarEvent> events = calendarEventRepo.findAllByYear(year);
         Collection<Map<?, ?>> data = new LinkedList<>();
-        
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         Map<String, Object> map = null;
         for (CalendarEvent event : events) {

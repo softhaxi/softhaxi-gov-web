@@ -1,18 +1,18 @@
 <div xmlns:th="http://www.thymeleaf.org" class="px-0">
     <div class="row list-item" th:each="row : ${data}" th:id="${row.id}">
         <div class="col-md-8">
-            <h5 th:text="${row.code}"
+            <h5 th:text="${row.code}" class="fw-bold mb-0" style="font-size: 12pt;"
                 th:classappend="${row.status.toUpperCase() == 'CLOSED' ? 'text-decoration-line-through' : ''}">Ticket
                 Code</h5>
-            <span class="h6 text-muted fw-lighter text-nowrap" th:if="${row.user.profile != null}"
+            <span class="h6 text-muted fw-bold text-nowrap" th:if="${row.user.profile != null}"
                 th:text="${row.user.profile.fullName}">Ticket Reporter</span>
-            <span class="h6 text-muted fw-lighter text-nowrap" th:unless="${row.user.profile != null}"
+            <span class="h6 text-muted fw-bold text-nowrap" th:unless="${row.user.profile != null}"
                 th:text="${row.user.email}">Ticket Reporter</span>
         </div>
         <div class="col-md-4 text-end">
-            <span class="fs-6 text-muted" th:text="${#temporals.format(row.createdAt, 'dd-MM-yyyy')}">Ticket
+            <span class="text-muted mb-0" style="font-size: 10pt;" th:text="${#temporals.format(row.createdAt, 'dd-MM-yyyy')}">Ticket
                 date</span><br />
-            <small class="text-muted fw-lighter" th:text="${#temporals.format(row.createdAt, 'HH:MM zzz')}">Ticket
+            <small class="text-muted fw-lighter mb-0" style="font-size: 8pt;" th:text="${#temporals.format(row.createdAt, 'HH:MM zzz')}">Ticket
                 time</small>
         </div>
 

@@ -221,6 +221,10 @@ public class ChatController {
             if(member != null) {
                 profile = profileRepo.findByUser(member.getUser()).orElse(null);
             }
+
+            if(member.getUser().getEmployee() != null) {
+                room.setProfilePicture(member.getUser().getEmployee().getPictureUrl());
+            }
             
             if(profile != null) {
                 room.setRecipient(member.getUser().getEmail());
@@ -282,6 +286,10 @@ public class ChatController {
             .findFirst().orElse(null);
         if(member != null) {
             profile = profileRepo.findByUser(member.getUser()).orElse(null);
+        }
+        
+        if(member.getUser().getEmployee() != null) {
+            room.setProfilePicture(member.getUser().getEmployee().getPictureUrl());
         }
         
         if(profile != null) {

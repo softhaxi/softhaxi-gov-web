@@ -2,7 +2,9 @@
     <li class="list-group-item list-group-item-action border-0 rooms-item" th:id="${row.id}">
         <div class="row px-2">
             <div class="col-md-2">
-                <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
+                <img th:if="${row.profilePicture != null}" th:src="${row.profilePicture}"
+                    alt="user" class="thumbnail-50 rounded-circle">
+                <img th:unless="${row.profilePicture != null}" src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
                     alt="user" width="50" class="rounded-circle">
             </div>
             <div class="col-md-10">

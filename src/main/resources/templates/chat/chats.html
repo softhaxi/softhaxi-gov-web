@@ -1,6 +1,10 @@
 <div class="mx-0" xmlns:th="http://www.thymeleaf.org" >
     <div class="rooms-search p-3 border border-white" style="height: 3.5rem; background-color: #f1f1f1;">
-        <span class="h5 fw-bold" th:text="${room.name}"></span>
+        <img th:if="${room.profilePicture != null}" th:src="${room.profilePicture}"
+                    alt="user" class="thumbnail-mini rounded-circle">
+        <!-- <img th:unless="${room.profilePicture != null}" src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
+                    alt="user" class="thumbnail-mini rounded-circle"> -->
+        <span class="h5 fw-bold align-items-center" th:text="${room.name}"></span>
     </div>
     <div class="py-4 px-2 chats-message">
         <div class="d-flex mb-1" th:each="row : ${data}" th:classappend="${!row.myself ? 'justify-content-start' : 'justify-content-end'}">

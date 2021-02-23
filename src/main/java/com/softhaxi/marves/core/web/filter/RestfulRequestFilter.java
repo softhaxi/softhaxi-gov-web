@@ -56,7 +56,7 @@ public class RestfulRequestFilter extends OncePerRequestFilter {
             if(requestTokenHeader != null && requestTokenHeader.startsWith("Bearer")) {
                 token = requestTokenHeader.substring(7);
                 try {
-                    Session session = sessionRepo.findAllValidByAccessToken(token).orElseThrow();
+                    Session session = sessionRepo.findOneValidByAccessToken(token).orElseThrow();
                     session.setLastUsed(ZonedDateTime.now());
                     sessionRepo.save(session);
                     userid = accessTokenUtil.getUsernameFromToken(session.getAccessToken());

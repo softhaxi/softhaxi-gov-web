@@ -1,25 +1,25 @@
 package com.softhaxi.marves.core.controller.common;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import com.google.gson.Gson;
@@ -33,11 +33,12 @@ import com.softhaxi.marves.core.service.AgendaService;
 import com.softhaxi.marves.core.service.account.UserService;
 import com.softhaxi.marves.core.util.JSONUtil;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
@@ -48,6 +49,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * AgendaController
@@ -71,6 +73,9 @@ public class AgendaController {
 
     @Autowired
     private AgendaService agendaService;
+    
+    @Value("${app.upload.path}")
+	private String pathLocation;
 
     @GetMapping("/agenda")
     public String getAgenda(Model model, @RequestParam("date") Optional<Date> date,
@@ -113,6 +118,11 @@ public class AgendaController {
             
             invitationList.addAll(invitations);
         }
+        LocalDateTime now = LocalDateTime.now();
+        int hour = now.getHour();
+        int minute = now.getMinute();
+        model.addAttribute("startTime", hour + ":" +minute);
+        model.addAttribute("endTime", hour+1+":" +minute);
         model.addAttribute("category", categoryList);
         model.addAttribute("name", strName);
         model.addAttribute("id", strId);
@@ -132,11 +142,13 @@ public class AgendaController {
             @ModelAttribute("endTime") Optional<String> endTime,
             @ModelAttribute("location") Optional<String> location,
             @ModelAttribute("email") Optional<String> email,
-            @ModelAttribute("category") Optional<String> category) {
+            @ModelAttribute("category") Optional<String> category,
+            @RequestParam("file") MultipartFile file) {
         
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
             LocalDateTime startDateTime = LocalDateTime.parse(startDate.get()+" " + startTime.get() + ":00", formatter);
             LocalDateTime endDateTime = LocalDateTime.parse(endDate.get()+" " + endTime.get() + ":00", formatter);
+            
 
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String userId = null;
@@ -155,6 +167,10 @@ public class AgendaController {
 
             try {
               
+
+                String fileFormat = FilenameUtils.getExtension(file.getOriginalFilename());
+                String newFileName = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+
                 Invitation invitation = new Invitation()
                 .code(code.orElse(""))
                 .title(title.orElse(""))
@@ -165,8 +181,18 @@ public class AgendaController {
                 .startTime(startDateTime.atZone(ZoneId.systemDefault()))
                 .endTime(endDateTime.atZone(ZoneId.systemDefault()))
                 .category(category.orElse(""))
-                .user(user);
+                .user(user)
+                .fileName(newFileName+"."+fileFormat)
+                .attachement(pathLocation+"/"+newFileName+"."+fileFormat);
                 invitationRepository.save(invitation);
+                
+
+                Path path = Paths.get("/asset"+pathLocation);
+                
+                if (!file.isEmpty()) {
+                    Files.copy(file.getInputStream(), path.resolve(newFileName+"."+fileFormat));
+                }
+                
                 
                 List<InvitationMember> invitees = new ArrayList<>();
                 
@@ -200,6 +226,8 @@ public class AgendaController {
                 invitationMemberRepo.saveAll(invitees);
             } catch (ParseException e) {
                 e.printStackTrace();
+            } catch (IOException ioe){
+                ioe.printStackTrace();
             }
         
         return "redirect:/agenda";
@@ -232,15 +260,4 @@ public class AgendaController {
         return json;
     }
     
-    private static String escape(String raw) {
-        String escaped = raw;
-        escaped = escaped.replace("\\", "\\\\");
-        escaped = escaped.replace("\"", "\\\"");
-        escaped = escaped.replace("\b", "\\b");
-        escaped = escaped.replace("\f", "\\f");
-        escaped = escaped.replace("\n", "\\n");
-        escaped = escaped.replace("\r", "\\r");
-        escaped = escaped.replace("\t", "\\t");
-        return escaped;
-    }
 }

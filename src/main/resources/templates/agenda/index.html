@@ -39,7 +39,7 @@
             <div class="modal fade" id="new-agenda" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form class="new-agenda-form" method="POST" th:action="@{/agenda/save}">
+                        <form class="new-agenda-form" method="POST" th:action="@{/agenda/save}" enctype="multipart/form-data" >
                             <div class="modal-header">
                                 <span class="modal-title  py-2" id="exampleModalLabel">AGENDA BARU</span>
                             </div>
@@ -257,7 +257,7 @@
                                     </svg>
 
                                     <label for="lampiran" class="col-form-label">Lampiran</label><br>
-                                    <input type="file" id="myFile" name="filename">
+                                    <input type="file" id="myFile" name="file">
                                 </div>
 
                             </div>
@@ -349,11 +349,11 @@
         /*]]>*/
         
         var json = JSON.parse(message);
-
+        
         var agenda = [];
         for (var i = 0; i < json.length; i++) {
             var obj = json[i];
-
+            
             var startTimeString = new Date(obj.startTime);
             var hour = parseInt(startTimeString.getHours()) < 10 ? '0' + startTimeString.getHours() : startTimeString.getHours();
             var minute = parseInt(startTimeString.getMinutes()) < 10 ? '0' + startTimeString.getMinutes() : startTimeString.getMinutes();
@@ -384,7 +384,8 @@
                 + '<span>' + obj.title + '</span><br>'
                 + '<span>' + obj.location + '</span><br>'
                 + '<span>' + hour + ":" + minute + ' - ' + endHour + ":" + endMinute + '</span><br>'
-                + '<a href="' + obj.attachmentUrl + ' "download>' + 'Download Attachment' + '</a>';
+                + '<a href="'+obj.attachmentUrl+' "download='+obj.fileName+'>' + 'Download Attachment' + '</a>';
+                //+ '<a href="'+obj.attachmentUrl+' "download='+obj.fileName+'>' + '<img src="'+obj.attachmentUrl+'" />' + '</a>';
 
             var color = '';
             switch (obj.category) {
@@ -415,6 +416,7 @@
             scheduler.config.drag_resize = false;
             scheduler.config.drag_move = false;
             scheduler.config.drag_create = false;
+            scheduler.config.readonly = true;
             scheduler.config.icons_select = [];
             scheduler.config.hour_size_px = 132;
             scheduler.attachEvent('onDblClick', function (id, e) {

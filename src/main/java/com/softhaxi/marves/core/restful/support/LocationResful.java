@@ -11,9 +11,10 @@ import com.softhaxi.marves.core.domain.logging.LocationLog;
 import com.softhaxi.marves.core.model.request.LocationRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
 import com.softhaxi.marves.core.model.response.GeneralResponse;
-import com.softhaxi.marves.core.repository.logging.LocationLogRepository;
 import com.softhaxi.marves.core.service.logging.LoggerService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +26,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/location")
+@RequestMapping("/api/v1/location")
 public class LocationResful {
+
+    private static final Logger logger = LoggerFactory.getLogger(LocationResful.class);
 
     @Autowired
     private LoggerService loggerService;
     
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<?> post(@RequestBody LocationRequest request,
         HttpServletRequest servlet) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        logger.debug("[index] Here ......");
 
         String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
         
@@ -57,6 +62,7 @@ public class LocationResful {
                 ), 
                 HttpStatus.CREATED);
         } catch(Exception ex) {
+            logger.error(ex.getMessage(), ex);
             return new ResponseEntity<>(
                 new ErrorResponse(
                     HttpStatus.BAD_REQUEST.value(), 

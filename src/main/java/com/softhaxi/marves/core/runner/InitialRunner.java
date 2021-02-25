@@ -110,7 +110,7 @@ public class InitialRunner implements CommandLineRunner {
         if(radiusLimit.getId() == null) {
             radiusLimit.setCode("WFO_RADIUS_LIMIT");
             radiusLimit.setName("WFO Radius Limit in metre (m)");
-            radiusLimit.setValue("5");
+            radiusLimit.setValue("100");
             radiusLimit.setDecription("Radius limit to indicate that clock in/out is from office");
             radiusLimit.setIsEditable(true);
             radiusLimit.setIsSystem(false);
@@ -128,9 +128,9 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(houseKeep);
         }
 
-        SystemParameter excludeHouseKeep = sysParamRepository.findByCode("EXCLUDE_HOUSE_KEEP").orElse(new SystemParameter());
+        SystemParameter excludeHouseKeep = sysParamRepository.findByCode("HOUSE_KEEP_EXCLUDES").orElse(new SystemParameter());
         if(excludeHouseKeep.getId() == null) {
-            excludeHouseKeep.setCode("EXCLUDE_HOUSE_KEEP");
+            excludeHouseKeep.setCode("HOUSE_KEEP_EXCLUDES");
             excludeHouseKeep.setName("Exclude log tables");
             excludeHouseKeep.setValue("N/A");
             excludeHouseKeep.setDecription("List of exclude log tables for house keeping process");
@@ -185,9 +185,9 @@ public class InitialRunner implements CommandLineRunner {
 
 
 
-        SystemParameter maxClockInDaily = sysParamRepository.findByCode("MAX_CLOCK_IN_DAILY").orElse(new SystemParameter());
+        SystemParameter maxClockInDaily = sysParamRepository.findByCode("CLOCKIN_MAX").orElse(new SystemParameter());
         if(maxClockInDaily.getId() == null) {
-            maxClockInDaily.setCode("MAX_CLOCK_IN_DAILY");
+            maxClockInDaily.setCode("CLOCKIN_MAX");
             maxClockInDaily.setName("Maximum Clock In Daily");
             maxClockInDaily.setValue("07:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
@@ -196,9 +196,9 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(maxClockInDaily);
         }
 
-        SystemParameter maxClockOutDaily = sysParamRepository.findByCode("MAX_CLOCK_OUT_DAILY").orElse(new SystemParameter());
+        SystemParameter maxClockOutDaily = sysParamRepository.findByCode("CLOCKOUT_MAX").orElse(new SystemParameter());
         if(maxClockOutDaily.getId() == null) {
-            maxClockOutDaily.setCode("MAX_CLOCK_OUT_DAILY");
+            maxClockOutDaily.setCode("CLOCKOUT_MAX");
             maxClockOutDaily.setName("Maximum Clock Out Daily");
             maxClockOutDaily.setValue("16:00:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
@@ -207,9 +207,9 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(maxClockOutDaily);
         }
 
-        SystemParameter maxClockInFriday = sysParamRepository.findByCode("MAX_CLOCK_IN_FRIDAY").orElse(new SystemParameter());
+        SystemParameter maxClockInFriday = sysParamRepository.findByCode("CLOCKIN_MAX_FRIDAY").orElse(new SystemParameter());
         if(maxClockInFriday.getId() == null) {
-            maxClockInFriday.setCode("MAX_CLOCK_IN_FRIDAY");
+            maxClockInFriday.setCode("CLOCKIN_MAX_FRIDAY");
             maxClockInFriday.setName("Max Clock In Friday");
             maxClockInFriday.setValue("07:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
@@ -218,9 +218,9 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(maxClockInFriday);
         }
 
-        SystemParameter maxClockOutFriday = sysParamRepository.findByCode("MAX_CLOCK_OUT_FRIDAY").orElse(new SystemParameter());
+        SystemParameter maxClockOutFriday = sysParamRepository.findByCode("CLOCKOUT_MAX_FRIDAY").orElse(new SystemParameter());
         if(maxClockOutFriday.getId() == null) {
-            maxClockOutFriday.setCode("MAX_CLOCK_OUT_FRIDAY");
+            maxClockOutFriday.setCode("CLOCKOUT_MAX_FRIDAY");
             maxClockOutFriday.setName("Maximum Clock Out Friday");
             maxClockOutFriday.setValue("16:30:00");
             //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
@@ -238,6 +238,66 @@ public class InitialRunner implements CommandLineRunner {
             paginationPageSize.setIsEditable(true);
             paginationPageSize.setIsSystem(false);
             sysParamRepository.save(paginationPageSize);
+        }
+
+        SystemParameter clockInReminder = sysParamRepository.findByCode("CLOCKIN_REMINDER_ENABLED").orElse(new SystemParameter());
+        if(clockInReminder.getId() == null) {
+            clockInReminder.setCode("CLOCKIN_REMINDER_ENABLED");
+            clockInReminder.setName("To enable daily clock in reminder notification");
+            clockInReminder.setValue("Y");
+            clockInReminder.setIsEditable(true);
+            clockInReminder.setIsSystem(false);
+            sysParamRepository.save(clockInReminder);
+        }
+
+        clockInReminder = sysParamRepository.findByCode("CLOCKIN_REMINDER_TIME").orElse(new SystemParameter());
+        if(clockInReminder.getId() == null) {
+            clockInReminder.setCode("CLOCKIN_REMINDER_TIME");
+            clockInReminder.setName("Time to send clock in reminder notification (HH:mm)");
+            clockInReminder.setValue("07:30");
+            clockInReminder.setIsEditable(true);
+            clockInReminder.setIsSystem(false);
+            sysParamRepository.save(clockInReminder);
+        }
+
+        SystemParameter clockOutReminder = sysParamRepository.findByCode("CLOCKOUT_REMINDER_ENABLED").orElse(new SystemParameter());
+        if(clockOutReminder.getId() == null) {
+            clockOutReminder.setCode("CLOCKOUT_REMINDER_ENABLED");
+            clockOutReminder.setName("To enable daily clock out reminder notification");
+            clockOutReminder.setValue("N");
+            clockOutReminder.setIsEditable(true);
+            clockOutReminder.setIsSystem(false);
+            sysParamRepository.save(clockOutReminder);
+        }
+
+        clockOutReminder = sysParamRepository.findByCode("CLOCKOUT_REMINDER_TIME").orElse(new SystemParameter());
+        if(clockOutReminder.getId() == null) {
+            clockOutReminder.setCode("CLOCKOUT_REMINDER_TIME");
+            clockOutReminder.setName("Time to send clock in reminder notification (HH:mm)");
+            clockOutReminder.setValue("16:00");
+            clockOutReminder.setIsEditable(true);
+            clockOutReminder.setIsSystem(false);
+            sysParamRepository.save(clockOutReminder);
+        }
+
+        SystemParameter agendaReminder = sysParamRepository.findByCode("AGENDA_REMINDER_BEFORE").orElse(new SystemParameter());
+        if(agendaReminder.getId() == null) {
+            agendaReminder.setCode("AGENDA_REMINDER_BEFORE");
+            agendaReminder.setName("To send reminder before agenda time (in minutes)");
+            agendaReminder.setValue("60");
+            agendaReminder.setIsEditable(true);
+            agendaReminder.setIsSystem(false);
+            sysParamRepository.save(agendaReminder);
+        }
+
+        SystemParameter bufferTime = sysParamRepository.findByCode("ABSENCE_BUFFER_TIME").orElse(new SystemParameter());
+        if(bufferTime.getId() == null) {
+            bufferTime.setCode("ABSENCE_BUFFER_TIME");
+            bufferTime.setName("Buffer time to absence from max clock in and clock out (in minutes)");
+            bufferTime.setValue("30");
+            bufferTime.setIsEditable(true);
+            bufferTime.setIsSystem(false);
+            sysParamRepository.save(bufferTime);
         }
 
         logger.info("[run] Finish at " + ZonedDateTime.now());

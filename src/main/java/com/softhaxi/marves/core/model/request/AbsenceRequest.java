@@ -15,7 +15,7 @@ public class AbsenceRequest implements Serializable {
     private static final long serialVersionUID = 442484045745715890L;
     private String type;
     private String action;
-    private Date dateTime;
+    private String dateTime;
     private double latitude;
     private double longitude;
     private boolean isMockLocation;
@@ -32,7 +32,7 @@ public class AbsenceRequest implements Serializable {
     public AbsenceRequest() {
     }
 
-    public AbsenceRequest(String type, String action, Date dateTime, double latitude, double longitude, boolean isMockLocation, String code, String referenceId, String location, String organizer, String title, String description, String startTime, String endTime) {
+    public AbsenceRequest(String type, String action, String dateTime, double latitude, double longitude, boolean isMockLocation, String code, String referenceId, String location, String organizer, String title, String description, String startTime, String endTime) {
         this.type = type;
         this.action = action;
         this.dateTime = dateTime;
@@ -65,11 +65,11 @@ public class AbsenceRequest implements Serializable {
         this.action = action;
     }
 
-    public Date getDateTime() {
+    public String getDateTime() {
         return this.dateTime;
     }
 
-    public void setDateTime(Date dateTime) {
+    public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
     }
 
@@ -175,7 +175,7 @@ public class AbsenceRequest implements Serializable {
         return this;
     }
 
-    public AbsenceRequest dateTime(Date dateTime) {
+    public AbsenceRequest dateTime(String dateTime) {
         this.dateTime = dateTime;
         return this;
     }

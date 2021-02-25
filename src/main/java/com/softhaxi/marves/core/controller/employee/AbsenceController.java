@@ -1,6 +1,7 @@
 package com.softhaxi.marves.core.controller.employee;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -9,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +31,7 @@ import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
 import com.softhaxi.marves.core.repository.logging.SessionRepository;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 import com.softhaxi.marves.core.service.employee.EmployeeDivisionService;
+import com.softhaxi.marves.core.util.AbsenceUtil;
 import com.softhaxi.marves.core.util.PagingUtil;
 
 import org.slf4j.Logger;
@@ -74,6 +77,9 @@ public class AbsenceController {
     @Autowired
     private SystemParameterRepository parameterRepo;
 
+    @Autowired
+    private AbsenceUtil absenceUtil;
+
     @GetMapping()
     public String index(Model model, @RequestParam(name = "page", required = false, defaultValue = "0") int page,
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date,
@@ -86,6 +92,14 @@ public class AbsenceController {
 
         ZonedDateTime from = now.atStartOfDay(ZoneId.systemDefault());
         ZonedDateTime to = now.plusDays(1).atStartOfDay(ZoneId.systemDefault());
+        model.addAttribute("division", division);
+        model.addAttribute("divisions", divisionService.findAll());
+        model.addAttribute("totalEmployee", userRepo.findAllActiveMobileUser().size());
+        model.addAttribute("totalFakeLocator", dailyRepo.findStatisticFakeLocatorByDate(from, to));
+        model.addAttribute("totalLogin", sessionRepo.findStatisticStatusSession("VALID", from, to));
+        model.addAttribute("totalClockIn", dailyRepo.findStatisticClockInByDate(from, to));
+        model.addAttribute("totalClockOut", dailyRepo.findStatisticClockOutByDate(from, to));
+        model.addAttribute("totalDispensation", dispensationRepo.findStatisticByDate(now));
 
         List<User> users = null;
         Collection<String> emails = new LinkedList<>();
@@ -111,6 +125,13 @@ public class AbsenceController {
         to = date.plusDays(1).atStartOfDay(ZoneId.systemDefault());
         Collection<DailyAttendance> attendances = dailyRepo.findAllByEmailsAndDate(emails, from, to);
         Collection<Dispensation> dispensations = dispensationRepo.findAllByDateAndEmails(date, emails);
+
+        Map<String, Object> parameters = new HashMap<>();
+        Collection<SystemParameter> params = parameterRepo.findByCodes(
+            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+        for(SystemParameter param: params) {
+            parameters.put(param.getCode(), param.getValue());
+        }
 
         AtomicReference<List<Absence>> attends = new AtomicReference<>();
         AtomicReference<List<Absence>> dispens = new AtomicReference<>();
@@ -141,13 +162,19 @@ public class AbsenceController {
                             .divisionName(user.getEmployee() != null ? user.getEmployee().getDivisionName() : null));
                 }
             } else {
+                Map<?, ?> absenceTime = absenceUtil.calculateAbsenceTime(parameters, attendance.getDateTime(), 
+                    attendance.getOutDateTime());
                 Absence absence = new Absence().userId(user.getId()).email(user.getEmail())
                         .fullName(user.getProfile() != null ? user.getProfile().getFullName() : null)
                         .divisionName(user.getEmployee() != null ? user.getEmployee().getDivisionName() : null)
                         .workFrom(attendance.getWorkFrom()).clockInTime(attendance.getDateTime())
                         .clockInIpAddress(attendance.getIpAddress()).clockInMockLocation(attendance.isMockLocation())
                         .clockOutTime(attendance.getOutDateTime()).clockOutIpAddress(attendance.getOutIpAddress())
-                        .clockOutMockLocation(attendance.isOutMockLocation());
+                        .clockOutMockLocation(attendance.isOutMockLocation())
+                        .late(absenceTime.containsKey("late") ? (Duration)absenceTime.get("late") : null)
+                        .early(absenceTime.containsKey("early") ? (Duration)absenceTime.get("early") : null)
+                        .working((Duration)absenceTime.get("working"));
+                        
                 if(dispensation != null) {
                     absence.setDispensationId(dispensation.getId());
                     absence.setDispensation(dispensation.getType());
@@ -177,14 +204,6 @@ public class AbsenceController {
         model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         model.addAttribute("dateDisplay",
                 date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
-        model.addAttribute("division", division);
-        model.addAttribute("divisions", divisionService.findAll());
-        model.addAttribute("totalEmployee", userRepo.findAllActiveMobileUser().size());
-        model.addAttribute("totalFakeLocator", dailyRepo.findStatisticFakeLocatorByDate(from, to));
-        model.addAttribute("totalLogin", sessionRepo.findStatisticStatusSession("VALID", from, to));
-        model.addAttribute("totalClockIn", dailyRepo.findStatisticClockInByDate(from, to));
-        model.addAttribute("totalClockOut", dailyRepo.findStatisticClockOutByDate(from, to));
-        model.addAttribute("totalDispensation", dispensationRepo.findStatisticByDate(now));
         model.addAttribute("currentPage", page);
         model.addAttribute("startIndex", pageSize * page);
         model.addAttribute("data", pagination);

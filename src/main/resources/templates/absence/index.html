@@ -182,14 +182,14 @@
                                 th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
                             <td class="text-center"
                                 th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
-                            <td class="text-center">-</td>
+                            <td class="text-center" th:text="${row.lateDisplay != null ? row.lateDisplay : '-'}">-</td>
                             <td class="text-center"
                                 th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
                             <td class="text-center"
                                 th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
-                            <td class="text-center">-</td>
+                            <td class="text-center" th:text="${row.earlyDisplay != null ? row.earlyDisplay : '-'}">-</td>
                             <td class="text-center"
-                                th:text="${row.workingDuration != null ? row.workingDuration : '-'}">-</td>
+                                th:text="${row.workingDisplay != null ? row.workingDisplay : '-'}">-</td>
                             <td class="text-center" th:text="${row.status != null ? row.status : '-'}">Status</td>
                             <td class="text-center text-danger" th:if="${row.isFakeLocator==true}">On</td>
                             <td class="text-center" th:unless="${row.isFakeLocator==true}">-</td>

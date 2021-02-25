@@ -1,9 +1,6 @@
 package com.softhaxi.marves.core.controller.common;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -31,6 +28,7 @@ import com.softhaxi.marves.core.repository.employee.InvitationMemberRepository;
 import com.softhaxi.marves.core.repository.employee.InvitationRepository;
 import com.softhaxi.marves.core.service.AgendaService;
 import com.softhaxi.marves.core.service.account.UserService;
+import com.softhaxi.marves.core.service.storage.FileStorageService;
 import com.softhaxi.marves.core.util.JSONUtil;
 
 import org.apache.commons.io.FilenameUtils;
@@ -73,6 +71,9 @@ public class AgendaController {
 
     @Autowired
     private AgendaService agendaService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
     
     @Value("${app.upload.path}")
 	private String pathLocation;
@@ -83,8 +84,9 @@ public class AgendaController {
         Date startDate = date.orElse(new Date());
         String strId = id.orElse("");
         String strName = name.orElse("");
-        logger.debug("strId: " + strId);
-        List<String> categoryList = category.isEmpty()?new ArrayList<>():category.get();
+        
+        List<String> categoryList = new ArrayList<>();
+        categoryList = category.isEmpty()?new ArrayList<>():category.get();
         
         LocalDate localDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         Collection<User> userList = new ArrayList<>();
@@ -94,6 +96,9 @@ public class AgendaController {
         }else{
             userList = userService.findAllIncludeAdmin();
         }
+
+        logger.debug("userList: " + userList);
+        logger.debug("categoryList: " + categoryList);
 
         Collection<Invitation> invitations = new ArrayList<>();
         List<Invitation> invitationList = new ArrayList<>();
@@ -106,7 +111,7 @@ public class AgendaController {
             else
                 invitations = invitationRepository.findAllUserDailyInvitationByCategory(!strId.equals("")?strId:user.getId().toString(), categoryList, localDate);
 
-            
+
             agendaService.setMember(invitations);
 
             for (Iterator<Invitation> iterator = invitations.iterator(); iterator.hasNext();) {
@@ -128,6 +133,8 @@ public class AgendaController {
         model.addAttribute("id", strId);
         
         model.addAttribute("invitationObject", jsonArray.toList());
+        logger.debug("jsonArray.toList(): "+jsonArray.toList());
+        model.addAttribute("users", userList);
 
         return "agenda/index";
     }
@@ -183,21 +190,17 @@ public class AgendaController {
                 .category(category.orElse(""))
                 .user(user)
                 .fileName(newFileName+"."+fileFormat)
-                .attachement(pathLocation+"/"+newFileName+"."+fileFormat);
+                .attachement("/"+newFileName+"."+fileFormat);
                 invitationRepository.save(invitation);
                 
-
-                Path path = Paths.get("/asset"+pathLocation);
-                
                 if (!file.isEmpty()) {
-                    Files.copy(file.getInputStream(), path.resolve(newFileName+"."+fileFormat));
+                    fileStorageService.store("", newFileName, file);
                 }
-                
                 
                 List<InvitationMember> invitees = new ArrayList<>();
                 
                 List<String> inviteeEmails =  new LinkedList<>(Arrays.asList(email.orElse("").split(",")));
-                logger.debug("inviteeEmails: " + inviteeEmails);
+                
                 //List<String> inviteeEmails =  new LinkedList<>(Arrays.asList(email.orElse("")));
                 invitees.add(new InvitationMember()
                     .invitation(invitation)
@@ -207,7 +210,7 @@ public class AgendaController {
                 if(inviteeEmails != null && !inviteeEmails.isEmpty()) {
 
                     for(String strEmail: inviteeEmails) {
-                        logger.debug("strEmail: " + strEmail);
+                        
                         User invitee = userRepository.findByUsernameOrEmailIgnoreCase(strEmail).orElse(null);
                         if(invitee == null) {
                             invitee = new User()
@@ -236,7 +239,7 @@ public class AgendaController {
     @GetMapping("/agenda/getuserbyemail")
     public @ResponseBody String getUserByEmail(Model model, @RequestParam("email") Optional<String> email) {
         String strEmail = email.orElse("");
-        logger.debug(strEmail);
+
         List<User> users = userService.findUserByEmailLike(strEmail);
         List<Map<?, ?>> userList = new LinkedList<>();
         

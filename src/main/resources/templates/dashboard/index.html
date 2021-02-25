@@ -42,21 +42,38 @@
         <div class="row my-3">
             <div class="col-md-7">
                 <div class="card">
-                    <div class="card-body" style="height: 25rem;">
+                    <div class="card-body" style="height: 30rem;">
                         <div class="card-title">
                             <h6>MONITOR LOKASI</h6>
                         </div>
-                        <div id="map" class="rounded-bottom" style="height: 21rem;"></div>
+                        <div class="row mb-2">
+                            <div class="col-md-1 btn-group btn-group-sm" role="group"
+                                aria-label="Basic outlined example">
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadMarkerLayer();"><i
+                                        class="las la-sync"></i></button>
+                            </div>
+                            <div class="col-md-6 offset-md-5">
+                                <form>
+                                    <div class="input-group input-group-sm">
+                                        <input id="search-name" type="text" class="form-control" name="name" placeholder="Cari nama..."
+                                        autocomplete="off" aria-label="cari nama">
+                                        <span class="input-group-text bg-light"><i class="las la-search"></i></span>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div id="map" class="rounded-bottom" style="height: 24rem;"></div>
                     </div>
                 </div>
             </div>
             <div class="col-md-5">
                 <div class="card">
-                    <div class="card-body" style="height: 25rem;">
+                    <div class="card-body" style="height: 30rem;">
                         <div class="card-title">
                             <h6>SUMMARY PRESENSI</h6>
                         </div>
-                        <div style="height: 20rem;">
+                        <div style="height: 25rem;">
                             <canvas class="my-4" id="summary-chart"></canvas>
                         </div>
                     </div>
@@ -79,7 +96,8 @@
                             <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                                 <div class="d-flex justify-content-between align-items-center w-100">
                                     <a th:href="@{'/activity?id=' + ${row.id}}"><strong class="text-gray-dark"
-                                            th:text="${row.user.profile != null ? row.user.profile.fullName : row.user.email}">Full Name</strong></a>
+                                            th:text="${row.user.profile != null ? row.user.profile.fullName : row.user.email}">Full
+                                            Name</strong></a>
                                     <span
                                         th:text="${#temporals.format(row.actionTime, 'dd-MM-yyyy HH:mm:ss zzz')}">Follow</span>
                                 </div>
@@ -105,7 +123,11 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
+    <script th:src="@{/scripts/autocomplete.js}"></script>
     <script>
+        var map;
+        var markerGroup;
+        var nameAutocomplete;
         // var absenceOptions = {
         //     responsive: true,
         //     maintainAspectRatio: false,
@@ -206,6 +228,59 @@
                 }]
             }
         };
+
+        function initMap() {
+            map = L.map('map').setView([50.0875726, 14.4189987], 13);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
+            }).addTo(map);
+            loadMarkerLayer();
+        }
+
+        function loadMarkerLayer(user = null) {
+            var bounds = [];
+            var LeafIcon = L.Icon.extend({
+                options: {
+                    iconSize: [36, 36],
+                }
+            });
+            $.ajax({
+                url: user == null ? '/location/latest' : '/location/latest?user=' + user,
+                method: 'GET',
+                success: function (response) {
+                    if(markerGroup != undefined)
+                        markerGroup.clearLayers();
+                    markerGroup = L.layerGroup().addTo(map);
+                    // var result = JSON.parse(response);
+                    // console.log(response.data);
+                    response.data.forEach(element => {
+                        var markerPoint = [element.latitude, element.longitude];
+                        bounds.push(markerPoint);
+                        // if(element.profilePicture != null) {
+                        //     var icon = new LeafIcon({iconUrl: element.profilePicture})
+                        //     var marker = L.marker(markerPoint, { icon: icon, title: element.fullName }).addTo(group);
+                        // } else {
+                        var marker = L.marker(markerPoint, { title: element.fullName }).addTo(markerGroup);
+                        // }
+                        if (element.profilePicture != null) {
+                            marker.bindPopup('<img src="' + element.profilePicture + '" class="thumbnail-mini rounded-circle m-1" alt="pic"/><b>' + element.fullName + '</b><br>Terakhir Update: <b class="text-danger">' + element.dateTimeDisplay + '</b>');
+                        } else {
+                            marker.bindPopup('<img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" class="thumbnail-mini rounded-circle m-1" alt="pic"/><b>' + element.fullName + '</b><br>Terakhir Update: <b class="text-danger">' + element.dateTimeDisplay + '</b>');
+                        }
+                    });
+                    map.fitBounds(bounds);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+
         (function () {
             var absenceCtx = document.getElementById("absence-chart").getContext("2d");
             var absenceChart;
@@ -283,15 +358,33 @@
                 }
             });
 
-            var map = L.map('map').setView([50.0875726, 14.4189987], 13);
-            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-                id: 'mapbox/streets-v11',
-                tileSize: 512,
-                zoomOffset: -1,
-                accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
-            }).addTo(map);
+            nameAutocomplete = new Autocomplete(document.getElementById('search-name'), {
+                data: [],
+                maximumItems: 5,
+                treshold: 1,
+                onSelectItem: ({ label, value }) => {
+                    // console.log("user selected:", label, value);
+                    loadMarkerLayer(value);
+                    $('#search-name').val(null);
+                }
+            });
+            $('#search-name').keyup(function (e) {
+                if ($('#search-name').val().length >= 1 && $('#search-name').val() != "") {
+                    console.log
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/employee/search",
+                        data: 'name=' + $('#search-name').val(),
+                        success: function (data) {
+                            nameAutocomplete.setData(data);
+                        }
+                    });
+                }
+            });
+
+            initMap();
+            
         })();
     </script>
 </body>

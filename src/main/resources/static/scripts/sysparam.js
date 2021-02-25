@@ -10,7 +10,7 @@ $(function () {
             // on the right side
             code: {
                 required: true,
-                maxlength: 20
+                maxlength: 50
             },
             name: {
                 required: true,

@@ -171,13 +171,19 @@ public class InvitationResful {
         LocalDate startDate = request.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate endDate = request.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        String[] startTimes = request.getStartTime().split(":");
-        String[] endTimes = request.getEndTime().split(":");
+        ZonedDateTime startTimeMobile = ZonedDateTime.parse(request.getStartTime(),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+        ZonedDateTime endTimeMobile = ZonedDateTime.parse(request.getEndTime(),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
         
-        ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-            Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
-        ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-            Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
+
+        // String[] startTimes = request.getStartTime().split(":");
+        // String[] endTimes = request.getEndTime().split(":");
+        
+        // ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+        //     Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
+        // ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+        //     Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
 
         Invitation invitation = new Invitation()
             .code(request.getCode())
@@ -186,8 +192,10 @@ public class InvitationResful {
             .location(request.getLocation())
             .startDate(startDate)
             .endDate(endDate)
-            .startTime(startTime)
-            .endTime(endTime)
+            .startTime(startTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
+            .endTime(endTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
+            // .startTimeMobile(startTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
+            // .endTimeMobile(endTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
             .category(request.getCategory().toUpperCase())
             .user(user);
         if(path != null) {
@@ -333,20 +341,27 @@ public class InvitationResful {
         }
         logger.info("[edit] File Path...." + path);
 
-        LocalDate startDate = invitation.getStartDate();
+        // LocalDate startDate = invitation.getStartDate();
 
-        String[] startTimes = request.getStartTime().split(":");
-        String[] endTimes = request.getEndTime().split(":");
+        // String[] startTimes = request.getStartTime().split(":");
+        // String[] endTimes = request.getEndTime().split(":");
+
+        ZonedDateTime startTimeMobile = ZonedDateTime.parse(request.getStartTime(),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+        ZonedDateTime endTimeMobile = ZonedDateTime.parse(request.getEndTime(),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
         
-        ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-            Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
-        ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-            Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
+        // ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+        //     Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
+        // ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
+        //     Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
 
         //invitation.location(request.getLocation());
         invitation.setDescription(request.getDescription());
-        invitation.startTime(startTime);
-        invitation.endTime(endTime);
+        // invitation.startTimeMobile(startTimeMobile);
+        // invitation.endTimeMobile(endTimeMobile);
+        invitation.startTime(startTimeMobile.toInstant().atZone(ZoneId.systemDefault()));
+        invitation.endTime(endTimeMobile.toInstant().atZone(ZoneId.systemDefault()));
         if(path != null) {
             invitation.setFileName(file.getOriginalFilename());
             invitation.setAttachement(path);

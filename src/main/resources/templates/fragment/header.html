@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
@@ -22,15 +23,15 @@
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/dashboard') || #strings.contains(#httpServletRequest.requestURI, '/activity')  ? 'active':''}"
                             class="nav-link" th:href="@{/dashboard}">Dashboard</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN')">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/covid') ? 'active':''}"
                             class="nav-link" th:href="@{/covid}">CovidTracker</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN')">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/chat') ? 'active':''}"
                             class="nav-link" th:href="@{/chat}">Chat</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN')">
                         <a th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/openticket') ? 'active':''}"
                             class="nav-link" th:href="@{/openticket}">Open Ticket</a>
                     </li>
@@ -60,7 +61,7 @@
                             Pengaturan
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">
-                            <li><a class="dropdown-item" th:href="@{/auth/session}">Daftar Session</a></li>
+                            <li sec:authorize="hasAnyAuthority('ADMIN')"><a class="dropdown-item" th:href="@{/auth/session}">Daftar Session</a></li>
                             <!-- <li><a class="dropdown-item" href="#">Kantor Utama</a></li> -->
                             <li><a class="dropdown-item" th:href="@{/calendar}">Kalendar Tahunan</a></li>
                             <li><hr class="dropdown-divider"></li>

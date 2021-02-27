@@ -23,7 +23,7 @@
                 <div class="table-wrapper table-responsive-sm">
                     <div class="row mt-3 mb-1">
                         <div class="col-sm-8 text-align-right">
-                            <form action="#" th:action="@{/sysparam/add}" th:object="${sysParam}" method="POST">
+                            <form sec:authorize="hasAnyAuthority('ADMIN')" action="#" th:action="@{/sysparam/add}" th:object="${sysParam}" method="POST">
                                 <button type="submit" class="btn btn-sm btn-success" data-toggle="modal">
                                     <i class="las la-plus"></i> <span>Tambah</span>
                                 </button>

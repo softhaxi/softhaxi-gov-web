@@ -1,4 +1,3 @@
-<!-- https://github.com/nhn/tui.calendar -->
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
@@ -68,21 +67,6 @@
                     </form>
                 </div>
                 <div class="row list-wrapper">
-                    <!-- <div class="row list-item" th:each="row : ${data}" th:id="${row.id}">
-                        <div class="col-md-8">
-                            <h5 th:text="${row.code}">Ticket Code</h5>
-                            <span class="h6 text-muted fw-lighter text-nowrap" th:if="${row.user.profile != null}"
-                                th:text="${row.user.profile.fullName}">Ticket Reporter</span>
-                            <span class="h6 text-muted fw-lighter text-nowrap" th:unless="${row.user.profile != null}"
-                                th:text="${row.user.email}">Ticket Reporter</span>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <span class="fs-6 text-muted"
-                                th:text="${#temporals.format(row.createdAt, 'dd-MM-yyyy')}">Ticket date</span><br />
-                            <small class="text-muted fw-lighter"
-                                th:text="${#temporals.format(row.createdAt, 'HH:MM zzz')}">Ticket time</small>
-                        </div>
-                    </div> -->
                 </div>
             </div>
             <div class="col-md-8 detail-wrapper"></div>

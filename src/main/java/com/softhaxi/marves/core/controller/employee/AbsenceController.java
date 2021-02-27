@@ -239,15 +239,25 @@ public class AbsenceController {
         List<DailyAttendance> attendances = (List<DailyAttendance>) dailyRepo.findAllByEmailsAndDate(
                 Arrays.asList(user.getEmail()), from.atStartOfDay(ZoneId.systemDefault()),
                 to.atStartOfDay(ZoneId.systemDefault()));
+        Map<String, Object> parameters = new HashMap<>();
+        Collection<SystemParameter> params = parameterRepo.findByCodes(
+            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+        for(SystemParameter param: params) {
+            parameters.put(param.getCode(), param.getValue());
+        }
 
         AtomicReference<List<Absence>> data = new AtomicReference<>();
         AtomicReference<Integer> wfo = new AtomicReference<>();
         AtomicReference<Integer> wfh = new AtomicReference<>();
         AtomicReference<Integer> fake = new AtomicReference<>();
+        AtomicReference<Integer> late = new AtomicReference<>();
+        AtomicReference<Integer> early = new AtomicReference<>();
 
         wfo.set(0);
         wfh.set(0);
         fake.set(0);
+        late.set(0);
+        early.set(0);
         dateRange.forEach((date) -> {
             List<Absence> list = data.get();
             if (list == null)
@@ -271,6 +281,10 @@ public class AbsenceController {
                             date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY));
                 }
             } else {
+                Map<?, ?> absenceTime = absenceUtil.calculateAbsenceTime(parameters, attendance.getDateTime(), 
+                    attendance.getOutDateTime());
+
+                
                 if (attendance.getWorkFrom().equalsIgnoreCase("wfo")) {
                     wfo.set(wfo.get() + 1);
                 } else if (attendance.getWorkFrom().equalsIgnoreCase("wfh")) {
@@ -280,12 +294,25 @@ public class AbsenceController {
                 if (attendance.isMockLocation() || attendance.isOutMockLocation()) {
                     fake.set(fake.get() + 1);
                 }
-                list.add(new Absence().date(date)
+                Absence absence = new Absence().date(date)
                         .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)
                         .workFrom(attendance.getWorkFrom()).clockInTime(attendance.getDateTime())
                         .clockInIpAddress(attendance.getIpAddress()).clockInMockLocation(attendance.isMockLocation())
                         .clockOutTime(attendance.getOutDateTime()).clockOutIpAddress(attendance.getOutIpAddress())
-                        .clockOutMockLocation(attendance.isOutMockLocation()));
+                        .clockOutMockLocation(attendance.isOutMockLocation());
+                
+                if(absenceTime.containsKey("late")) {
+                    late.set(late.get() + 1);
+                    absence.setLate((Duration) absenceTime.get("late"));
+                }
+
+                if(absenceTime.containsKey("early")) {
+                    early.set(early.get() + 1);
+                    absence.setEarly((Duration) absenceTime.get("early"));
+                }
+                absence.working((Duration)absenceTime.get("working"));
+                
+                list.add(absence);
             }
             data.set(list);
         });
@@ -333,8 +360,8 @@ public class AbsenceController {
         model.addAttribute("dateDisplay",
                 from.format(DateTimeFormatter.ofPattern("MMMM yyyy").withLocale(new Locale("in", "ID"))));
         model.addAttribute("user", user);
-        model.addAttribute("totalLate", 0);
-        model.addAttribute("totalEarly", 0);
+        model.addAttribute("totalLate", late.get());
+        model.addAttribute("totalEarly", early.get());
         model.addAttribute("totalWFO", wfo.get());
         model.addAttribute("totalWFH", wfh.get());
         model.addAttribute("totalFake", fake.get());

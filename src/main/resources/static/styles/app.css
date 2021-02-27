@@ -9,7 +9,13 @@ body {
     text-decoration: none;
 }
 
-.thumbnail {
+.thumbnail-240 {
+    width: 240px; 
+    height: 240px;
+    object-fit: cover;
+}
+
+.thumbnail-64 {
     width: 64px; 
     height: 64px;
     object-fit: cover;

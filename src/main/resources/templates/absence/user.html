@@ -31,11 +31,11 @@
         </div>
         <div class="row" style="margin-top: 2rem;">
             <div class="col-md-1">
-                <img th:if="${user.employee != null && user.employee.pictureUrl != null }"
-                    th:src="${user.employee.pictureUrl}" class="thumbnail rounded-circle z-depth-2" width="100"
-                    data-holder-rendered="true" />
+                <img id="thumbnail" th:if="${user.employee != null && user.employee.pictureUrl != null }"
+                    th:src="${user.employee.pictureUrl}" class="thumbnail-64 rounded-circle z-depth-2" width="100"
+                    data-holder-rendered="true" onclick="showPreview();"/>
                 <img th:unless="${user.employee != null && user.employee.pictureUrl != null }"
-                    class="thumbnail rounded-circle z-depth-2" alt="thumbnail"
+                    class="thumbnail-64 rounded-circle z-depth-2" alt="thumbnail"
                     src="https://randomuser.me/api/portraits/men/1.jpg" data-holder-rendered="true">
             </div>
             <div class="col-md-11">
@@ -83,11 +83,12 @@
                             <td>:</td>
                             <td th:text="${totalWFH + ' hari'}">0 hari</td>
                         </tr>
-                        <tr>
+                        <tr sec:authorize="hasAnyAuthority('ADMIN')">
                             <td>Fake Locator</td>
                             <td>:</td>
                             <td th:text="${totalFake + ' hari'}">0 hari</td>
                         </tr>
+                        <tr sec:authorize="hasAnyAuthority('OPERATOR')"></tr>
                     </tbody>
                 </table>
             </div>
@@ -144,7 +145,7 @@
                             <th colspan="3" class="text-center" scope="col">Pulang</th>
                             <th rowspan="2" class="text-center align-middle" scope="col">Durasi Kerja</th>
                             <th rowspan="2" class="text-center align-middle" scope="col">Status</th>
-                            <th rowspan="2" class="text-center align-middle" scope="col">Fake Locator</th>
+                            <th sec:authorize="hasAnyAuthority('ADMIN')" rowspan="2" class="text-center align-middle" scope="col">Fake Locator</th>
                         </tr>
                         <tr>
                             <th class="text-center" scope="col">Waktu</th>
@@ -160,14 +161,14 @@
                             <td class="text-center" th:text="${#temporals.format(row.date, 'dd-MM-yyyy')}" />
                             <td class="text-center" th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
                             <td class="text-center" th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
-                            <td class="text-center">-</td>
+                            <td class="text-center" th:text="${row.lateDisplay != null ? row.lateDisplay : '-'}">-</td>
                             <td class="text-center" th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
                             <td class="text-center" th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
-                            <td class="text-center">-</td>
-                            <td class="text-center" th:text="${row.workingDuration != null ? row.workingDuration : '-'}">-</td>
+                            <td class="text-center" th:text="${row.earlyDisplay != null ? row.earlyDisplay : '-'}">-</td>
+                            <td class="text-center" th:text="${row.workingDisplay != null ? row.workingDisplay : '-'}">-</td>
                             <td class="text-center" th:text="${row.status != null ? row.status : '-'}">Status</td>
-                            <td th:if="${row.isFakeLocator==true}" class="text-danger">On</td>
-                            <td th:unless="${row.isFakeLocator==true}">-</td>
+                            <td sec:authorize="hasAnyAuthority('ADMIN')" th:if="${row.isFakeLocator==true}" class="text-danger">On</td>
+                            <td sec:authorize="hasAnyAuthority('ADMIN')" th:unless="${row.isFakeLocator==true}">-</td>
 
                         </tr>
                         <tr th:unless="${data.numberOfElements > 0}"> 
@@ -213,6 +214,16 @@
                 </nav>
             </div>
         </div>
+        <div class="modal fade" id="image-preview" tabindex="-1" role="dialog" aria-labelledby="image-preview"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img class="img-fluid" src="" id="image-src" />
+                    </div>
+                </div>
+            </div>
+        </div>
         <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
@@ -224,6 +235,11 @@
         crossorigin="anonymous"></script>
     <script th:src="@{/scripts/app.js}"></script>
     <script>
+        function showPreview() {
+            $('#image-src').attr('src', $('#thumbnail').attr('src')).attr('src');
+            $('#image-preview').modal('show')
+        }
+
         (function () {
             $('#date-selection').datepicker({
                 startView: 1,

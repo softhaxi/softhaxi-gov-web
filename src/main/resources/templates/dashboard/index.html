@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css"
+        integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+        crossorigin="anonymous" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css"
+        integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+        crossorigin="anonymous" />
     <link th:href="@{/styles/app.css}" rel="stylesheet" />
 </head>
 
@@ -55,8 +62,8 @@
                             <div class="col-md-6 offset-md-5">
                                 <form>
                                     <div class="input-group input-group-sm">
-                                        <input id="search-name" type="text" class="form-control" name="name" placeholder="Cari nama..."
-                                        autocomplete="off" aria-label="cari nama">
+                                        <input id="search-name" type="text" class="form-control" name="name"
+                                            placeholder="Cari nama..." autocomplete="off" aria-label="cari nama">
                                         <span class="input-group-text bg-light"><i class="las la-search"></i></span>
                                     </div>
                                 </form>
@@ -123,10 +130,14 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"
+        integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+        crossorigin="anonymous"></script>
     <script th:src="@{/scripts/autocomplete.js}"></script>
     <script>
         var map;
         var markerGroup;
+        var clusters;
         var nameAutocomplete;
         // var absenceOptions = {
         //     responsive: true,
@@ -231,14 +242,21 @@
 
         function initMap() {
             map = L.map('map').setView([50.0875726, 14.4189987], 13);
-            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Marves © 2021',
+                tap: false,
                 maxZoom: 18,
-                id: 'mapbox/streets-v11',
                 tileSize: 512,
                 zoomOffset: -1,
-                accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
             }).addTo(map);
+            // L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
+            //     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            //     maxZoom: 18,
+            //     id: 'mapbox/streets-v11',
+            //     tileSize: 512,
+            //     zoomOffset: -1,
+            //     accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
+            // }).addTo(map);
             loadMarkerLayer();
         }
 
@@ -253,9 +271,15 @@
                 url: user == null ? '/location/latest' : '/location/latest?user=' + user,
                 method: 'GET',
                 success: function (response) {
-                    if(markerGroup != undefined)
-                        markerGroup.clearLayers();
-                    markerGroup = L.layerGroup().addTo(map);
+                    if(clusters != null) {
+                        clusters.clearLayers();
+                    }
+                    clusters = new L.markerClusterGroup();
+                    // var markers = [];
+                    // clusters.setMap(null);
+                    // if (markerGroup != undefined)
+                    //     markerGroup.clearLayers();
+                    // markerGroup = L.layerGroup().addTo(map);
                     // var result = JSON.parse(response);
                     // console.log(response.data);
                     response.data.forEach(element => {
@@ -265,14 +289,17 @@
                         //     var icon = new LeafIcon({iconUrl: element.profilePicture})
                         //     var marker = L.marker(markerPoint, { icon: icon, title: element.fullName }).addTo(group);
                         // } else {
-                        var marker = L.marker(markerPoint, { title: element.fullName }).addTo(markerGroup);
+                        var marker = L.marker(markerPoint, { title: element.fullName });
+                        //.addTo(markerGroup);
                         // }
                         if (element.profilePicture != null) {
                             marker.bindPopup('<img src="' + element.profilePicture + '" class="thumbnail-mini rounded-circle m-1" alt="pic"/><b>' + element.fullName + '</b><br>Terakhir Update: <b class="text-danger">' + element.dateTimeDisplay + '</b>');
                         } else {
                             marker.bindPopup('<img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" class="thumbnail-mini rounded-circle m-1" alt="pic"/><b>' + element.fullName + '</b><br>Terakhir Update: <b class="text-danger">' + element.dateTimeDisplay + '</b>');
                         }
+                        clusters.addLayer(marker);
                     });
+                    map.addLayer(clusters);
                     map.fitBounds(bounds);
                 },
                 error: function (xhr, status, error) {
@@ -384,7 +411,7 @@
             });
 
             initMap();
-            
+
         })();
     </script>
 </body>

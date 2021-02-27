@@ -1,0 +1,93 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="table-wrapper" id="table-wrapper">
+    <div class="row mb-2">
+        <div class="col-md-2 btn-group" role="group" aria-label="Basic radio toggle button group">
+            <input th:if="${filter == 'all'}" type="radio" class="btn-check" name="btnradio" id="all"
+                autocomplete="off" checked>
+            <input th:unless="${filter == 'all'}" type="radio" class="btn-check" name="btnradio" id="all"
+                autocomplete="off">
+            <label class="btn btn-outline-primary" for="all">Semua</label>
+
+            <input th:if="${filter == 'latest'}" type="radio" class="btn-check" name="btnradio" id="latest"
+                autocomplete="off" checked>
+            <input th:unless="${filter == 'latest'}" type="radio" class="btn-check" name="btnradio" id="latest"
+                autocomplete="off">
+            <label class="btn btn-outline-primary" for="latest">Terkini</label>
+        </div>
+        <!-- <div class="col-md-3 offset-md-6 justify-content-end">
+            <input id="date-selection" type="text" class="form-control text-center border-0"
+                data-provide="datepicker" th:value="${dateDisplay}">
+        </div> -->
+    </div>
+    <div class="row mb-3">
+        <div class="table-responsive">
+            <table class="table table-borderless bg-light">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
+                        <td class="col-md-4 text-center align-middle" scope="col">Nama Pengguna</td>
+                        <td class="col-md-3 text-center align-middle" scope="col">Tanggal Login</td>
+                        <td class="col-md-3 text-center align-middle" scope="col">Terakhir Digunakan</td>
+                        <!-- <td class="col-md-3 text-center align-middle" scope="col">Status</td> -->
+                        <th class="col-md-2 text-center" scope="col" th:text="Action" />
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
+                        <td class="text-center" th:text="${rowStat.count + startIndex}" />
+                        <td class="text-start">
+                            <a class="flat-link" th:text="${row.user.profile.fullName}"></a>
+                        </td>
+                        <td class="text-center"
+                            th:text="${#temporals.format(row.createdAt, 'dd MMM yyyy HH:mm:ss')}" />
+                        <td th:if="${row.lastUsed != null}" class="text-center"
+                            th:text="${#temporals.format(row.lastUsed, 'dd MMM yyyy HH:mm:ss')}"></td>
+                        <td th:unless="${row.lastUsed != null}" class="text-center">-</td>
+                        <!-- <td class="text-center" th:text="${row.status}">-</td> -->
+                        <td class="text-center">
+                            <a th:data-delete-link="${row.id}" class="btn btn-sm btn-outline-danger btn-delete"
+                                style="font-size: 8pt;" data-bs-toggle="modal" data-bs-target="#delete-modal"><i
+                                    class="las la-trash la-lg"></i></a>
+                        </td>
+                    </tr>
+                    <tr th:unless="${data.numberOfElements > 0}">
+                        <td colspan="5" class="text-center">Tidak ada data</td>
+                    </tr>
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation example" th:if="${data.totalPages > 1}">
+                <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/auth/session(page=${currentPage-1}, filter=${filter})}"
+                            aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <th:block th:each="pageNumber : ${pages}">
+                        <li class="page-item active" th:if="${pageNumber==currentPage}">
+                            <a href="#" th:classappend="page-link">
+                                <span aria-hidden="true" th:text="${pageNumber}"></span>
+                            </a>
+                        </li>
+                        <li class="page-item disabled" th:if="${pageNumber} == -1">
+                            <a class="page-link" href="#">...</a>
+                        </li>
+                        <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage}">
+                            <a th:href="@{/auth/session(page=${pageNumber}, filter=${filter})}"
+                                th:classappend="page-link">
+                                <span aria-hidden="true" th:text="${pageNumber}"></span>
+                            </a>
+                        </li>
+                    </th:block>
+                    <li class="page-item" th:classappend="${currentPage == data.totalPages} ? 'disabled'">
+                        <a class="page-link"
+                            th:href="@{/auth/session(page=${currentPage+1}, filter=${filter})}"
+                            aria-label="Next" title="Next Page" data-toggle="tooltip">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>

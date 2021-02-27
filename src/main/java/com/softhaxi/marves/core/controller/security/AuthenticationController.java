@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.logging.Session;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
@@ -25,6 +26,8 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -38,24 +41,17 @@ public class AuthenticationController {
     @Autowired
     private SystemParameterRepository parameterRepo;
 
-    @GetMapping("/session")
-    public String sessionIndex(Model model, @RequestParam(name = "page", required = false, defaultValue = "1") int page,
-            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date,
-            @RequestParam(name = "filter", required = false, defaultValue = "all") String filter) {
+    private Model getSessionPagination(Model model, int page, String filter) {
         LocalDate now = LocalDate.now();
-        if (date == null) {
-            date = now;
-        }
 
         List<Session> sessions = null;
         if (filter.equalsIgnoreCase("latest")) {
-            ZonedDateTime from = date.atStartOfDay(ZoneId.systemDefault());
-            ZonedDateTime to = date.plusDays(1).atStartOfDay(ZoneId.systemDefault());
+            ZonedDateTime from = now.atStartOfDay(ZoneId.systemDefault());
+            ZonedDateTime to = now.plusDays(1).atStartOfDay(ZoneId.systemDefault());
             sessions = (List<Session>) sessionRepo.findAllByStatusAndDateRange("VALID", from, to);
         } else {
             sessions = (List<Session>) sessionRepo.findAllByStatus("VALID");
         }
-
         int pageSize = Integer.parseInt(
                 parameterRepo.findByCode("PAGINATION_PAGE_SIZE").orElse(new SystemParameter().value("10")).getValue());
         Pageable pageable = PageRequest.of(page - 1, pageSize);
@@ -69,15 +65,40 @@ public class AuthenticationController {
 
         int[] pages = PagingUtil.generatePages(pagination.getTotalPages(), pagination.getNumber());
 
-        model.addAttribute("filter", filter);
-        model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        model.addAttribute("dateDisplay",
-                date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
-        model.addAttribute("currentPage", page );
+        model.addAttribute("currentPage", page);
         model.addAttribute("startIndex", pageSize * (page - 1));
         model.addAttribute("data", pagination);
         model.addAttribute("pages", pages);
 
+        return model;
+    }
+
+    @GetMapping("/session")
+    public String sessionIndex(Model model, @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date,
+            @RequestParam(name = "filter", required = false, defaultValue = "all") String filter) {
+
+        model.addAttribute("filter", filter);
+        // model.addAttribute("date", date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        // model.addAttribute("dateDisplay",
+        //         date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy").withLocale(new Locale("in", "ID"))));
+
+        model = getSessionPagination(model, page, filter);
+
         return "auth/session";
+    }
+
+    @PostMapping("/session")
+    public String sessionDelete(Model model, @RequestParam(name = "id") String id, 
+        @RequestParam(name = "filter", required = false, defaultValue = "all") String filter) {
+        Session session = sessionRepo.findById(UUID.fromString(id)).orElseThrow();
+
+        session.setStatus("INVALID");
+        sessionRepo.save(session);
+        
+        model.addAttribute("filter", filter);
+        model = getSessionPagination(model, 1, filter);
+
+        return "auth/session-table";
     }
 }

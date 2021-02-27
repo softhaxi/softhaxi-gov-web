@@ -16,14 +16,21 @@ public class LoginRequest implements Serializable {
     private String userid;
     private String password;
     private String oneSignalId;
+    private boolean mockLocation;
+    private String latitude;
+    private String longitude;
+
 
     public LoginRequest() {
     }
 
-    public LoginRequest(String userid, String password, String oneSignalId) {
+    public LoginRequest(String userid, String password, String oneSignalId, boolean mockLocation, String latitude, String longitude) {
         this.userid = userid;
         this.password = password;
         this.oneSignalId = oneSignalId;
+        this.mockLocation = mockLocation;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getUserid() {
@@ -43,49 +50,80 @@ public class LoginRequest implements Serializable {
     }
 
     public String getOneSignalId() {
-        return oneSignalId;
+        return this.oneSignalId;
     }
 
     public void setOneSignalId(String oneSignalId) {
         this.oneSignalId = oneSignalId;
     }
 
+    public boolean isMockLocation() {
+        return this.mockLocation;
+    }
+
+    public boolean getMockLocation() {
+        return this.mockLocation;
+    }
+
+    public void setMockLocation(boolean mockLocation) {
+        this.mockLocation = mockLocation;
+    }
+
+    public String getLatitude() {
+        return this.latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return this.longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
     public LoginRequest userid(String userid) {
-        this.userid = userid;
+        setUserid(userid);
         return this;
     }
 
     public LoginRequest password(String password) {
-        this.password = password;
+        setPassword(password);
         return this;
     }
 
     public LoginRequest oneSignalId(String oneSignalId) {
-        this.oneSignalId = oneSignalId;
+        setOneSignalId(oneSignalId);
         return this;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof LoginRequest)) {
-            return false;
-        }
-        LoginRequest loginRequest = (LoginRequest) o;
-        return Objects.equals(userid, loginRequest.userid);
+    public LoginRequest mockLocation(boolean mockLocation) {
+        setMockLocation(mockLocation);
+        return this;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(userid, password);
+    public LoginRequest latitude(String latitude) {
+        setLatitude(latitude);
+        return this;
+    }
+
+    public LoginRequest longitude(String longitude) {
+        setLongitude(longitude);
+        return this;
     }
 
     @Override
     public String toString() {
         return "{" +
-            " userID='" + getUserid() + "'" +
+            " userid='" + getUserid() + "'" +
             ", password='" + getPassword() + "'" +
+            ", oneSignalId='" + getOneSignalId() + "'" +
+            ", mockLocation='" + isMockLocation() + "'" +
+            ", latitude='" + getLatitude() + "'" +
+            ", longitude='" + getLongitude() + "'" +
             "}";
     }
 

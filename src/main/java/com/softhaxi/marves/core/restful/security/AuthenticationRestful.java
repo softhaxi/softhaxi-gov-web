@@ -12,6 +12,7 @@ import com.softhaxi.marves.core.domain.access.UserRole;
 import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
+import com.softhaxi.marves.core.domain.logging.LocationLog;
 import com.softhaxi.marves.core.domain.logging.Session;
 import com.softhaxi.marves.core.model.request.LoginRequest;
 import com.softhaxi.marves.core.model.response.ErrorResponse;
@@ -86,6 +87,7 @@ public class AuthenticationRestful {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest servlet) {
+        logger.debug("[login] Request...." + request.toString());
         User user = null;
         String description = "login.mobile";
         String ipAddress = servlet.getHeader("X-Forwarded-For") != null ? servlet.getHeader("X-Forwarded-For") : servlet.getRemoteAddr();
@@ -154,6 +156,11 @@ public class AuthenticationRestful {
             }
 
             if (!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {
+                if(request.getLatitude() != null && request.getLongitude() != null)
+                    loggerService.saveAsyncLocationLog(new LocationLog().user(user).dateTime(ZonedDateTime.now())
+                    .isMockLocation(request.getMockLocation())
+                    .latitude(Double.parseDouble(request.getLatitude()))
+                    .longitude(Double.parseDouble(request.getLongitude())));
                 loggerService.saveAsyncActivityLog(new ActivityLog().user(user).actionTime(ZonedDateTime.now())
                         .actionName("log.in").description(description).uri("/user").deepLink("core://marves.dev/user")
                         .referenceId(user.getId().toString()).ipAddress(ipAddress));

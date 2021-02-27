@@ -33,12 +33,14 @@
                 <h5 class="align-text-bottom text-uppercase">Notifikasi</h5>
             </div>
             <div class="col-md-6 text-end">
+                <button id="btn-back" class="btn btn-danger border-0" style="display: none;" onclick="backToTable();">
+                    <i class="las la-undo"></i></button>
                 <button class="btn btn-primary border-0" style="background-color: #42BC6F;" data-bs-toggle="modal"
                     data-bs-target="#new-notification"><i class="las la-plus"></i>
                     Notifikasi Baru</button>
             </div>
         </div>
-        <div id="table-container">
+        <div id="data-container">
             <div th:replace="~{notification/table :: table}">table</div>
         </div>
 
@@ -99,9 +101,10 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <input id="btn-submit" type="submit" class="btn btn-primary border-0" style="background-color: #42BC6F;"
-                                value="Kirim">
-                            <button id="btn-cancel" type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <input id="btn-submit" type="submit" class="btn btn-primary border-0"
+                                style="background-color: #42BC6F;" value="Kirim">
+                            <button id="btn-cancel" type="reset" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Batal</button>
                         </div>
                     </form>
                 </div>
@@ -115,6 +118,12 @@
         crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
         integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-linkify/2.1.9/linkify.min.js"
+        integrity="sha512-kxj7VjlzsQgiku2vbRcZI0FJ0dXmPsiRLugiRxJrCROusKHaFfX/hGDD1/L/R0Y+xI8zlA2B5nm6USapz7nQbg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-linkify/2.1.9/linkify-jquery.min.js"
+        integrity="sha512-pPmL2lffs0/BuPtn6iwFP+VEZV539C9uBBY7JDqHUvlxXaxr/03pUaueCB7C9fUSa+D0xeyyz53alBdHAiTQSA=="
         crossorigin="anonymous"></script>
     <script th:src="@{/scripts/app.js}"></script>
     <script th:inline="javascript">
@@ -134,6 +143,37 @@
             }
         }
 
+        function viewDetail(id) {
+            $.ajax({
+                url: '/notification?id=' + id,
+                method: 'GET',
+                success: function (response) {
+                    $('#data-container').html(response);
+                    console.log($('#content-detail').linkify({
+                        target: '_blank'
+                    }));
+                    document.getElementById("btn-back").style.display = "inline";
+                },
+                error: function (xhr, status, error) {
+                    alert('Koneksi ke server terkendala');
+                }
+            });
+        }
+
+        function backToTable() {
+            $.ajax({
+                url: '/notification/table',
+                method: 'GET',
+                success: function (response) {
+                    $('#data-container').html(response);
+                    document.getElementById("btn-back").style.display = "none";
+                },
+                error: function (xhr, status, error) {
+                    alert('Koneksi ke server terkendala');
+                }
+            });
+        }
+
         (function () {
             $('#date-selection').datepicker({
                 startView: 1,
@@ -148,9 +188,9 @@
             });
 
             newModal.addEventListener('shown.bs.modal', function (event) {
-                
+
                 $('#form-new-notification').submit(function (e) {
-                    if(loading) {
+                    if (loading) {
                         alert('Notifikasi baru sedang diproses');
                         return;
                     }
@@ -163,9 +203,7 @@
                     var recipientGroup = $(this).find('#recipientGroup').val();
                     var division = $(this).find('#division').val();
                     var subject = $(this).find('#subject').val();
-                    var message = $(this).find('#message').val().replace(/<br\s*\/?>/mg,"\n");
-                    $(this).find('#btn-submit').prop('disabled', true);
-                    $(this).find('#btn-cancel').prop('disabled', true);
+                    var message = $(this).find('#message').val().replace(/<br\s*\/?>/mg, "\n");
 
                     if (recipientGroup == 'DIVISION' && division == '') {
                         loading = false;
@@ -187,6 +225,9 @@
                         $(this).find('#message').focus();
                         return;
                     }
+
+                    $(this).find('#btn-submit').prop('disabled', true);
+                    $(this).find('#btn-cancel').prop('disabled', true);
                     $.ajax({
                         type: 'POST',
                         url: url,
@@ -199,11 +240,11 @@
                         }),
                         success: function (response) {
                             // console.log(response);
-                            $('#table-container').html(response);
+                            $('#data-container').html(response);
                             var modal = bootstrap.Modal.getInstance(newModal);
                             $('#form-new-notification').trigger('reset');
-                            $(this).find('#btn-submit').prop('disabled', false);
-                            $(this).find('#btn-cancel').prop('disabled', false);
+                            $('#btn-submit').prop('disabled', false);
+                            $('#btn-cancel').prop('disabled', false);
                             modal.hide();
                             document.getElementById('toastBody').innerHTML = 'Notifikasi telah dikirimkan';
                             var toast = new bootstrap.Toast(toastInfo);

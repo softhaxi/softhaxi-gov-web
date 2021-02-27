@@ -1,0 +1,11 @@
+<dic xmlns:th="http://www.thymeleaf.org" class="card my-4" th:fragment="detail">
+    <div class="card-body">
+        <h5 class="card-title" th:text="${data.categoryDisplay}">Card title</h5>
+        <h6 class="card-subtitle mb-2 text-muted" th:if="${data.assignee == 'ALL'}">Kepada: Semua Pegawai</h6>
+        <h6 class="card-subtitle mb-2 text-muted"  th:unless="${data.assignee == 'ALL'}" th:text="${data.assigneeName}">Divisi</h6>
+        <p id="content-detail" class="card-text mt-3" th:text="${data.content}" style="white-space: pre-line">Some quick example text to build on the card title and make up the bulk of the card's
+            content.</p>
+        <!-- <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a> -->
+    </div>
+</dic>

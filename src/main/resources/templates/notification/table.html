@@ -6,7 +6,7 @@
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-borderless bg-light">
+        <table class="table table-borderless table-hover bg-light" style="white-space: nowrap;">
             <thead style="background-color: #BBEED0;">
                 <tr>
                     <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
@@ -18,12 +18,12 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
+                <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}" th:onclick="viewDetail([[${row.id}]]);" >
                     <td class="text-center" th:text="${rowStat.count + startIndex}" />
                     <td th:if="${row.assignee == 'ALL'}" class="text-center">Semua Pegawai</td>
                     <td th:unless="${row.assignee == 'ALL'}" class="text-center" th:text="${row.assigneeName}">Divisi</td>
                     <td th:text="${row.categoryDisplay}" />
-                    <td th:text="${row.content}"  style="white-space: pre-line"/>
+                    <td th:text="${row.content}" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"/>
                     <td class="text-center" th:text="${#temporals.format(row.dateTime, 'dd/MM/yyyy')}" />
                     <td class="text-center" th:text="${#temporals.format(row.dateTime, 'HH:mm:ss')}" />
 

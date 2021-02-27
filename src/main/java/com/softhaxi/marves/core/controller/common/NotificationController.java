@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Map.entry;
@@ -138,14 +139,32 @@ public class NotificationController {
     public String index(Model model, 
             @RequestParam(name = "page", required = false, defaultValue = "1") int page,
             @RequestParam(name = "month", required = false) String month,
-            @RequestParam(name = "year", required = false) String year) {
-        model = getTablePagination(model, page - 1, month, year);
+            @RequestParam(name = "year", required = false) String year,
+            @RequestParam(name = "id", required = false) String id) {
+        if(id == null) {
+            var divisions = divisionService.findAll();
+            model.addAttribute("divisions", divisions);
+            model = getTablePagination(model, page - 1, month, year);
+        } else {
+            Notification notification = notificationRepo.findById(UUID.fromString(id)).orElseThrow();
 
-        var divisions = divisionService.findAll();
-        // logger.debug(divisions.toString());
-        model.addAttribute("divisions", divisions);
+            model.addAttribute("action", "detail");
+            model.addAttribute("data", notification);
+            return "notification/detail";
+        }
         
         return "notification/index";
+    }
+
+    @GetMapping("/table")
+    public String table(Model model,
+        @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+        @RequestParam(name = "month", required = false) String month,
+        @RequestParam(name = "year", required = false) String year) {
+        model = getTablePagination(model, page - 1, String.valueOf(LocalDate.now().getMonthValue()), 
+            String.valueOf(LocalDate.now().getYear()));
+
+        return "notification/table";
     }
 
     @PostMapping()
@@ -220,75 +239,5 @@ public class NotificationController {
         return "notification/table";
     }
 
-    @PostMapping("/save-notification")
-    public String saveNotification(Model model, @ModelAttribute("notification") Notification notification) {
-        String subscriber = "";
-        logger.debug("Assignee: " + notification.getAssignee());
-        if (null == notification.getAssignee() || notification.getAssignee().equals("")) {
-            subscriber = "Maritim Users";
-        } else {
-            Optional<User> user = userRepo.findUserByEmail(notification.getAssignee());
-            if (user.isPresent()) {
-                notification.setUser(user.get());
-                notification.setDateTime(ZonedDateTime.now(ZoneId.systemDefault()));
-                notificationRepo.save(notification);
-            } else {
-                model.addAttribute("errorMessage",
-                        "Email " + notification.getAssignee() + " is not attached to any user");
-            }
-        }
 
-        HttpHeaders headers = new HttpHeaders();
-
-        headers.add("Content-Type", "application/json; charset=utf-8");
-
-        Map<?, ?> body = new HashMap<>();
-        if (!subscriber.equals("")) {
-            body = Maps.of("app_id", appId, "included_segments", Arrays.asList(subscriber), "headings",
-                    ImmutableMap.of("en", notification.getCategory()), "contents",
-                    ImmutableMap.of("en", notification.getContent()));
-        } else {
-            body = Maps.of("app_id", appId, "include_player_ids",
-                    Arrays.asList(notification.getUser().getOneSignalId()), "headings",
-                    ImmutableMap.of("en", notification.getCategory()), "contents",
-                    ImmutableMap.of("en", notification.getContent()));
-        }
-
-        HttpEntity<Map<?, ?>> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<?> response = restTemplate.postForEntity(notificationEndPoint, entity, Map.class);
-
-        logger.info("[sendNotification] Result....{}", response.getBody());
-
-        List<Notification> notifications = notificationRepo.findAll();
-
-        model.addAttribute("notifications", notifications);
-        return "common/notification-list.html";
-    }
-
-    @GetMapping("/find-user-email")
-    public @ResponseBody String findUserByName(Model model, @RequestParam("email") Optional<String> email) {
-        String strEmail = email.orElse("");
-
-        List<User> users = userRepo.findUserByUsernameLike(strEmail);
-
-        List<Map<String, String>> userList = new ArrayList<>();
-        users = users.stream().limit(10).collect(Collectors.toList());
-        String json = "";
-
-        try {
-            Map<String, String> userMap = new HashMap<>();
-            for (User user : users) {
-                userMap = new HashMap<>();
-                userMap.put("email", user.getEmail());
-                userList.add(userMap);
-            }
-
-            Gson gson = new Gson();
-            json = gson.toJson(userList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return json;
-    }
 }

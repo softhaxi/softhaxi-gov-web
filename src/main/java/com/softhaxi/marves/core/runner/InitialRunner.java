@@ -65,6 +65,13 @@ public class InitialRunner implements CommandLineRunner {
             user.setIsSystem(false);
             roleRepository.save(user);
         }
+        Role operator = roleRepository.findByName("SADMIN").orElse(null);
+        if(operator.getId() == null) {
+            operator.setName("OPERATOR");
+            operator.setDescription("Operator");
+            operator.setIsSystem(false);
+            roleRepository.save(operator);
+        }
 
         Role sadmin = roleRepository.findByName("SADMIN").orElse(null);
         User sUser = userRepository.findByUsername("MCORE.SADMIN").orElse(null);
@@ -78,6 +85,19 @@ public class InitialRunner implements CommandLineRunner {
             userRepository.save(sUser);
             
             UserRole userRole = new UserRole(sUser, sadmin);
+            userRoleRepository.save(userRole);
+        }
+
+        User aOpr = userRepository.findByUsername("MCORE.OPERATOR").orElse(null);
+        if(aOpr == null && operator != null) {
+            aOpr = new User();
+            aOpr.setUsername("MCORE.OPERATOR");
+            aOpr.setEmail("mcore.operator@maritim.go.id");
+            aOpr.setPassword("password");
+            aOpr.setIsLDAPUser(false);
+            userRepository.save(aOpr);
+            
+            UserRole userRole = new UserRole(aOpr, operator);
             userRoleRepository.save(userRole);
         }
 

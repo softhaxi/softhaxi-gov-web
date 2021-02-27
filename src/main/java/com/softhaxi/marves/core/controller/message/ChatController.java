@@ -167,7 +167,7 @@ public class ChatController {
 
         messagingTemplate.convertAndSendToUser(
             recipientUser.getEmail(), 
-            "/queue/message", chat.getId().toString());
+            "/queue/message", String.format("%s.%s", chat.getChatRoom().getId().toString(), chat.getId().toString()));
 
         if(recipientUser.getOneSignalId() != null && !recipientUser.getOneSignalId().isEmpty()) {
             Map<String, Object> body = new HashMap<>(Map.ofEntries(

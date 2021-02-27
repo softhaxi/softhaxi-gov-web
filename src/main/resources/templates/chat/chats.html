@@ -1,7 +1,7 @@
 <div class="mx-0" xmlns:th="http://www.thymeleaf.org" >
     <div class="rooms-search p-3 border border-white" style="height: 3.5rem; background-color: #f1f1f1;">
         <img th:if="${room.profilePicture != null}" th:src="${room.profilePicture}"
-                    alt="user" class="thumbnail-mini rounded-circle">
+                    alt="user" class="thumbnail-mini rounded-circle" th:onclick="showPreview([[${room.profilePicture}]]);">
         <!-- <img th:unless="${room.profilePicture != null}" src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
                     alt="user" class="thumbnail-mini rounded-circle"> -->
         <span class="h5 fw-bold align-items-center" th:text="${room.name}"></span>

@@ -31,11 +31,11 @@
         </div>
         <div class="row" style="margin-top: 2rem;">
             <div class="col-md-1">
-                <img th:if="${user.employee != null && user.employee.pictureUrl != null }"
-                    th:src="${user.employee.pictureUrl}" class="thumbnail rounded-circle z-depth-2" width="100"
-                    data-holder-rendered="true" />
+                <img id="thumbnail" th:if="${user.employee != null && user.employee.pictureUrl != null }"
+                    th:src="${user.employee.pictureUrl}" class="thumbnail-64 rounded-circle z-depth-2" width="100"
+                    data-holder-rendered="true" onclick="showPreview();"/>
                 <img th:unless="${user.employee != null && user.employee.pictureUrl != null }"
-                    class="thumbnail rounded-circle z-depth-2" alt="thumbnail"
+                    class="thumbnail-64 rounded-circle z-depth-2" alt="thumbnail"
                     src="https://randomuser.me/api/portraits/men/1.jpg" data-holder-rendered="true">
             </div>
             <div class="col-md-11">
@@ -182,6 +182,16 @@
                 </nav>
             </div>
         </div>
+        <div class="modal fade" id="image-preview" tabindex="-1" role="dialog" aria-labelledby="image-preview"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img class="img-fluid" src="" id="image-src" />
+                    </div>
+                </div>
+            </div>
+        </div>
         <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
@@ -193,6 +203,10 @@
         crossorigin="anonymous"></script>
     <script th:src="@{/scripts/app.js}"></script>
     <script>
+        function showPreview() {
+            $('#image-src').attr('src', $('#thumbnail').attr('src')).attr('src');
+            $('#image-preview').modal('show')
+        }
         (function () {
             $('#date-selection').datepicker({
                 startView: 1,

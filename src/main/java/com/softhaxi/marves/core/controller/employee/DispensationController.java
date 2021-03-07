@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendance.Dispensation;

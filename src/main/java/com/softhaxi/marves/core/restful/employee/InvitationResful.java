@@ -232,7 +232,8 @@ public class InvitationResful {
                 if(invitee == null) {
                     invitee = new User()
                         .email(email)
-                        .username(email.substring(0, email.indexOf("@")).toUpperCase());
+                        .username(email.substring(0, email.indexOf("@")).toUpperCase())
+                        .status("INACTIVE");
                     invitee.setIsLDAPUser(true);
                     userRepo.save(invitee);
                 }

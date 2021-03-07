@@ -3,6 +3,8 @@ package com.softhaxi.marves.core.model.request;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class InvitationRequest implements Serializable {
 
     /**
@@ -10,6 +12,7 @@ public class InvitationRequest implements Serializable {
      */
     private static final long serialVersionUID = -7377330212903413314L;
     
+    private String action;
     private String id;
     private String code;
     private String title;
@@ -23,12 +26,14 @@ public class InvitationRequest implements Serializable {
     private String location;
     private double latitude;
     private double longitude;
+    private MultipartFile attachment;
 
 
     public InvitationRequest() {
     }
 
-    public InvitationRequest(String id, String code, String title, String category, Date startDate, Date endDate, String description, String startTime, String endTime, String invitee, String location, double latitude, double longitude) {
+    public InvitationRequest(String action, String id, String code, String title, String category, Date startDate, Date endDate, String description, String startTime, String endTime, String invitee, String location, double latitude, double longitude, MultipartFile attachment) {
+        this.action = action;
         this.id = id;
         this.code = code;
         this.title = title;
@@ -42,6 +47,15 @@ public class InvitationRequest implements Serializable {
         this.location = location;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.attachment = attachment;
+    }
+
+    public String getAction() {
+        return this.action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 
     public String getId() {
@@ -148,75 +162,20 @@ public class InvitationRequest implements Serializable {
         this.longitude = longitude;
     }
 
-    public InvitationRequest id(String id) {
-        setId(id);
-        return this;
+    public MultipartFile getAttachment() {
+        return this.attachment;
     }
 
-    public InvitationRequest code(String code) {
-        setCode(code);
-        return this;
-    }
-
-    public InvitationRequest title(String title) {
-        setTitle(title);
-        return this;
-    }
-
-    public InvitationRequest category(String category) {
-        setCategory(category);
-        return this;
-    }
-
-    public InvitationRequest startDate(Date startDate) {
-        setStartDate(startDate);
-        return this;
-    }
-
-    public InvitationRequest endDate(Date endDate) {
-        setEndDate(endDate);
-        return this;
-    }
-
-    public InvitationRequest description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    public InvitationRequest startTime(String startTime) {
-        setStartTime(startTime);
-        return this;
-    }
-
-    public InvitationRequest endTime(String endTime) {
-        setEndTime(endTime);
-        return this;
-    }
-
-    public InvitationRequest invitee(String invitee) {
-        setInvitee(invitee);
-        return this;
-    }
-
-    public InvitationRequest location(String location) {
-        setLocation(location);
-        return this;
-    }
-
-    public InvitationRequest latitude(double latitude) {
-        setLatitude(latitude);
-        return this;
-    }
-
-    public InvitationRequest longitude(double longitude) {
-        setLongitude(longitude);
-        return this;
+    public void setAttachment(MultipartFile attachment) {
+        this.attachment = attachment;
     }
 
     @Override
     public String toString() {
         return "{" +
-            " code='" + getCode() + "'" +
+            " action='" + getAction() + "'" +
+            ", id='" + getId() + "'" +
+            ", code='" + getCode() + "'" +
             ", title='" + getTitle() + "'" +
             ", category='" + getCategory() + "'" +
             ", startDate='" + getStartDate() + "'" +
@@ -228,6 +187,7 @@ public class InvitationRequest implements Serializable {
             ", location='" + getLocation() + "'" +
             ", latitude='" + getLatitude() + "'" +
             ", longitude='" + getLongitude() + "'" +
+            ", attachment='" + getAttachment() + "'" +
             "}";
     }
 

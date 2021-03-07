@@ -3,7 +3,6 @@ package com.softhaxi.marves.core.restful.support;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.domain.messaging.Message;
 import com.softhaxi.marves.core.domain.messaging.MessageStatus;
 import com.softhaxi.marves.core.domain.messaging.Notification;
@@ -28,10 +26,6 @@ import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepositor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
@@ -76,12 +70,13 @@ public class NotificationRestful {
         User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString()))
             .orElse(new User().id(UUID.fromString(auth.getPrincipal().toString())));
 
-        if (date == null)
-            date = LocalDate.now();
-        ZonedDateTime from = date.with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay(ZoneId.systemDefault());
-        ZonedDateTime to = date.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).atStartOfDay(ZoneId.systemDefault());
+        // if (date == null)
+        //     date = LocalDate.now();
+        // ZonedDateTime from = date.with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay(ZoneId.systemDefault());
+        // ZonedDateTime to = date.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).atStartOfDay(ZoneId.systemDefault());
 
-        Collection<Notification> notifications = notificationRepo.findAllByUserAndDateRange(user, from, to);
+        // Collection<Notification> notifications = notificationRepo.findAllByUserAndDateRange(user, from, to);
+        Collection<Notification> notifications = notificationRepo.findAllByUser(user);
         // logger.debug("[index] Number of notification before filtered..." +notifications);
         List<Notification> filtered = notifications.stream()
                 .filter((item) -> item.getDateTime() != null && (item.getDateTime().toLocalDate().equals(user.getCreatedAt().toLocalDate())

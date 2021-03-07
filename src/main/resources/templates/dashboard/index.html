@@ -11,6 +11,10 @@
         integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <link rel="stylesheet"
         href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+        integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw=="
+        crossorigin="anonymous" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
@@ -21,6 +25,8 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css"
         integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
         crossorigin="anonymous" />
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css'
+        rel='stylesheet' />
     <link th:href="@{/styles/app.css}" rel="stylesheet" />
 </head>
 
@@ -32,7 +38,16 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="card-title">
-                            <h6>PRESENSI</h6>
+                            <div class="d-flex justify-content-between">
+                                <div class="col-md-3 align-self-end">
+                                    <h5>PRESENSI</h6>
+                                </div>
+                                <div class="col-md-2 justify-content-end">
+                                    <input id="daily-statistic" type="text"
+                                        class="form-control form-control-sm text-center" data-provide="datepicker"
+                                        th:value="${dateDisplay}">
+                                </div>
+                            </div>
                         </div>
                         <!-- <div id="chart-loading" class="d-flex justify-content-center invisible">
                             <div class="spinner-grow text-primary" role="status">
@@ -40,7 +55,7 @@
                             </div>
                         </div> -->
                         <div style="height: 30rem;">
-                            <canvas class="my-4" id="absence-chart"></canvas>
+                            <canvas class="mt-0 mb-4" id="daily-chart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -51,26 +66,26 @@
                 <div class="card">
                     <div class="card-body" style="height: 30rem;">
                         <div class="card-title">
-                            <h6>MONITOR LOKASI</h6>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-1 btn-group btn-group-sm" role="group"
-                                aria-label="Basic outlined example">
-                                <button type="button" class="btn btn-outline-secondary" onclick="loadMarkerLayer();"><i
-                                        class="las la-sync"></i></button>
-                            </div>
-                            <div class="col-md-6 offset-md-5">
-                                <form>
-                                    <div class="input-group input-group-sm">
-                                        <input id="search-name" type="text" class="form-control" name="name"
-                                            placeholder="Cari nama..." autocomplete="off" aria-label="cari nama">
-                                        <span class="input-group-text bg-light"><i class="las la-search"></i></span>
-                                    </div>
-                                </form>
+                            <!-- <h6>MONITOR LOKASI</h6> -->
+                            <div class="d-flex justify-content-between">
+                                <div class="col-md-5 align-self-end">
+                                    <h5>MONITOR LOKASI</h6>
+                                </div>
+                                <!-- <div class="col-md-6 justify-content-end">
+                                    <form>
+                                        <div class="input-group input-group-sm">
+                                            <input id="search-name" type="text" class="form-control" name="name"
+                                                placeholder="Cari nama..." autocomplete="off" aria-label="cari nama">
+                                            <span class="input-group-text bg-light"><i class="las la-search"></i></span>
+                                            <button type="button" class="btn btn-danger" onclick="loadMarkerLayer();"><i
+                                                class="las la-sync"></i></button>
+                                        </div>
+                                        </form>
+                                </div> -->
                             </div>
                         </div>
 
-                        <div id="map" class="rounded-bottom" style="height: 24rem;"></div>
+                        <div id="map" class="rounded-bottom" style="height: 25.5rem;"></div>
                     </div>
                 </div>
             </div>
@@ -78,10 +93,19 @@
                 <div class="card">
                     <div class="card-body" style="height: 30rem;">
                         <div class="card-title">
-                            <h6>SUMMARY PRESENSI</h6>
+                            <div class="d-flex justify-content-between align-self-end">
+                                <div class="col-md-5">
+                                    <h5>SUMMARY PRESENSI</h6>
+                                </div>
+                                <div class="col-md-5 justify-content-end">
+                                    <input id="monthly-statistic" type="text"
+                                        class="form-control form-control-sm text-center" data-provide="datepicker"
+                                        th:value="${dateDisplay}">
+                                </div>
+                            </div>
                         </div>
                         <div style="height: 25rem;">
-                            <canvas class="my-4" id="summary-chart"></canvas>
+                            <canvas class="my-4" id="monthly-chart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -126,6 +150,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
+        integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ=="
+        crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
@@ -133,12 +160,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"
         integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
         crossorigin="anonymous"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <script th:src="@{/scripts/autocomplete.js}"></script>
+    <script th:src="@{/scripts/app.js}"></script>
     <script>
+        var dailyCtx = document.getElementById("daily-chart").getContext("2d");
+        var monthlyCtx = document.getElementById("monthly-chart").getContext("2d");
+        var dailyChart;
+        var monthlyChart;
         var map;
         var markerGroup;
         var clusters;
         var nameAutocomplete;
+        
+        L.Control.Searchbar = L.Control.extend({
+            onAdd: function (map) {
+                var container = L.DomUtil.create('div', 'leaflet-bar input-group input-group-sm border border-secondary');
+                var input = L.DomUtil.create('input', 'form-control', container);
+                input.id = 'search-name';
+                input.type = 'text';
+                input.name = 'name';
+                input.placeholder = 'Cari nama pegawai...';
+                input.autocomplete = 'off';
+                input.style = "width: 240px !important;";
+                var span = L.DomUtil.create('span', 'input-group-text bg-light', container);
+                var spanIcon = L.DomUtil.create('i', 'las la-search', span);
+                var button = L.DomUtil.create('button', 'btn btn-danger', container);
+                var btnIcon = L.DomUtil.create('i', 'las la-sync', button);
+                L.DomEvent.on(button, 'click', this._loadMarkerLayer, this);
+
+                // container.innerHTML = 'My Control';
+
+                return container;
+            },
+            onRemove: function (map) {
+
+            },
+            _loadMarkerLayer: function () {
+                loadMarkerLayer();
+            }
+        });
+        L.control.searchbar = function (opts) {
+            return new L.Control.Searchbar(opts);
+        }
         // var absenceOptions = {
         //     responsive: true,
         //     maintainAspectRatio: false,
@@ -176,7 +240,7 @@
         //         }
         //     }
         // };
-        var absenceOptions = {
+        var dailyOptions = {
             responsive: true,
             maintainAspectRatio: false,
             legend: {
@@ -240,23 +304,141 @@
             }
         };
 
+        function loadDailyStatistic(date) {
+            $.ajax({
+                url: date == null ? '/dashboard/dailyStatistic' : '/dashboard/dailyStatistic?month=' + (date.getMonth() + 1) + "&year=" + date.getFullYear(),
+                method: 'GET',
+                success: function (response) {
+                    // console.log(response.data);
+                    var data = {
+                        labels: response.data['dates'],
+                        datasets: [
+                            {
+                                label: "WFO",
+                                backgroundColor: "#FFC107",
+                                data: response.data['wfo']
+                            },
+                            {
+                                label: "WFH",
+                                backgroundColor: "#17A2B8",
+                                data: response.data['wfh']
+                            },
+                            {
+                                label: "DISPENSASI",
+                                backgroundColor: "#FC4D4D",
+                                data: response.data['dispensation']
+                            }
+                        ]
+                    };
+
+                    if (dailyChart == null) {
+                        dailyChart = new Chart(dailyCtx, {
+                            type: 'bar',
+                            data: data,
+                            options: dailyOptions
+                        });
+                    } else {
+                        dailyChart.data = data;
+                        dailyChart.update();
+                    }
+                }
+            });
+        }
+
+        function loadMonthlyStatistic(date) {
+            var data = {
+                labels: ["Datang Tepat Waktu", "Terlambat", "Pulang Tepat Waktu", "Pulang Cepat"],
+                datasets: [
+                    {
+                        //backgroundColor: "#FFC107",
+                        data: [700, 20, 100, 150],
+                        backgroundColor: ["#6C4FA1", "#9BBD57", "#5DC5F1", "#FF9356"]
+                    },
+                ]
+            };
+            if (monthlyChart == null) {
+                monthlyChart = new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [{
+                                gridLines: {
+                                    display: false
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0,
+                                    callback: function (value) {
+                                        valuek = value;
+                                        return valuek;
+                                    }
+                                },
+                            }]
+                        },
+                        legend: {
+                            display: false,
+                        },
+                    }
+                });
+            } else {
+                monthlyChart.data = data;
+                monthlyChart.update();
+            }
+        }
+
         function initMap() {
-            map = L.map('map').setView([50.0875726, 14.4189987], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Marves © 2021',
-                tap: false,
-                maxZoom: 18,
-                tileSize: 512,
-                zoomOffset: -1,
-            }).addTo(map);
-            // L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
-            //     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            map = L.map('map', {
+                zoomControl: false
+            }).setView([50.0875726, 14.4189987], 13);
+            L.control.searchbar({ position: 'topleft' }).addTo(map);
+            L.control.zoom({ position: 'topright' }).addTo(map);
+            L.control.fullscreen({ position: 'topright' }).addTo(map);
+            // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            //     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Marves © 2021',
+            //     tap: false,
             //     maxZoom: 18,
-            //     id: 'mapbox/streets-v11',
             //     tileSize: 512,
             //     zoomOffset: -1,
-            //     accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
             // }).addTo(map);
+
+            L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Marves © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiaXZvaHV0YXNvaXQiLCJhIjoiY2p1Mjdwd2VqMDltcjQ0cWdqZjM3eG00NCJ9.wMtcTTE8Q2rn6QtnvfzYIQ'
+            }).addTo(map);
+            nameAutocomplete = new Autocomplete(document.getElementById('search-name'), {
+                data: [],
+                maximumItems: 5,
+                treshold: 1,
+                onSelectItem: ({ label, value }) => {
+                    // console.log("user selected:", label, value);
+                    loadMarkerLayer(value);
+                    $('#search-name').val(null);
+                }
+            });
+            $('#search-name').keyup(function (e) {
+                if ($('#search-name').val().length >= 1 && $('#search-name').val() != "") {
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/user/search",
+                        data: 'name=' + $('#search-name').val(),
+                        success: function (response) {
+                            console.log(response.data);
+                            nameAutocomplete.setData(response.data);
+                        }
+                    });
+                }
+            });
+
             loadMarkerLayer();
         }
 
@@ -271,7 +453,7 @@
                 url: user == null ? '/location/latest' : '/location/latest?user=' + user,
                 method: 'GET',
                 success: function (response) {
-                    if(clusters != null) {
+                    if (clusters != null) {
                         clusters.clearLayers();
                     }
                     clusters = new L.markerClusterGroup();
@@ -309,107 +491,29 @@
         }
 
         (function () {
-            var absenceCtx = document.getElementById("absence-chart").getContext("2d");
-            var absenceChart;
-            $.ajax({
-                url: '/dashboard/monthlyAbsence',
-                method: 'GET',
-                success: function (response) {
-                    console.log(response.data);
-                    var absenceData = {
-                        labels: response.data['dates'],
-                        datasets: [
-                            {
-                                label: "WFO",
-                                backgroundColor: "#FFC107",
-                                data: response.data['wfo']
-                            },
-                            {
-                                label: "WFH",
-                                backgroundColor: "#17A2B8",
-                                data: response.data['wfh']
-                            },
-                            {
-                                label: "DISPENSASI",
-                                backgroundColor: "#FC4D4D",
-                                data: response.data['dispensation']
-                            }
-                        ]
-                    };
+            $('#daily-statistic').datepicker({
+                startView: 1,
+                minViewMode: 1,
+                language: 'id',
+                autoclose: true,
+                format: "MM yyyy",
 
-                    absenceChart = new Chart(absenceCtx, {
-                        type: 'bar',
-                        data: absenceData,
-                        options: absenceOptions
-                    });
-                }
+            }).on('changeDate', function (e) {
+                loadDailyStatistic(e.date);
+            });
+            $('#monthly-statistic').datepicker({
+                startView: 1,
+                minViewMode: 1,
+                language: 'id',
+                autoclose: true,
+                format: "MM yyyy",
+
+            }).on('changeDate', function (e) {
+                loadMonthlyStatistic(e.date);
             });
 
-            var summaryCtx = document.getElementById("summary-chart").getContext("2d");
-            var summaryData = {
-                labels: ["Datang Tepat Waktu", "Terlambat", "Pulang Tepat Waktu", "Pulang Cepat"],
-                datasets: [
-                    {
-                        //backgroundColor: "#FFC107",
-                        data: [700, 20, 100, 150],
-                        backgroundColor: ["#6C4FA1", "#9BBD57", "#5DC5F1", "#FF9356"]
-                    },
-                ]
-            };
-            var absenceChart = new Chart(summaryCtx, {
-                type: 'bar',
-                data: summaryData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        xAxes: [{
-                            gridLines: {
-                                display: false
-                            }
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true,
-                                precision: 0,
-                                callback: function (value) {
-                                    valuek = value;
-                                    return valuek;
-                                }
-                            },
-                        }]
-                    },
-                    legend: {
-                        display: false,
-                    },
-                }
-            });
-
-            nameAutocomplete = new Autocomplete(document.getElementById('search-name'), {
-                data: [],
-                maximumItems: 5,
-                treshold: 1,
-                onSelectItem: ({ label, value }) => {
-                    // console.log("user selected:", label, value);
-                    loadMarkerLayer(value);
-                    $('#search-name').val(null);
-                }
-            });
-            $('#search-name').keyup(function (e) {
-                if ($('#search-name').val().length >= 1 && $('#search-name').val() != "") {
-                    console.log
-                    $.ajax({
-                        type: "GET",
-                        dataType: "json",
-                        url: "/employee/search",
-                        data: 'name=' + $('#search-name').val(),
-                        success: function (data) {
-                            nameAutocomplete.setData(data);
-                        }
-                    });
-                }
-            });
-
+            loadDailyStatistic();
+            loadMonthlyStatistic();
             initMap();
 
         })();

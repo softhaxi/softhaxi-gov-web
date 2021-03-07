@@ -1,0 +1,793 @@
+<!-- https://github.com/nhn/tui.calendar -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>[[#{app.name}]] - Agenda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link th:href="@{/asset/vendor/dhtmlx/dhtmlxscheduler_material.css?v=5.3.11}" rel="stylesheet" />
+    <link th:href="@{/styles/app.css}" rel="stylesheet" />
+    <style>
+        body {
+            padding-top: 3.5rem;
+            height: 100vh;
+        }
+
+        .dhx_cal_scale_placeholder {
+            height: 0;
+        }
+
+        .dhx_scheduler_day .dhx_cal_header {
+            display: none;
+        }
+
+        .form-check-input[type="checkbox"] {
+            border-radius: 0;
+            margin-right: 1rem;
+        }
+
+        .online-checkbox:checked {
+            border-color: #EAC600;
+            background-color: #EAC600;
+        }
+
+        .inoffice-checkbox:checked {
+            border-color: #4AC8F1;
+            background-color: #4AC8F1;
+        }
+
+        .outoffice-checkbox:checked {
+            border-color: #FB852F;
+            background-color: #FB852F;
+        }
+
+        .btn-location {
+            background-color: #F4F4F4;
+            color: #757575;
+            border-radius: 0;
+        }
+
+        .btn-check:checked+.btn-location {
+            background-color: #8678D9;
+            color: white;
+            border-radius: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header th:replace="~{fragment/header :: header}">Header</header>
+    <div class="container">
+        <!-- <div class="row">
+            <div class="col-md-6">
+                <h5 class="align-text-bottom">AGENDA</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                
+            </div>
+        </div> -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="text-end my-2">
+                    <button id="btn-create" class="btn btn-light text-light col-md-12 border-0 rounded-0"
+                        style="background-color: #8678D9;" data-form-action="create" data-bs-toggle="modal"
+                        data-bs-target="#modal-form"><i class="las la-plus"></i>Tambah
+                        Agenda</button>
+                </div>
+                <div id="cal_here" class="mb-3"></div>
+                <div id="filter-wrapper" class="row">
+                    <form class="search" th:action="@{/agenda}" method="GET">
+                        <!-- <div class="input-group">
+                            <input id="search-room" type="text" class="form-control" name="name"
+                                placeholder="Cari pengguna..." autocomplete="off" aria-label="cari nama">
+                            <span class="input-group-text bg-light"><i class="las la-search"></i></span>
+                        </div> -->
+
+                        <div class="form-check mt-3">
+                            <input class="form-check-input online-checkbox" type="checkbox" value="online" id="online">
+                            <label class="form-check-label" for="online">
+                                Daring
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input inoffice-checkbox" type="checkbox" value="inoffice"
+                                id="inoffice">
+                            <label class="form-check-label" for="inoffice">
+                                Di Kantor
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input outoffice-checkbox" type="checkbox" value="outoffice"
+                                id="outoffice">
+                            <label class="form-check-label" for="outoffice">
+                                Perjalanan Dinas
+                            </label>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            <div class="col-md-9">
+                <div id="scheduler_here" class="dhx_cal_container" style='width:100%; height: calc(100vh - 7.5rem);'>
+                    <div class="dhx_cal_navline">
+                        <div class="dhx_cal_prev_button">&nbsp;</div>
+                        <div class="dhx_cal_next_button">&nbsp;</div>
+                        <div class="dhx_cal_today_button"></div>
+                        <div class="dhx_cal_date"></div>
+                        <div class="dhx_cal_tab" name="day_tab"></div>
+                        <div class="dhx_cal_tab" name="week_tab"></div>
+                        <div class="dhx_cal_tab" name="month_tab"></div>
+                    </div>
+                    <div class="dhx_cal_header"></div>
+                    <div class="dhx_cal_data"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-delete" tabindex="-1" aria-labelledby="delete-agenda" aria-hidden="true">
+            <form id="form-delete" method="POST" th:action="@{/agenda}">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Hapus agenda ini?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-sm">
+                            Agenda yang sudah kamu hapus tidak dapat dilihat kembali.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-sm text-white border-0"
+                                style="background-color: #8678D9;"><i class="las la-trash la-lg"></i> Hapus</button>
+                            <button type="button" class="btn btn-sm btn-secondary"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal fade" id="modal-form" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="form-agenda" method="POST" th:action="@{/agenda}">
+                        <div class="modal-header p-0">
+                            <span class="text-center py-2 fw-bold text-white"
+                                style="background-color: #8678D9; width: 100%;">
+                                AGENDA BARU</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-2">
+                                <label for="title" class="col-form-label"><i class="las la-book la-lg"
+                                        style="color: #8678D9;"></i>
+                                    Judul/Perihal:</label>
+                                <input type="text" placeholder="Judul atau perihal agenda"
+                                    class="form-control border-0 rounded-0" id="title" name="title"
+                                    style="background-color: #F4F4F4;" th:value="${title}" autocomplete="off" />
+                            </div>
+                            <div class="mb-2">
+                                <label for="description" class="col-form-label">
+                                    <i class="las la-newspaper la-lg" style="color: #0983E7"></i>
+                                    Deskripsi:
+                                </label>
+                                <textarea placeholder="Tambahkan catatan atau link"
+                                    class="form-control border-0 rounded-0" id="description" name="description"
+                                    style="background-color: #F4F4F4; resize: none;" rows="3" th:value="${description}"
+                                    autocomplete="off"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label for="datetime" class="col-form-label"><i class="las la-clock la-lg"
+                                        style="color: #00ACC1;"></i>
+                                    Waktu</label>
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <input type="hidden" id="startDate" />
+                                        <input type="hidden" id="endDate" />
+                                        <input type="text" placeholder="01 Jan 2021 - 31 Des 2021"
+                                            class="form-control border-0 rounded-0" id="dates" name="dates"
+                                            style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
+                                    </div>
+                                    <div class="col">
+                                        <input type="hidden" id="startTime" />
+                                        <input type="hidden" id="endTime" />
+                                        <input type="text" placeholder="08:00 - 09:00"
+                                            class="form-control border-0 rounded-0" id="times" name="times"
+                                            style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label for="location" class="col-form-label"><i class="las la-map-pin la-lg"
+                                        style="color: red;"></i>
+                                    Lokasi</label>
+                                <div class="row">
+                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                        <input type="radio" class="btn-check" name="category" id="btnradio-inoffice"
+                                            autocomplete="off" checked>
+                                        <label class="btn btn-location" for="btnradio-inoffice">Di Kantor</label>
+
+                                        <input type="radio" class="btn-check" name="category" id="btnradio-outoffice"
+                                            autocomplete="off">
+                                        <label class="btn btn-location" for="btnradio-outoffice">Luar Kantor</label>
+
+                                        <input type="radio" class="btn-check" name="category" id="btnradio-online"
+                                            autocomplete="off">
+                                        <label class="btn btn-location" for="btnradio-online">Daring</label>
+                                    </div>
+                                </div>
+                                <input type="text" placeholder="Lokasi atau id dari rapat daring"
+                                    class="form-control border-0 rounded-0 mt-2" id="location" name="location"
+                                    style="background-color: #F4F4F4;" autocomplete="off" required/>
+                            </div>
+                            <div class="mb-2">
+                                <label for="invitees" class="col-form-label"><i class="las la-users la-lg"></i>
+                                    Peserta:</label>
+                                <div class="form-control border-0 rounded-0" style="background-color: #F4F4F4">
+                                    <div id="display-invitees"></div>
+                                    <div id="invitee-values"></div>
+                                    <input id="invitees" type="text" name="email" class="border-0 ellipsis"
+                                        style="background-color: #F4F4F4; outline:0px; min-width: 16rem;"
+                                        placeholder="Tambahkan peserta..." autocomplete="off" />
+                                </div>
+
+                            </div>
+                            <div class="mb-3">
+                                <label for="attachment" class="form-label"><i class="las la-paperclip la-lg"></i>
+                                    Lampiran</label>
+                                <input class="form-control form-control-sm rounded-0" type="file" name="attachment"
+                                    aria-label="Pilih File" accept="image/jpeg,image/gif,image/png,application/pdf">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input id="btn-submit" type="submit" class="btn btn-sm btn-primary border-0"
+                                style="background-color: #8678D9;" value="Simpan">
+                            <button id="btn-cancel" type="reset" class="btn btn-sm btn-secondary"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="container toast-container position-absolute bottom-0 end-0 p-3">
+            <div id="toast-info" class="toast align-items-center text-white" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div id="toastBody" class="toast-body">
+                        Hello, world! This is a toast message.
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+        <footer th:insert="~{fragment/footer :: footer}">Footer</footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/dhtmlxscheduler.js?v=5.3.11}"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_minical.js?v=5.3.11}"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/ext/dhtmlxscheduler_quick_info.js?v=5.3.11}"></script>
+    <script th:src="@{/asset/vendor/dhtmlx/locale/locale_id.js?v=5.3.11}"></script>
+    <script th:src="@{/scripts/autocomplete.js}"></script>
+    <script>
+        var toastInfo = document.getElementById('toast-info');
+        var formModalEl = document.getElementById('modal-form');
+        var deleteModalEl = document.getElementById('modal-delete');
+        var loading = false;
+        var filters = {
+            online: true,
+            inoffice: true,
+            outoffice: true
+        };
+        var invitees;
+
+        jQuery.validator.setDefaults({
+            highlight: function (element) {
+                jQuery(element).closest('.form-control').addClass('is-invalid');
+            },
+            unhighlight: function (element) {
+                jQuery(element).closest('.form-control').removeClass('is-invalid');
+            },
+            errorElement: 'span',
+            errorClass: 'invalid-feedback',
+            errorPlacement: function (error, element) {
+                if (element.parent('.form-control').length) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+        function loadInvitations(year) {
+            $.ajax({
+                type: 'GET',
+                url: '/agenda/search',
+                success: function (response) {
+                    console.log(response);
+                    scheduler.parse(response.data, 'json');
+                },
+                error: function (xhr, status, error) {
+                    alert('Koneksi ke server terkendala');
+                }
+            });
+        }
+
+        function closeQuickInfo() {
+            scheduler.hideQuickInfo();
+        }
+
+        function deleteInvitee(id) {
+            $('#' + id + '_display').remove();
+            $('#' + id + '_value').remove();
+        }
+
+        function showToast(message, clazz) {
+            var body = document.getElementById('toastBody');
+            body.innerHTML = message;
+            toastInfo.classList.add(clazz);
+            var toast = new bootstrap.Toast(toastInfo);
+            toastInfo.addEventListener('hidden.bs.toast', function () {
+                toastInfo.classList.remove(clazz);
+            });
+            toast.show();
+        }
+
+        (function () {
+            var filterInputs = document.getElementById("filter-wrapper").getElementsByClassName("form-check-input");
+            for (var i = 0; i < filterInputs.length; i++) {
+                var input = filterInputs[i];
+                input.checked = filters[input.id];
+                input.onclick = function () {
+                    // console.log('print her');
+                    filters[this.id] = !!this.checked;
+                    // console.log(filters);
+                    scheduler.updateView();
+                }
+            }
+
+            scheduler.config.header = [
+                "date",
+                "prev",
+                "today",
+                "next"
+            ];
+            scheduler.config.dblclick_create = false;
+            scheduler.config.drag_resize = false;
+            scheduler.config.drag_move = false;
+            scheduler.config.drag_create = false;
+            scheduler.config.readonly = true;
+            scheduler.config.icons_select = [];
+            // scheduler.config.hour_size_px = 88;
+            // scheduler.config.quick_info_detached = true;
+            // scheduler.config.mark_now = true;
+            // scheduler.config.now_date = Date.now();
+            scheduler.attachEvent('onDblClick', function (id, e) {
+                return false;
+            });
+            scheduler.attachEvent('onClick', function (id, e) {
+                // $('[event_id="' + id + '"]').popover({
+                //     html: true,
+                //     title: "<span class='booked'>This is booked</span>",
+                //     content: "Meeting at " + id
+                // });
+                // var ev = scheduler.getEvent(id);
+                var quickInfoTitleEl = document.querySelector(".dhx_cal_qi_title");
+                quickInfoTitleEl.style.display = 'none';
+                // quichInfoTitleEl.style.backgroundColor = 'white';
+                // quichInfoTitleEl.style.color = 'black';
+                // var quickInfoContentEl = document.querySelector('.dhx_cal_qi_content');
+                // quickInfoContentEl.style.padding = '0 8px';
+                // quickInfoContentEl.style.width = '300px';
+                return true;
+            });
+            scheduler.attachEvent('onQuickInfo', function (id) {
+                $('.btn-delete').click(function () {
+                    $('#form-delete').attr('data-delete-id', $(this).data('delete-id'));
+                });
+            });
+            scheduler.templates.quick_info_title = function (start, end, ev) {
+                var id = ev.event_id || ev.id;
+                var box = '<div class="text-end px-3">' +
+                    '<div class="btn-group btn-group-sm content-justify-end">';
+                if (ev.editable)
+                    box += '<button class="btn border-0 rounded-0 p-0 mx-2"><i class="las la-pencil-alt la-lg"></i></button>';
+
+                if (ev.removable)
+                    box += '<a data-delete-id="' + id + '" class="btn btn-delete border-0 rounded-0 p-0 mx-2" data-bs-toggle="modal" data-bs-target="#modal-delete"><i class="las la-trash-alt la-lg"></i></a>';
+
+                box += '<button class="btn border-0 rounded-0 p-0 mx-2" onclick="closeQuickInfo();"><i class="las la-times la-lg"></i></button>' +
+                    '</div>' +
+                    '</div>';
+                return box;
+            };
+            // scheduler.templates.quick_info_date = function (start, end, ev) {
+            //     if (scheduler.isOneDayEvent(ev)) {
+            //         return scheduler.templates.day_date(start, end, ev) + " " +
+            //             scheduler.templates.event_header(start, end, ev);
+            //     } else {
+            //         return scheduler.templates.week_date(start, end, ev);
+            //     }
+            // };
+            scheduler.templates.quick_info_content = function (start, end, ev) {
+                var id = ev.event_id || ev.id;
+
+                var box = '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-users la-lg"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight"><span class="text-dark align-top fw-bold">' + ev.members + '</span></div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-book la-lg" style="color: #8678D9;"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight"><span class="align-top">' + ev.text + '</span></div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-map-pin la-lg" style="color: red;"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight align-top">' + ev.location + '</div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-clock la-lg" style="color: #00ACC1;"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight align-top">' + scheduler.templates.event_date(start) + " - " + scheduler.templates.event_date(end) + '</div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-newspaper la-lg" style="color: #0983E7"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight"><span class="align-top">' + ev.description + '</span></div></div>';
+                if (ev.attachmentUrl != null) {
+                    box += '<div class="d-flex bd-highlight mb-1">' +
+                        '<div class="bd-highlight"><i class="las la-paperclip la-lg"></i></div>' +
+                        '<div class="flex-grow-1 bd-highlight align-top"><a href="' + ev.attachmentUrl + '" target="_blank">' + ev.fileName + '</a></div></div>';
+                }
+                box += '<div class="text-end">' +
+                    '<div class="btn-group btn-group-sm">';
+                if (ev.editable)
+                    box += '<button class="btn border-0 rounded-0 p-0 mx-2"><i class="las la-pencil-alt la-lg"></i></button>';
+
+                if (ev.removable)
+                    box += '<a data-delete-id="' + id + '" class="btn btn-delete border-0 rounded-0 p-0 mx-2" data-bs-toggle="modal" data-bs-target="#modal-delete"><i class="las la-trash-alt la-lg"></i></a>';
+
+                box += '<button class="btn border-0 rounded-0 p-0 mx-2" onclick="closeQuickInfo();"><i class="las la-times la-lg"></i></button>' +
+                    '</div>' +
+                    '</div>';
+                return box;
+            };
+            scheduler.templates.event_class = function (start, end, event) {
+                return "overflow-hidden rounded-3";
+            };
+            scheduler.templates.event_header = function (start, end, ev) {
+                return '<i class="las la-clock la-lg"></i> &nbsp;' + scheduler.templates.event_date(start) + " - " + scheduler.templates.event_date(end);
+            }
+            scheduler.templates.event_text = function (start, end, ev) {
+                var box = '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-users la-lg"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight"> &nbsp;<span class="text-dark align-top" style="font-size: 8pt">' + ev.members + '</span></div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-book la-lg"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight"> &nbsp;<span class="align-top" style="font-size: 8pt">' + ev.text + '</span></div></div>';
+                box += '<div class="d-flex bd-highlight mb-1">' +
+                    '<div class="bd-highlight"><i class="las la-map-pin la-lg"></i></div>' +
+                    '<div class="flex-grow-1 bd-highlight align-top" style="font-size: 8pt"> &nbsp;' + ev.location + '</div></div>';
+                if (ev.attachmentUrl != null) {
+                    box += '<div class="d-flex bd-highlight mb-1">' +
+                        '<div class="bd-highlight"><i class="las la-paperclip la-lg"></i></div>' +
+                        '<div class="flex-grow-1 bd-highlight align-top"> &nbsp;<a href="' + ev.attachmentUrl + '" target="_blank" class="text-white" style="font-size: 8pt">' + ev.fileName + '</a></div></div>';
+                }
+                return box;
+            }
+            scheduler.filter_day = function (id, event) {
+                if (filters[event.category]) {
+                    return true;
+                }
+                return false;
+            }
+
+            scheduler.init('scheduler_here', new Date(), "day");
+            var calendar = scheduler.renderCalendar({
+                container: "cal_here",
+                navigation: true,
+                handler: function (date) {
+                    scheduler.setCurrentView(date, scheduler.getState().mode);
+                },
+
+            });
+            scheduler.linkCalendar(calendar);
+            scheduler.setCurrentView();
+
+            loadInvitations();
+
+            $('#btn-create').click(function () {
+                $('#form-agenda').attr('data-action', $(this).data('form-action'));
+            });
+
+            formModalEl.addEventListener('shown.bs.modal', function (e) {
+                $('input[id="dates"]').daterangepicker({
+                    autoUpdateInput: false,
+                    locale: {
+                        applyLabel: "Pilih",
+                        cancelLabel: "Hapus",
+                        fromLabel: "Dari",
+                        toLabel: "Sampai",
+                        customRangeLabel: "Custom",
+                        weekLabel: "W",
+                        daysOfWeek: [
+                            "Ming",
+                            "Sen",
+                            "Sel",
+                            "Rab",
+                            "Kam",
+                            "Jum",
+                            "Sab"
+                        ],
+                        monthNames: [
+                            "Januari",
+                            "Februari",
+                            "Maret",
+                            "April",
+                            "Mei",
+                            "Juni",
+                            "Juli",
+                            "Augustus",
+                            "September",
+                            "Oktober",
+                            "November",
+                            "Desember"
+                        ]
+                    }
+                });
+                $('input[id="dates"]').on('apply.daterangepicker', function (ev, picker) {
+                    console.log(picker);
+                    if (picker.startDate.format('DD MMM YYYY') == picker.endDate.format('DD MMM YYYY'))
+                        $(this).val(picker.startDate.format('DD MMM YYYY'));
+                    else
+                        $(this).val(picker.startDate.format('DD MMM YYYY') + ' - ' + picker.endDate.format('DD MMM YYYY'));
+                    $('#startDate').val(picker.startDate);
+                    $('#endDate').val(picker.endDate);
+                });
+
+                $('input[id="dates"]').on('cancel.daterangepicker', function (ev, picker) {
+                    $(this).val('');
+                });
+
+                $('input[id="times"]').daterangepicker({
+                    autoUpdateInput: false,
+                    timePicker: true,
+                    timePicker24Hour: true,
+                    timePickerIncrement: 1,
+                    locale: {
+                        applyLabel: "Pilih",
+                        cancelLabel: "Hapus",
+                    }
+                }).on('show.daterangepicker', function (ev, picker) {
+                    picker.container.find(".calendar-table").hide();
+                    picker.container.find('.drp-selected').hide();
+                });
+                $('input[id="times"]').on('apply.daterangepicker', function (ev, picker) {
+                    console.log(picker);
+                    var duration = moment.duration(picker.endDate.diff(picker.startDate));
+                    var minutes = duration.asMinutes();
+                    if (minutes < 15) {
+                        alert('Durasi minimal adalah 15 menit');
+                        return;
+                    }
+                    $(this).val(picker.startDate.format('HH:mm') + ' - ' + picker.endDate.format('HH:mm'));
+                    $('#startTime').val(picker.startDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+                    $('#endTime').val(picker.endDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+                });
+
+                $('input[id="times"]').on('cancel.daterangepicker', function (ev, picker) {
+                    $(this).val('');
+                });
+                invitees = new Autocomplete(document.getElementById('invitees'), {
+                    data: [],
+                    maximumItems: 5,
+                    treshold: 1,
+                    onSelectItem: ({ label, value }) => {
+                        console.log("user selected:", label, value);
+                        $('#display-invitees').append(
+                            '<span id="' + value + '_display" class="badge bg-secondary m-1 display-invitee">' + label + ' <span class="text-white" onclick="deleteInvitee(\'' + value + '\')">x</span></span>');
+                        $('#invitee-values').append(
+                            '<input id="' + value + '_value" type="hidden" name="invitees[]" value="' + label + '"/>'
+                        );
+                        $('#invitees').val(null);
+                        invitees.setData([]);
+                    }
+                });
+                $('#invitees').keyup(function (e) {
+                    if ($('#invitees').val().length >= 1 && $('#invitees').val() != "") {
+                        var selecteds = $('input[name="invitees[]"]').map(function () { return $(this).val(); }).get();
+                        $.ajax({
+                            type: "GET",
+                            dataType: "json",
+                            url: "/employee/search/autocomplete",
+                            data: 'q=' + $('#invitees').val() + '&excepts=' + selecteds.join(';'),
+                            success: function (response) {
+                                invitees.setData(response.data);
+                            }
+                        });
+                    }
+                });
+
+                $('#form-agenda').validate({
+                    // rules: {
+                    //     title: 'required',
+                    // },
+                    // messages: {
+                    //     title: 'Silahkan isi judul/perihal agenda'
+                    // },
+                    //errorClass: "invalid-feedback",
+                    //errorElement: "span",
+                    submitHandler: function (form) {
+                        // e.preventDefault();
+                        if (loading) {
+                            alert('Agenda baru sedang diproses');
+                            return;
+                        }
+
+                        // var form = $(this);
+                        var url = form.action;
+                        var data = new FormData(form);
+                        data.delete('dates');
+                        data.delete('times');
+                        data.delete('invitees[]');
+                        data.delete('email');
+
+                        var action = $(form).data('action');
+                        var title = $(form).find('#title').val().trim();
+
+                        var description = $(form).find('#description').val().trim();
+                        var startDate = $(form).find('#startDate').val().trim();
+                        var endDate = $(form).find('#endDate').val().trim();
+                        var startTime = $(form).find('#startTime').val().trim();
+                        var endTime = $(form).find('#endTime').val().trim();
+
+                        var category = $(form).find('input[type="radio"]:checked')[0].id.split('-')[1];
+                        var location = $(form).find('#location').val().trim();
+                        var invitees = $('input[name="invitees[]"]').map(function () { return $(this).val(); }).get();
+
+                        data.set('action', action);
+                        data.set('title', title);
+                        data.set('description', description);
+                        data.set('startDate', startDate);
+                        data.set('endDate', endDate);
+                        data.set('startTime', startTime);
+                        data.set('endTime', endTime);
+                        data.set('category', category);
+                        data.set('location', location.trim());
+                        data.set('invitee', invitees.join(';'));
+                        loading = true;
+                        $(this).find('#btn-submit').prop('disabled', true);
+                        $(this).find('#btn-cancel').prop('disabled', true);
+                        $.ajax({
+                            type: "POST",
+                            enctype: 'multipart/form-data',
+                            url: url,
+                            data: data,
+                            processData: false,
+                            contentType: false,
+                            cache: false,
+                            timeout: 600000,
+                            success: function (response) {
+                                console.log("SUCCESS : ", response.data);
+                                loading = false;
+                                var modal = bootstrap.Modal.getInstance(formModalEl);
+                                modal.hide();
+                                scheduler.clearAll();
+                                loadInvitations();
+
+                                showToast('Agenda berhasil ditambahkan', 'bg-success');
+                            },
+                            error: function (e) {
+                                console.log("ERROR : ", e);
+                                $('#btn-submit').prop('disabled', false);
+                                $('#btn-cancel').prop('disabled', false);
+                                loading = false;
+                            }
+                        });
+                    }
+                });
+                $('#title').rules('add', {
+                    required: true,
+                    minlength: 10,
+                    maxlength: 50,
+                    messages: {
+                        required: 'Silahkan isi judul/perihal agenda',
+                        minlength: 'Panjang judul/perihal agenda adalah minimal 10 karakter',
+                        maxlength: 'Panjang judul/perihal agenda adalah maksimum 50 karakter'
+                    }
+                });
+                $('#description').rules('add', {
+                    required: true,
+                    minlength: 3,
+                    messages: {
+                        required: 'Silahkan isi deskripsi agenda',
+                        minlength: 'Panjang judul/perihal agenda adalah minimal 3 karakter',
+                    }
+                });
+                $('#dates').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi tanggal agenda',
+                    }
+                });
+                $('#times').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi waktu agenda',
+                    }
+                });
+                $('#location').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi lokasi agenda',
+                    }
+                });
+            });
+            formModalEl.addEventListener('hidden.bs.modal', function (e) {
+                loading = false;
+                $('#form-agenda').trigger('reset');
+                $('#display-invitees').empty();
+                $('#invitee-values').empty();
+                $('#btn-submit').prop('disabled', false);
+                $('#btn-cancel').prop('disabled', false);
+                $('input[name="title"]').rules('remove');
+                
+                invitees = null;
+            });
+
+            deleteModalEl.addEventListener('shown.bs.modal', function (e) {
+                $('#form-delete').on('submit', function (e) {
+                    e.preventDefault();
+
+                    var form = $(this);
+                    var url = form.attr('action');
+                    var data = new FormData(form[0]);
+                    var id = $(this).data('delete-id');
+                    data.set('action', 'delete');
+                    data.set('id', id);
+                    loading = false;
+                    $.ajax({
+                        type: "POST",
+                        enctype: 'multipart/form-data',
+                        url: url,
+                        data: data,
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        timeout: 600000,
+                        success: function (response) {
+                            console.log("SUCCESS : ", response.data);
+                            loading = false;
+                            var modal = bootstrap.Modal.getInstance(deleteModalEl);
+                            modal.hide();
+
+                            closeQuickInfo();
+
+                            scheduler.clearAll();
+                            loadInvitations();
+
+                            showToast('Agenda berhasil dihapus', 'bg-danger');
+                        },
+                        error: function (e) {
+                            console.log("ERROR : ", e);
+                            loading = false;
+                        }
+                    });
+                });
+                deleteModalEl.addEventListener('hidden.bs.modal', function (e) {
+                    loading = false;
+                    $('#form-delete').trigger('reset');
+                });
+
+            });
+        })();
+
+    </script>
+</body>
+
+</html>

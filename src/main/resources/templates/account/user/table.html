@@ -1,0 +1,81 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="table-wrapper" id="table-wrapper">
+    <div class="mb-2 d-flex justify-content-between">
+        <div class="btn-group btn-group-sm" role="group" aria-label="toolbar">
+            <button type="button" class="btn btn-outline-primary"><i
+                    class="las la-sync"></i></button>
+        </div>
+
+        <form>
+            <div class="input-group">
+                <input id="search-room" type="text" class="form-control" name="name"
+                    placeholder="Cari pengguna..." autocomplete="off" aria-label="cari nama">
+                <span class="input-group-text bg-light"><i class="las la-search"></i></span>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-borderless table-hover bg-light" style="white-space: nowrap;">
+            <thead class="bg-primary text-white">
+                <tr>
+                    <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
+                    <td class="col-md-3 text-center align-middle" scope="col">User ID</td>
+                    <td class="col-md-4 text-center align-middle" scope="col">Name</td>
+                    <td class="col-md-3 text-center align-middle" scope="col">Status</td>
+                    <td class="col-md-2 text-center align-middle" scope="col"></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}" th:onclick="viewDetail([[${row.id}]]);" >
+                    <td class="text-center" th:text="${rowStat.count + startIndex}" />
+                    <td th:text="${row.username}" />
+                    <td th:if="${row.profile != null}" th:text="${row.profile.fullName}" />
+                    <td th:unless="${row.profile != null}" th:text="${row.email}" />
+                    <td th:text="${row.status}" th:classappend="${row.status.toLowerCase() == 'active' ? 'text-success' : 'text-muted'}"/>
+                    <!-- <td th:unless="${row.profile != null}" class="text-muted">INACTIVE</td> -->
+                    <td class="text-center">
+                        <a th:data-delete-link="${row.id}" class="btn btn-sm btn-outline-danger btn-delete"
+                                style="font-size: 8pt;" data-bs-toggle="modal" data-bs-target="#delete-modal"><i
+                                    class="las la-trash la-lg"></i></a>
+                    </td>
+                </tr>
+                <tr th:unless="${data.numberOfElements > 0}">
+                    <td colspan="5" class="text-center">Tidak ada data</td>
+                </tr>
+            </tbody>
+        </table>
+        <nav aria-label="Pagination">
+            <ul class="pagination pagination-sm" th:classappend="justify-content-end">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link"
+                        th:href="@{/user(page=${currentPage-1}, filter=${filter})}"
+                        aria-label="Previous" title="Previous Page" data-toggle="tooltip">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <th:block th:each="pageNumber : ${pages}">
+                    <li class="page-item active" th:if="${pageNumber==currentPage}">
+                        <a href="#" th:classappend="page-link">
+                            <span aria-hidden="true" th:text="${pageNumber}"></span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled" th:if="${pageNumber} == -1">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    <li class="page-item" th:if="${pageNumber} != -1 and ${pageNumber} != ${currentPage}">
+                        <a th:href="@{/user(page=${pageNumber}, filter=${filter})}"
+                            th:classappend="page-link">
+                            <span aria-hidden="true" th:text="${pageNumber}"></span>
+                        </a>
+                    </li>
+                </th:block>
+                <li class="page-item" th:classappend="${currentPage == data.totalPages} ? 'disabled'">
+                    <a class="page-link"
+                        th:href="@{/user(page=${currentPage+1}, filter=${filter})}"
+                        aria-label="Next" title="Next Page" data-toggle="tooltip">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

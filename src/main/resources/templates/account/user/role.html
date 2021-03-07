@@ -1,0 +1,53 @@
+<div class="row" xmlns:th="http://www.thymeleaf.org" th:fragment="role-wrapper">
+    <div class="col-sm-3">
+        <h6 class="mb-0">Level Akses</h6>
+    </div>
+    <div class="col-sm-9 text-secondary">
+        <ul id="roles" class="list-unstyled">
+            <li class="align-middle mb-0" th:each="row : ${assignedRoles}" th:id="${row.role.id}">
+                <span class="h6" th:text="${row.role.name}"></span> 
+                    <a a th:data-delete-link="${row.id}" th:if="${row.removable}" data-bs-toggle="modal" data-bs-target="#delete-modal"
+                        class="btn btn-sm border-none btn-delete">
+                        <i class="las la-trash-alt la-lg text-danger"></i></a> 
+            </li>
+        </ul>
+        <form th:if="${!roles.isEmpty() }" id="form-role" method="post" th:action="@{/user/role}">
+            <div class="row mb-2">
+                <div class="col-md-5 pe-0">
+                    <select name="role" id="role" class="form-select form-select-sm" onchange="changeRole();">
+                        <option value="" selected>Pilih untuk tambah Level Akses</option>
+                        <option th:each="role : ${roles}"
+                            th:value="${role.id}"
+                            th:text="${role.name + ' - ' + role.description}">Akses</option>
+                    </select>
+                </div>
+                <div id="btn-panel" class="col-md-2 pl-1" style="display: none;">
+                    <button type="submit" role="button" class="btn btn-sm btn-success"><i
+                            class="las la-save la-lg"></i></button>
+                </div>
+            </div>
+        </form>
+        <!-- <button role="button" class="btn btn-sm btn-primary"><i class="las la-plus"></i> Level Akses</button> -->
+    </div>
+    <div class="modal fade" id="delete-modal" tabindex="-1" aria-labelledby="delete-modal" aria-hidden="true">
+        <form id="delete-form">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Konfirmasi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-sm">
+                        Apakah anda yakin untuk menghapus?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i
+                                class="las la-trash la-lg"></i> Hapus</button>
+                        <button type="button" class="btn btn-sm btn-secondary"
+                            data-bs-dismiss="modal">Batal</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

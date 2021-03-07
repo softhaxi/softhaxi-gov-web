@@ -96,6 +96,9 @@ public class AuthenticationRestful {
                     new UsernamePasswordAuthenticationToken(request.getUserid().trim(), request.getPassword().trim()));
 
             user = userService.findByUsername(request.getUserid().trim()).orElse(null);
+            if(request.getUserid().trim().contains("@maritim.go.id") && user == null) {
+                user = userService.findByUsername(request.getUserid().trim().substring(0, request.getUserid().indexOf("@"))).orElse(null);
+            }
             Profile profile = null;
             Map<?, ?> userLdap = null;
             Map<?, ?> profileData = null;
@@ -111,14 +114,13 @@ public class AuthenticationRestful {
                             .getPersonalInfo(userLdap.get("email").toString().toLowerCase().trim());
                     user.setUsername(userLdap.get("username").toString().trim().toUpperCase());
                     user.setIsLDAPUser(true);
+                    user.setEmail(userLdap.get("email").toString());
                     if (profileData != null) {
-                        user.setEmail(profileData.get("email").toString());
                         profile = new Profile().fullName(profileData.get("name").toString())
-                                .primaryEmail(profileData.get("email").toString());
+                                .primaryEmail(user.getEmail());
                     } else {
-                        user.setEmail(userLdap.get("email").toString());
                         profile = new Profile().fullName(userLdap.get("fullName").toString())
-                                .primaryEmail(userLdap.get("email").toString());
+                                .primaryEmail(user.getEmail());
                     }
                 }
                 user.setProfile(profile);
@@ -135,7 +137,7 @@ public class AuthenticationRestful {
                             .getPersonalInfo(user.getEmail().toLowerCase().trim());
                     if (profileData != null) {
                         profile = new Profile().fullName(profileData.get("name").toString())
-                                .primaryEmail(profileData.get("email").toString());
+                                .primaryEmail(userLdap.get("email").toString());
                     } else {
                         profile = new Profile().fullName(userLdap.get("fullName").toString())
                                 .primaryEmail(userLdap.get("email").toString());
@@ -146,7 +148,7 @@ public class AuthenticationRestful {
                     profileRepo.save(profile);
                     Role role = roleRepo.findByName("MOBILE").orElse(null);
                     if (role != null) {
-                        userRoleRepo.save(new UserRole(user, role));
+                        userRoleRepo.save(new UserRole(user, role, false));
                     }
                     description = "first.time.login.mobile";
                 } else {

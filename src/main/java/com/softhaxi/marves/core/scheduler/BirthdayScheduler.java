@@ -58,7 +58,7 @@ public class BirthdayScheduler {
         });
 
         data.forEach(item -> {
-            User user = userRepo.findByUsername((String) item.get("email")).orElse(null);
+            User user = userRepo.findByUsernameOrEmailIgnoreCase((String) item.get("email")).orElse(null);
             String name = item.get("name").toString();
             String division = item.get("unit").toString();
             // String birthDate = item.get("birthDate").toString();

@@ -74,7 +74,7 @@ public class AbsenceReminder {
             String[] times = clockInTime.getValue().split(":");
             ZonedDateTime now = ZonedDateTime.now();
             if(now.getHour() != Integer.parseInt(times[0]) || now.getMinute() != Integer.parseInt(times[1])) {
-                logger.debug("[sendClockInNotification] Not send clock in reminder due to not clock out time ");
+                logger.debug("[sendClockInNotification] Not send clock in reminder due to not clock in time ");
                 return;
             }
             

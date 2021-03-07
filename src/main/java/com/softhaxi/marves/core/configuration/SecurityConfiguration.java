@@ -5,11 +5,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.account.User;
+import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.web.RestfulAuthenticationEntryPoint;
 import com.softhaxi.marves.core.web.filter.RestfulRequestFilter;
@@ -73,6 +76,9 @@ public class SecurityConfiguration {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepo;
 
     @Order(1)
     @Configuration
@@ -210,10 +216,11 @@ public class SecurityConfiguration {
                 User userDao = userRepository
                     .findByUsernameOrEmailIgnoreCase(username)
                     .orElse(null);
+                List<Role> roles = (List<Role>) roleRepo.findAllByUser(userDao);
                 Set<GrantedAuthority> credentials = null;
                 if(userDao != null) {
                     credentials = new HashSet<>();
-                    for(var userRole : userDao.getRoles()) {
+                    for(var role : roles) {
                         credentials.add(new GrantedAuthority() {
 
                             /**
@@ -223,7 +230,7 @@ public class SecurityConfiguration {
 
                             @Override
                             public String getAuthority() {
-                                return userRole.getRole().getName().toUpperCase();
+                                return role.getName().toUpperCase();
                             }
 
                         });
@@ -264,10 +271,12 @@ public class SecurityConfiguration {
                 .orElseThrow(() -> new UsernameNotFoundException("error.invalid.credential"));
 
             var isMobileUser = false;
-            for(var userRole : user.getRoles()) {
-                if(userRole.getRole().getName().equalsIgnoreCase("MOBILE")) {
-                    isMobileUser = true;
-                    break;
+            if(user.getRoles().size() == 1) {
+                for(var userRole : user.getRoles()) {
+                    if(userRole.getRole().getName().equalsIgnoreCase("MOBILE")) {
+                        isMobileUser = true;
+                        break;
+                    }
                 }
             }
 

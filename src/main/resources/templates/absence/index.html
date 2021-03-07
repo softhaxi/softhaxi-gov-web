@@ -293,10 +293,10 @@
                     $.ajax({
                         type: "GET",
                         dataType: "json",
-                        url: "/employee/search",
+                        url: "/user/search",
                         data: 'name=' + $('#search-name').val(),
-                        success: function (data) {
-                            nameAutocomplete.setData(data);
+                        success: function (response) {
+                            nameAutocomplete.setData(response.data);
                         }
                     });
                 }

@@ -190,16 +190,15 @@
             newModal.addEventListener('shown.bs.modal', function (event) {
 
                 $('#form-new-notification').submit(function (e) {
+                    e.preventDefault();
                     if (loading) {
                         alert('Notifikasi baru sedang diproses');
                         return;
                     }
 
                     loading = true;
-                    e.preventDefault();
                     var form = $(this);
                     var url = form.attr('action');
-                    // console.log(url);
                     var recipientGroup = $(this).find('#recipientGroup').val();
                     var division = $(this).find('#division').val();
                     var subject = $(this).find('#subject').val();

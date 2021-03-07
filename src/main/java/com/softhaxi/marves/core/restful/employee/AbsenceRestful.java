@@ -123,7 +123,7 @@ public class AbsenceRestful {
 
         Map<String, Object> parameters = new HashMap<>();
         Collection<SystemParameter> params = parameterRepo
-                .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+                .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
         for (SystemParameter param : params) {
             parameters.put(param.getCode(), param.getValue());
         }
@@ -151,6 +151,8 @@ public class AbsenceRestful {
                             absenceTime.containsKey("late") ? ((Duration) absenceTime.get("late")).getSeconds() : 0);
                     daily.setEarly(
                             absenceTime.containsKey("early") ? ((Duration) absenceTime.get("early")).getSeconds() : 0);
+                    daily.setNotAbsence(
+                            absenceTime.containsKey("notAbsence") ? (boolean) absenceTime.get("notAbsence") : false);
                     daily.setWorking(
                             absenceTime.get("working") != null ? ((Duration) absenceTime.get("working")).getSeconds()
                                     : 0);
@@ -305,7 +307,7 @@ public class AbsenceRestful {
         }
         Map<String, Object> parameters = new HashMap<>();
         Collection<SystemParameter> params = parameterRepo
-                .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+                .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
         for (SystemParameter param : params) {
             parameters.put(param.getCode(), param.getValue());
         }
@@ -314,6 +316,7 @@ public class AbsenceRestful {
         daily.getOutDateTime());
         daily.setLate(absenceTime.containsKey("late") ? ((Duration) absenceTime.get("late")).getSeconds() : 0);
         daily.setEarly(absenceTime.containsKey("early") ? ((Duration) absenceTime.get("early")).getSeconds() : 0);
+        daily.setNotAbsence(absenceTime.containsKey("notAbsence") ? (boolean) absenceTime.get("notAbsence") : false);
         daily.setWorking(absenceTime.get("working") != null ? ((Duration) absenceTime.get("working")).getSeconds() : 0);
 
 
@@ -480,7 +483,7 @@ public class AbsenceRestful {
             if (attendence.getDateTime() != null) {
                 Map<String, Object> parameters = new HashMap<>();
                 Collection<SystemParameter> params = parameterRepo
-                        .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+                        .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
                 for (SystemParameter param : params) {
                     parameters.put(param.getCode(), param.getValue());
                 }
@@ -488,6 +491,7 @@ public class AbsenceRestful {
                 attendence.getOutDateTime());
                 attendence.setLate(absenceTime.containsKey("late") ? ((Duration) absenceTime.get("late")).getSeconds() : 0);
                 attendence.setEarly(absenceTime.containsKey("early") ? ((Duration) absenceTime.get("early")).getSeconds() : 0);
+                attendence.setNotAbsence(absenceTime.containsKey("notAbsence") ? (boolean) absenceTime.get("notAbsence") : false);
                 attendence.setWorking(absenceTime.get("working") != null ? ((Duration) absenceTime.get("working")).getSeconds() : 0);
 
         
@@ -498,6 +502,20 @@ public class AbsenceRestful {
                 }
             }
         }
+        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), null),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<?> info() {
+        Map<String, Object> parameters = new HashMap<>();
+        Collection<SystemParameter> params = parameterRepo
+                .findByCodes(Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+        // for (SystemParameter param : params) {
+        //     switch(param.getCode()) {
+        //         case
+        //     }
+        // }
         return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), null),
                 HttpStatus.OK);
     }

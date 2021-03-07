@@ -48,6 +48,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.w3c.dom.Notation;
 
 /**
  * @author Raja Sihombing
@@ -128,7 +129,7 @@ public class AbsenceController {
 
         Map<String, Object> parameters = new HashMap<>();
         Collection<SystemParameter> params = parameterRepo.findByCodes(
-            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
         for(SystemParameter param: params) {
             parameters.put(param.getCode(), param.getValue());
         }
@@ -173,6 +174,7 @@ public class AbsenceController {
                         .clockOutMockLocation(attendance.isOutMockLocation())
                         .late(absenceTime.containsKey("late") ? (Duration)absenceTime.get("late") : null)
                         .early(absenceTime.containsKey("early") ? (Duration)absenceTime.get("early") : null)
+                        .notAbsence(absenceTime.containsKey("notAbsence") ? (boolean)absenceTime.get("notAbsence") : false)
                         .working((Duration)absenceTime.get("working"));
                         
                 if(dispensation != null) {
@@ -185,6 +187,7 @@ public class AbsenceController {
                 attends.set(temp);
             }
         });
+        // System.out.println(attends);
         List<Absence> absences = attends.get();
         absences.addAll(dispens.get());
         absences.addAll(nonAttends.get());
@@ -241,35 +244,40 @@ public class AbsenceController {
                 to.atStartOfDay(ZoneId.systemDefault()));
         Map<String, Object> parameters = new HashMap<>();
         Collection<SystemParameter> params = parameterRepo.findByCodes(
-            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
+            Arrays.asList("CLOCKIN_MAX", "CLOCKIN_MAX_FRIDAY", "CLOCKIN_BUFFER_TIME", "CLOCKOUT_MAX", "CLOCKOUT_MAX_FRIDAY"));
         for(SystemParameter param: params) {
             parameters.put(param.getCode(), param.getValue());
         }
 
+        AtomicReference<LocalDate> toReference = new AtomicReference<>();
         AtomicReference<List<Absence>> data = new AtomicReference<>();
         AtomicReference<Integer> wfo = new AtomicReference<>();
         AtomicReference<Integer> wfh = new AtomicReference<>();
         AtomicReference<Integer> fake = new AtomicReference<>();
         AtomicReference<Integer> late = new AtomicReference<>();
         AtomicReference<Integer> early = new AtomicReference<>();
+        AtomicReference<Integer> absent = new AtomicReference<>();
 
+        toReference.set(to);
         wfo.set(0);
         wfh.set(0);
         fake.set(0);
         late.set(0);
         early.set(0);
+        absent.set(0);
         dateRange.forEach((date) -> {
+            
             List<Absence> list = data.get();
             if (list == null)
                 list = new LinkedList<>();
             DailyAttendance attendance = attendances.stream()
                     .filter(item -> item.getDateTime().toLocalDate().equals(date)).findFirst().orElse(null);
+            Dispensation dispensation = dispensations.stream()
+                    .filter(item -> item.getStartDate().equals(date)
+                            || (item.getStartDate().isBefore(date) && item.getEndDate().isAfter(date))
+                            || item.getEndDate().equals(date))
+                    .findFirst().orElse(null);
             if (attendance == null) {
-                Dispensation dispensation = dispensations.stream()
-                        .filter(item -> item.getStartDate().equals(date)
-                                || (item.getStartDate().isBefore(date) && item.getEndDate().isAfter(date))
-                                || item.getEndDate().equals(date))
-                        .findFirst().orElse(null);
                 if (dispensation != null) {
                     list.add(new Absence().date(date)
                             .weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY
@@ -277,8 +285,12 @@ public class AbsenceController {
                             .dispensationId(dispensation.getId()).dispensation(dispensation.getType())
                             .dispensationReason(dispensation.getDescription()));
                 } else {
-                    list.add(new Absence().date(date).weekend(
-                            date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY));
+                    if(!(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)) {
+                        if(date.isBefore(toReference.get())) {
+                            absent.set(absent.get() + 1);
+                        }
+                    }
+                    list.add(new Absence().date(date).weekend(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY));
                 }
             } else {
                 Map<?, ?> absenceTime = absenceUtil.calculateAbsenceTime(parameters, attendance.getDateTime(), 
@@ -310,7 +322,21 @@ public class AbsenceController {
                     early.set(early.get() + 1);
                     absence.setEarly((Duration) absenceTime.get("early"));
                 }
+                if(absenceTime.containsKey("notAbsence")) {
+                    var notAbsence = (boolean)absenceTime.get("notAbsence");
+                    if(notAbsence) {
+                        absent.set(absent.get() + 1);
+                        absence.setNotAbsence(notAbsence);
+                    }
+                }
+                        
                 absence.working((Duration)absenceTime.get("working"));
+
+                if(dispensation != null) {
+                    absence.setDispensationId(dispensation.getId());
+                    absence.setDispensation(dispensation.getType());
+                    absence.setDispensationReason(dispensation.getDescription());
+                }
                 
                 list.add(absence);
             }
@@ -365,6 +391,7 @@ public class AbsenceController {
         model.addAttribute("totalWFO", wfo.get());
         model.addAttribute("totalWFH", wfh.get());
         model.addAttribute("totalFake", fake.get());
+        model.addAttribute("totalAbsent", absent.get());
         model.addAttribute("totalAssignment", assignment.get());
         model.addAttribute("totalSick", sick.get());
         model.addAttribute("totalLeave", leave.get());

@@ -65,7 +65,7 @@ public class InitialRunner implements CommandLineRunner {
             user.setIsSystem(false);
             roleRepository.save(user);
         }
-        Role operator = roleRepository.findByName("SADMIN").orElse(null);
+        Role operator = roleRepository.findByName("OPERATOR").orElse(new Role());
         if(operator.getId() == null) {
             operator.setName("OPERATOR");
             operator.setDescription("Operator");
@@ -84,7 +84,7 @@ public class InitialRunner implements CommandLineRunner {
             //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
             userRepository.save(sUser);
             
-            UserRole userRole = new UserRole(sUser, sadmin);
+            UserRole userRole = new UserRole(sUser, sadmin, false);
             userRoleRepository.save(userRole);
         }
 
@@ -97,7 +97,7 @@ public class InitialRunner implements CommandLineRunner {
             aOpr.setIsLDAPUser(false);
             userRepository.save(aOpr);
             
-            UserRole userRole = new UserRole(aOpr, operator);
+            UserRole userRole = new UserRole(aOpr, operator, false);
             userRoleRepository.save(userRole);
         }
 
@@ -112,7 +112,7 @@ public class InitialRunner implements CommandLineRunner {
             //sUser.setRoles(new HashSet<>(Arrays.asList(new UserRole(sUser, sadmin))));
             userRepository.save(aUser);
             
-            UserRole userRole = new UserRole(aUser, admin);
+            UserRole userRole = new UserRole(aUser, admin, false);
             userRoleRepository.save(userRole);
         }
 
@@ -181,16 +181,16 @@ public class InitialRunner implements CommandLineRunner {
         //     sysParamRepository.save(marvesLetterAPI);
         // }
 
-        // SystemParameter covidTrackerAPI = sysParamRepository.findByCode("COVIDTRACKER_API_URL").orElse(new SystemParameter());
-        // if(covidTrackerAPI.getId() == null) {
-        //     covidTrackerAPI.setCode("COVIDTRACKER_API_URL");
-        //     covidTrackerAPI.setName("Covid Tracker Restful Service");
-        //     covidTrackerAPI.setValue("https://covidtracker.maritim.go.id/api");
-        //     //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
-        //     covidTrackerAPI.setIsEditable(true);
-        //     covidTrackerAPI.setIsSystem(false);
-        //     sysParamRepository.save(covidTrackerAPI);
-        // }
+        SystemParameter covidTrackerAPI = sysParamRepository.findByCode("COVIDTRACKER_API_URL").orElse(new SystemParameter());
+        if(covidTrackerAPI.getId() == null) {
+            covidTrackerAPI.setCode("COVIDTRACKER_API_URL");
+            covidTrackerAPI.setName("Covid Tracker Restful Service");
+            covidTrackerAPI.setValue("https://covidtracker.maritim.go.id/api");
+            //marvesHRAPI.setDecription("Radius limit to indicate that clock in/out is from office");
+            covidTrackerAPI.setIsEditable(true);
+            covidTrackerAPI.setIsSystem(false);
+            sysParamRepository.save(covidTrackerAPI);
+        }
 
         SystemParameter maxDispensationDay = sysParamRepository.findByCode("DISPENSATION_MAX_DAYS").orElse(new SystemParameter());
         if(maxDispensationDay.getId() == null) {
@@ -310,11 +310,11 @@ public class InitialRunner implements CommandLineRunner {
             sysParamRepository.save(agendaReminder);
         }
 
-        SystemParameter bufferTime = sysParamRepository.findByCode("ABSENCE_BUFFER_TIME").orElse(new SystemParameter());
+        SystemParameter bufferTime = sysParamRepository.findByCode("CLOCKIN_BUFFER_TIME").orElse(new SystemParameter());
         if(bufferTime.getId() == null) {
-            bufferTime.setCode("ABSENCE_BUFFER_TIME");
-            bufferTime.setName("Buffer time to absence from max clock in and clock out (in minutes)");
-            bufferTime.setValue("30");
+            bufferTime.setCode("CLOCKIN_BUFFER_TIME");
+            bufferTime.setName("Buffer time to absence from max clock in (in minutes)");
+            bufferTime.setValue("60");
             bufferTime.setIsEditable(true);
             bufferTime.setIsSystem(false);
             sysParamRepository.save(bufferTime);

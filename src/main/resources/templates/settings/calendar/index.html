@@ -84,8 +84,9 @@
             $.ajax({
                 type: 'GET',
                 url: year == null ? '/calendar/event/search' : '/calendar/event/search?year=' + year,
-                success: function (data) {
-                    scheduler.parse(data, 'json');
+                success: function (response) {
+                    // console.log(response.data);
+                    scheduler.parse(response.data, 'json');
                 },
                 error: function (xhr, status, error) {
                     alert('Koneksi ke server terkendala');
@@ -120,16 +121,19 @@
                     $.ajax({
                         type: "POST",
                         url: "/calendar/event",
-                        data: {
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             "name": event.text,
-                            "date": moment(event.start_date).format("YYYY-MM-DD")
-                        },
-                        success: function (data) {
-                            console.log(data);
+                            "date": moment(event.start_date).format("YYYY-MM-DD"),
+                            "action": 'insert'
+                        }),
+                        success: function (response) {
+                            // console.log(response);
                             // scheduler.changeEventId(id, data.id);
                             loadEvents();
                         },
                         error: function (xhr, status, error) {
+                            console.log(error);
                             alert('Koneksi ke server terkendala');
                             scheduler.deleteEvent(id);
                         }
@@ -140,16 +144,22 @@
             scheduler.attachEvent('onEventDeleted', function (id) {
                 $.ajax({
                     type: "POST",
-                    url: "/calendar/event/action",
-                    data: {
+                    url: "/calendar/event",
+                    contentType: 'application/json',
+                    data: JSON.stringify({
                         "id": id,
                         "action": 'delete'
-                    },
-                    success: function (data) {
-                        console.log(data);
+                    }),
+                    success: function (response) {
+                        // console.log(response);
                     },
                     error: function (xhr, status, error) {
-                        alert('Koneksi ke server terkendala');
+                        // console.log(xhr.status);
+                        if(xhr.status == '404') {
+                            console.log(error);
+                        } else {
+                            alert('Koneksi ke server terkendala');
+                        }
                     }
                 });
             });

@@ -119,7 +119,6 @@ public class LoginRequest implements Serializable {
     public String toString() {
         return "{" +
             " userid='" + getUserid() + "'" +
-            ", password='" + getPassword() + "'" +
             ", oneSignalId='" + getOneSignalId() + "'" +
             ", mockLocation='" + isMockLocation() + "'" +
             ", latitude='" + getLatitude() + "'" +

@@ -1,6 +1,7 @@
 package com.softhaxi.marves.core.controller.employee;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,9 +13,12 @@ import java.util.stream.IntStream;
 import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.employee.Employee;
+import com.softhaxi.marves.core.model.response.ErrorResponse;
+import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.employee.EmployeeRepository;
 import com.softhaxi.marves.core.service.account.UserService;
+import com.softhaxi.marves.core.service.employee.EmployeeInfoService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +56,9 @@ public class EmployeeController {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    private EmployeeInfoService employeeInfoService;
 
     @Value("${total.activity.perpage}")
     private int pageSize;
@@ -98,30 +107,37 @@ public class EmployeeController {
         return "common/employee";
     }
 
-    @GetMapping("/search")
-    public @ResponseBody String search(Model model, @RequestParam("name") Optional<String> name) {
-        String strName = name.orElse("");
-        
-        List<User> users = userRepository.findUserByUsernameLike(strName.toUpperCase());
-        List<Map<?, ?>> userList = new LinkedList<>();
-        
-        String json = "";
-        
-        try {
-            Map<String, String> userMap = new HashMap<>();
-            for (User user : users) {
-                userMap = new HashMap<>();
-                userMap.put("value", user.getId().toString());
-                userMap.put("label", user.getProfile().getFullName());
-                userList.add(userMap);
-            }
-            Gson gson = new Gson();
-            json = gson.toJson(userList);
-            
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+    @GetMapping("/search/autocomplete")
+    public ResponseEntity<?> search(@RequestParam(name="q", required = true) String keyword,
+        @RequestParam(name = "excepts", required = false) String except
+    ) {
+        List<?> excepts = Arrays.asList(except.split(";"));
+        List<Map<?, ?>> users = (List<Map<?, ?>>) employeeInfoService.findEmployeeList(keyword);
+        if(users == null) {
+            return new ResponseEntity<>(
+                new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "invalid data response"
+                ),
+                HttpStatus.BAD_REQUEST
+            );
         }
-
-        return json;
+        // System.out.println(data);
+        List<Map<?, ?>> data = new LinkedList<>();
+        for (Map<?,?> map : users) {
+            if(map.get("email") != null) {
+            if(!excepts.contains(map.get("email")))
+                data.add(Map.of("value", map.get("employeeNumber"), "label", map.get("email")));
+            }
+        }
+        return new ResponseEntity<>(
+            new GeneralResponse(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                data
+            ),
+            HttpStatus.OK   
+        );
     }
 }

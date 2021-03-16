@@ -6,8 +6,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.service.employee.EmployeeInfoService;
 import com.softhaxi.marves.core.service.employee.EmployeeVitaeService;
@@ -69,7 +69,7 @@ public class EmployeeRestful {
         data.remove(index);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -105,7 +105,7 @@ public class EmployeeRestful {
         // data.remove(index);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -131,7 +131,7 @@ public class EmployeeRestful {
             );
         }
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -158,7 +158,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -185,7 +185,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -212,7 +212,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -239,7 +239,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -266,7 +266,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -293,7 +293,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -320,7 +320,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data
@@ -347,7 +347,7 @@ public class EmployeeRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data

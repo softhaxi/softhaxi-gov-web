@@ -26,17 +26,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.employee.Invitation;
 import com.softhaxi.marves.core.domain.employee.InvitationMember;
-import com.softhaxi.marves.core.domain.messaging.Message;
+import com.softhaxi.marves.core.domain.exception.BusinessException;
 import com.softhaxi.marves.core.domain.messaging.Notification;
 import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
-import com.softhaxi.marves.core.model.request.InvitationRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.InvitationRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.employee.InvitationMemberRepository;
 import com.softhaxi.marves.core.repository.employee.InvitationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationStatusRepository;
+import com.softhaxi.marves.core.service.employee.InvitationService;
 import com.softhaxi.marves.core.service.message.MessageService;
 import com.softhaxi.marves.core.service.storage.FileStorageService;
 
@@ -84,6 +85,9 @@ public class InvitationResful {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private InvitationService invitationService;
+
     @GetMapping()
     public ResponseEntity<?> index(@RequestParam(name="email", required = false) String email,
         @RequestParam(name = "date", required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
@@ -111,7 +115,7 @@ public class InvitationResful {
                         Map<String, Object> temp = new HashMap<>();
                         temp.put("email", member.getUser().getEmail());
                         temp.put("id", member.getUser().getId());
-                        temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
+                        temp.put("name", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
                         temp.put("response", member.getResponse());
                         temp.put("organizer", member.getOrganizer());
                         members.add(temp);
@@ -129,12 +133,84 @@ public class InvitationResful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 invitations
             ),
             HttpStatus.OK   
+        );
+    }
+
+    @PostMapping("/action")
+    public ResponseEntity<?> action(@RequestParam(required = true) String payload,
+        @RequestParam(value = "file", required = false) MultipartFile file) {
+        InvitationRequest request;
+        try {
+            request = new ObjectMapper().readValue(payload, InvitationRequest.class);
+        } catch (JsonProcessingException ex) {
+            logger.error("[action] Exception..." + ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), 
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), 
+                    Map.of("payload", "json.required")
+                ),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = new User().id(UUID.fromString(auth.getPrincipal().toString()));
+
+        if (file != null) {
+            request.setAttachment(file);
+        }
+
+        Invitation invitation = null;
+        try {
+            invitation = invitationService.save(user, request);
+        } catch(Exception ex) {
+            logger.error("[action]... ", ex);
+            if(ex instanceof BusinessException) {
+                return new ResponseEntity<>(
+                    new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage()),
+                    HttpStatus.NOT_FOUND
+                );
+            }
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), 
+                HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+        
+        if(request.getAction().equals("edit")) {
+            return new ResponseEntity<>(
+                new SuccessResponse(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    invitation
+                ),
+                HttpStatus.OK
+            );
+        } else if(request.getAction().equals("delete")) {
+            return new ResponseEntity<>(
+                new SuccessResponse(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    Map.of("status", "deleted", "id", invitation.getId())
+                ),
+                HttpStatus.OK
+            );
+        }
+        return new ResponseEntity<>(
+            new SuccessResponse(
+                HttpStatus.CREATED.value(),
+                HttpStatus.CREATED.getReasonPhrase(),
+                invitation
+            ),
+            HttpStatus.CREATED
         );
     }
 
@@ -176,15 +252,6 @@ public class InvitationResful {
         ZonedDateTime endTimeMobile = ZonedDateTime.parse(request.getEndTime(),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
         
-
-        // String[] startTimes = request.getStartTime().split(":");
-        // String[] endTimes = request.getEndTime().split(":");
-        
-        // ZonedDateTime startTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-        //     Integer.parseInt(startTimes[0]), Integer.parseInt(startTimes[1]), 0, 0, ZoneId.systemDefault());
-        // ZonedDateTime endTime = ZonedDateTime.of(startDate.getYear(), startDate.getMonthValue(), startDate.getDayOfMonth(),
-        //     Integer.parseInt(endTimes[0]), Integer.parseInt(endTimes[1]), 0, 0, ZoneId.systemDefault());
-
         Invitation invitation = new Invitation()
             .code(request.getCode())
             .title(request.getTitle().trim())
@@ -194,8 +261,6 @@ public class InvitationResful {
             .endDate(endDate)
             .startTime(startTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
             .endTime(endTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
-            // .startTimeMobile(startTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
-            // .endTimeMobile(endTimeMobile.toInstant().atZone(ZoneId.systemDefault()))
             .category(request.getCategory().toUpperCase())
             .user(user);
         if(path != null) {
@@ -290,7 +355,7 @@ public class InvitationResful {
         notificationStatusRepo.saveAll(statuses);
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.CREATED.value(),
                 HttpStatus.CREATED.getReasonPhrase(),
                 invitation
@@ -466,7 +531,7 @@ public class InvitationResful {
         notificationStatusRepo.saveAll(statuses);
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 invitation
@@ -495,7 +560,7 @@ public class InvitationResful {
             Map<String, Object> temp = new HashMap<>();
             temp.put("email", member.getUser().getEmail());
             temp.put("id", member.getUser().getId());
-            temp.put("fullName", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
+            temp.put("name", member.getUser().getProfile() != null ? member.getUser().getProfile().getFullName() : "");
             temp.put("response", member.getResponse());
             temp.put("organizer", member.getOrganizer());
             members.add(temp);
@@ -507,7 +572,7 @@ public class InvitationResful {
         invitation.setMembers(members);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 invitation
@@ -552,7 +617,7 @@ public class InvitationResful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 "invitation.deleted"
@@ -592,7 +657,7 @@ public class InvitationResful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 "invitation.completed"

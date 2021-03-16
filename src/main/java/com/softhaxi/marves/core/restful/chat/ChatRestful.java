@@ -15,22 +15,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.account.Profile;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.chatting.Chat;
 import com.softhaxi.marves.core.domain.chatting.ChatRoom;
 import com.softhaxi.marves.core.domain.chatting.ChatRoomMember;
 import com.softhaxi.marves.core.domain.chatting.ChatStatus;
+import com.softhaxi.marves.core.domain.exception.BusinessException;
 import com.softhaxi.marves.core.domain.messaging.MessageStatus;
-import com.softhaxi.marves.core.model.request.ChatRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.ChatRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.ProfileRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomMemberRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomRepository;
 import com.softhaxi.marves.core.repository.chat.ChatStatusRepository;
+import com.softhaxi.marves.core.service.message.ChatService;
 import com.softhaxi.marves.core.service.message.MessageService;
 
 import org.slf4j.Logger;
@@ -46,8 +50,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 //https://github.com/amrkhaledccd/One-to-One-WebSockets-Chat
 @RestController
@@ -79,6 +84,52 @@ public class ChatRestful {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private ChatService chatService;
+
+    @PostMapping("/send")
+    public ResponseEntity<?> send(@RequestParam(required = true) String payload,
+        @RequestParam(value = "file", required = false) MultipartFile file) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        final User user = userRepo.findById(UUID.fromString(auth.getPrincipal().toString()))
+            .orElse(new User().id(UUID.fromString(auth.getPrincipal().toString())));
+
+        ChatRequest request = null;
+        try {
+            // logger.debug("[post] payload from mobile...." + payload);
+            request = new ObjectMapper().readValue(payload, ChatRequest.class);
+        } catch (JsonProcessingException ex) {
+            logger.error("[post] Exception..." + ex.getMessage(), ex);
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), Map.of("payload", "json.required")),
+                    HttpStatus.BAD_REQUEST);
+        }
+        request.setFile(file);
+        //request.setContentType(file.getContentType());
+
+        try {
+            Chat chat = chatService.send(user, request);
+            return new ResponseEntity<>(
+                new SuccessResponse(
+                    HttpStatus.CREATED.value(),
+                    HttpStatus.CREATED.getReasonPhrase(),
+                    chat
+                ),
+                HttpStatus.CREATED
+            );
+        } catch (BusinessException e) {
+            logger.error(e.getMessage(), e);
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
+        } catch(Exception e) {
+            logger.error(e.getMessage(), e);
+            return new ResponseEntity<>(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     @PostMapping()
     public ResponseEntity<?> post(@RequestBody ChatRequest payload) {
@@ -178,7 +229,7 @@ public class ChatRestful {
 
         chat.setMyself(true);
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.CREATED.value(),
                 HttpStatus.CREATED.getReasonPhrase(),
                 chat
@@ -237,7 +288,7 @@ public class ChatRestful {
         });
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 rooms
@@ -298,7 +349,7 @@ public class ChatRestful {
             chatStatusRepo.saveAll(statuses);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 chats
@@ -339,7 +390,7 @@ public class ChatRestful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 chat
@@ -372,7 +423,7 @@ public class ChatRestful {
             chatStatusRepo.saveAll(statuses);
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 chats

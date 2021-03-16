@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -26,11 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/activity")
 public class ActivityRestful {
-    // private static final Logger logger =
-    // LoggerFactory.getLogger(ActivityRestful.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActivityRestful.class);
 
     @Autowired
-    private ActivityLogRepository activityLogRepository;
+    private ActivityLogRepository activityRepo;
 
     @GetMapping()
     public ResponseEntity<?> index(
@@ -41,7 +42,10 @@ public class ActivityRestful {
         if (date == null)
             date = LocalDate.now();
 
-        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
-                activityLogRepository.findAllUserDailyActivity(user, date)), HttpStatus.OK);
+        var data =  activityRepo.findAllUserActivity(user, date);
+        
+        //logger.debug("[index] Data...." + data);
+        return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+                data), HttpStatus.OK);
     }
 }

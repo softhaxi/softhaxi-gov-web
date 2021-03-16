@@ -8,9 +8,9 @@ import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.Session;
-import com.softhaxi.marves.core.model.request.UserRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.UserRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.logging.SessionRepository;
 import com.softhaxi.marves.core.service.account.UserService;
@@ -68,7 +68,7 @@ public class UserRestful {
         });
  
         return new ResponseEntity<>(
-                new GeneralResponse(
+                new SuccessResponse(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
                     data
@@ -87,7 +87,7 @@ public class UserRestful {
         
         if(data != null) {
             return new ResponseEntity<>(
-                new GeneralResponse(
+                new SuccessResponse(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
                     // "Success"
@@ -103,7 +103,7 @@ public class UserRestful {
         //logger.info("[ME] === " + data);
         if(data != null) {
             return new ResponseEntity<>(
-                new GeneralResponse(
+                new SuccessResponse(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
                     Map.of("id", user.getId(), "fullName", data.get("fullName").toString(), "photoUrl", 
@@ -152,7 +152,7 @@ public class UserRestful {
         sessionRepo.saveAll(sessions);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 "item.updated"

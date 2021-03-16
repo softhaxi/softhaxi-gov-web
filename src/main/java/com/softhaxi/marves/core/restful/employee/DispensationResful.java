@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -18,9 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.attendance.Dispensation;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
-import com.softhaxi.marves.core.model.request.DispensationRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.DispensationRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
 import com.softhaxi.marves.core.service.logging.LoggerService;
 import com.softhaxi.marves.core.service.storage.FileStorageService;
@@ -69,7 +68,7 @@ public class DispensationResful {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 dispensations
@@ -140,7 +139,7 @@ public class DispensationResful {
 
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.CREATED.value(),
                 HttpStatus.CREATED.getReasonPhrase(),
                 dispensation
@@ -159,7 +158,7 @@ public class DispensationResful {
         logger.info("[History] Dispensation number..." + dispensations.size());
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 dispensations

@@ -65,14 +65,6 @@
 <body>
     <header th:replace="~{fragment/header :: header}">Header</header>
     <div class="container">
-        <!-- <div class="row">
-            <div class="col-md-6">
-                <h5 class="align-text-bottom">AGENDA</h5>
-            </div>
-            <div class="col-md-6 text-end">
-                
-            </div>
-        </div> -->
         <div class="row mb-3">
             <div class="col-md-3">
                 <div class="text-end my-2">
@@ -132,6 +124,7 @@
         </div>
         <div class="modal fade" id="modal-delete" tabindex="-1" aria-labelledby="delete-agenda" aria-hidden="true">
             <form id="form-delete" method="POST" th:action="@{/agenda}">
+                <input type="hidden" id="id"/>
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -252,6 +245,110 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="modal-edit" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="form-edit" method="POST" th:action="@{/agenda}">
+                        <div class="modal-header p-0">
+                            <span class="text-center py-2 fw-bold text-white"
+                                style="background-color: #8678D9; width: 100%;">
+                                EDIT AGENDA</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-2">
+                                <label for="title" class="col-form-label"><i class="las la-book la-lg"
+                                        style="color: #8678D9;"></i>
+                                    Judul/Perihal:</label>
+                                <input type="text" placeholder="Judul atau perihal agenda"
+                                    class="form-control border-0 rounded-0" id="title-edit" name="title-edit"
+                                    style="background-color: #F4F4F4;" autocomplete="off" />
+                            </div>
+                            <div class="mb-2">
+                                <label for="description" class="col-form-label">
+                                    <i class="las la-newspaper la-lg" style="color: #0983E7"></i>
+                                    Deskripsi:
+                                </label>
+                                <textarea placeholder="Tambahkan catatan atau link"
+                                    class="form-control border-0 rounded-0" id="description-edit" name="description-edit"
+                                    style="background-color: #F4F4F4; resize: none;" rows="3"
+                                    autocomplete="off"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label for="datetime" class="col-form-label"><i class="las la-clock la-lg"
+                                        style="color: #00ACC1;"></i>
+                                    Waktu</label>
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <input type="hidden" id="startDate" />
+                                        <input type="hidden" id="endDate" />
+                                        <input type="text" placeholder="01 Jan 2021 - 31 Des 2021"
+                                            class="form-control border-0 rounded-0" id="dates-edit" name="dates-edit"
+                                            style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
+                                    </div>
+                                    <div class="col">
+                                        <input type="hidden" id="startTime" />
+                                        <input type="hidden" id="endTime" />
+                                        <input type="text" placeholder="08:00 - 09:00"
+                                            class="form-control border-0 rounded-0" id="times-edit" name="times-edit"
+                                            style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label for="location" class="col-form-label"><i class="las la-map-pin la-lg"
+                                        style="color: red;"></i>
+                                    Lokasi</label>
+                                <div class="row">
+                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                        <input type="radio" class="btn-check" name="category-edit" id="edit-inoffice"
+                                            autocomplete="off">
+                                        <label class="btn btn-location" for="edit-inoffice">Di Kantor</label>
+
+                                        <input type="radio" class="btn-check" name="category-edit" id="edit-outoffice"
+                                            autocomplete="off">
+                                        <label class="btn btn-location" for="outoffice">Luar Kantor</label>
+
+                                        <input type="radio" class="btn-check" name="category-edit" id="edit-online"
+                                            autocomplete="off">
+                                        <label class="btn btn-location" for="edit-online">Daring</label>
+                                    </div>
+                                </div>
+                                <input type="text" placeholder="Lokasi atau id dari rapat daring"
+                                    class="form-control border-0 rounded-0 mt-2" id="location-edit" name="location-edit"
+                                    style="background-color: #F4F4F4;" autocomplete="off" required/>
+                            </div>
+                            <div class="mb-2">
+                                <label for="invitees" class="col-form-label"><i class="las la-users la-lg"></i>
+                                    Peserta:</label>
+                                <div class="form-control border-0 rounded-0" style="background-color: #F4F4F4">
+                                    <div id="display-edit-invitees"></div>
+                                    <div id="invitee-edit-values"></div>
+                                    <input id="invitees-edit" type="text" name="email-edit" class="border-0 ellipsis"
+                                        style="background-color: #F4F4F4; outline:0px; min-width: 16rem;"
+                                        placeholder="Tambahkan peserta..." autocomplete="off" />
+                                </div>
+
+                            </div>
+                            <div class="mb-3">
+                                <label for="attachment" class="form-label"><i class="las la-paperclip la-lg"></i>
+                                    Lampiran</label>
+                                <input class="form-control form-control-sm rounded-0" type="file" name="attachment-edit"
+                                    aria-label="Pilih File" accept="image/jpeg,image/gif,image/png,application/pdf">
+                                <div id="current-attachment">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input id="btn-submit" type="submit" class="btn btn-sm btn-primary border-0"
+                                style="background-color: #8678D9;" value="Simpan">
+                            <button id="btn-cancel" type="reset" class="btn btn-sm btn-secondary"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="container toast-container position-absolute bottom-0 end-0 p-3">
             <div id="toast-info" class="toast align-items-center text-white" role="alert" aria-live="assertive"
                 aria-atomic="true">
@@ -284,6 +381,13 @@
     <script>
         var toastInfo = document.getElementById('toast-info');
         var formModalEl = document.getElementById('modal-form');
+        var formModal = new bootstrap.Modal(formModalEl, {
+            backdrop: 'static'
+        });
+        var formEditEl = document.getElementById('modal-edit');
+        var formEdit = new bootstrap.Modal(formEditEl, {
+            backdrop: 'static'
+        });
         var deleteModalEl = document.getElementById('modal-delete');
         var loading = false;
         var filters = {
@@ -345,6 +449,34 @@
             toast.show();
         }
 
+        function showEditForm(id) {
+            $.ajax({
+                type: 'GET',
+                url: '/agenda/' + id,
+                success: function(response) {
+                    console.log(response.data);
+                    var data = response.data;
+                    $('#title-edit').val(data.title);
+                    $('#description-edit').val(data.description);
+                    $('#location-edit').val(data.location);
+                    var members = data.members;
+                    for (var i = 0; i < members.length; i++) {
+                        console.log(members[i]);
+                        var member = members[i];
+                        $('#display-edit-invitees').append(
+                            '<span id="' + member.id + '_display" class="badge bg-secondary m-1 display-invitee">' + member.email + ' <span class="text-white" onclick="deleteInvitee(\'' + member.id + '\')">x</span></span>');
+                        $('#invitee-edit-values').append(
+                            '<input id="' + member.id + '_value" type="hidden" name="invitees[]" value="' + member.email + '"/>'
+                        );
+                    }
+                    formEdit.show();
+                },
+                error: function (xhr, status, error) {
+                    alert('Koneksi ke server terkendala');
+                }
+            });
+        }
+
         (function () {
             var filterInputs = document.getElementById("filter-wrapper").getElementsByClassName("form-check-input");
             for (var i = 0; i < filterInputs.length; i++) {
@@ -395,7 +527,8 @@
             });
             scheduler.attachEvent('onQuickInfo', function (id) {
                 $('.btn-delete').click(function () {
-                    $('#form-delete').attr('data-delete-id', $(this).data('delete-id'));
+                    $('#form-delete').find('#id').val($(this).data('delete-id'));
+                    // $('#form-delete').attr('data-delete-id', $(this).data('delete-id'));
                 });
             });
             scheduler.templates.quick_info_title = function (start, end, ev) {
@@ -447,7 +580,7 @@
                 box += '<div class="text-end">' +
                     '<div class="btn-group btn-group-sm">';
                 if (ev.editable)
-                    box += '<button class="btn border-0 rounded-0 p-0 mx-2"><i class="las la-pencil-alt la-lg"></i></button>';
+                    box += '<button onclick=showEditForm(\'' + id + '\') class="btn border-0 rounded-0 p-0 mx-2"><i class="las la-pencil-alt la-lg"></i></button>';
 
                 if (ev.removable)
                     box += '<a data-delete-id="' + id + '" class="btn btn-delete border-0 rounded-0 p-0 mx-2" data-bs-toggle="modal" data-bs-target="#modal-delete"><i class="las la-trash-alt la-lg"></i></a>';
@@ -629,7 +762,6 @@
                             return;
                         }
 
-                        // var form = $(this);
                         var url = form.action;
                         var data = new FormData(form);
                         data.delete('dates');
@@ -675,8 +807,7 @@
                             success: function (response) {
                                 console.log("SUCCESS : ", response.data);
                                 loading = false;
-                                var modal = bootstrap.Modal.getInstance(formModalEl);
-                                modal.hide();
+                                formModal.hide();
                                 scheduler.clearAll();
                                 loadInvitations();
 
@@ -747,9 +878,8 @@
                     var form = $(this);
                     var url = form.attr('action');
                     var data = new FormData(form[0]);
-                    var id = $(this).data('delete-id');
                     data.set('action', 'delete');
-                    data.set('id', id);
+                    data.set('id', $(form).find('#id').val().trim());
                     loading = false;
                     $.ajax({
                         type: "POST",
@@ -779,11 +909,12 @@
                         }
                     });
                 });
-                deleteModalEl.addEventListener('hidden.bs.modal', function (e) {
-                    loading = false;
-                    $('#form-delete').trigger('reset');
-                });
-
+            });
+            deleteModalEl.addEventListener('hidden.bs.modal', function (e) {
+                loading = false;
+                $('#form-delete').find('#id').val(null);
+                $('#form-delete').trigger('reset');
+                $('#form-delete').unbind('submit');
             });
         })();
 

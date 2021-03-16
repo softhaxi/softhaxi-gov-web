@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.master.CalendarEvent;
-import com.softhaxi.marves.core.model.request.CalendarEventRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.CalendarEventRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.master.CalendarEventRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ public class CalendarController {
         else if(request.getAction().equalsIgnoreCase("delete"))
             map.put("action", "deleted");
 
-        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), map),
+        return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), map),
                 HttpStatus.OK);
     }
 
@@ -95,7 +95,7 @@ public class CalendarController {
             map.put("end_date", event.getDate().plusDays(1).atStartOfDay(ZoneId.systemDefault()).format(formatter));
             data.add(map);
         }
-        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), data),
+        return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), data),
                 HttpStatus.OK);
     }
 }

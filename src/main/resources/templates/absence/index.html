@@ -25,15 +25,12 @@
             <div class="col-md-6">
                 <h5 class="align-text-bottom">HARI INI</h5>
             </div>
-            <div class="col-md-6 text-end">
-                <button class="btn btn-success"><i class="las la-download"></i> Download</button>
-            </div>
         </div>
         <div class="row row-cols-1 row-cols-md-5 g-5">
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #08990D;">
-                        <i class="las la-history la-3x"></i><br />
+                        <i class="las la-history la-2x"></i><br />
                         <span>LOGIN</span>
                     </div>
                     <div class="card-body text-center">
@@ -43,14 +40,15 @@
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: #83CC86;">
-                        <a th:href="@{/auth/session(filter='latest')}" class="flat-link"> <small>Detail <i class="las la-arrow-right"></i></small></a>
+                        <a th:href="@{/auth/session(filter='latest')}" class="flat-link"> <small>Detail <i
+                                    class="las la-arrow-right"></i></small></a>
                     </div>
                 </div>
             </div>
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #0983E7;">
-                        <i class="las la-door-open la-3x"></i><br />
+                        <i class="las la-door-open la-2x"></i><br />
                         <span>PRESENSI MASUK</span>
                     </div>
                     <div class="card-body text-center">
@@ -67,7 +65,7 @@
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #5A3F8C;">
-                        <i class="las la-door-closed la-3x"></i><br />
+                        <i class="las la-door-closed la-2x"></i><br />
                         <span>PRESENSI PULANG</span>
                     </div>
                     <div class="card-body text-center">
@@ -84,7 +82,7 @@
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #FFB800;">
-                        <i class="las la-id-card-alt la-3x"></i><br />
+                        <i class="las la-id-card-alt la-2x"></i><br />
                         <span>DISPENSASI</span>
                     </div>
                     <div class="card-body text-center">
@@ -94,14 +92,15 @@
                         </p>
                     </div>
                     <div class="card-footer text-end" style="background-color: rgba(255, 184, 0, 0.5);">
-                        <a th:href="@{/dispensation}" class="flat-link"> <small>Detail <i class="las la-arrow-right"></i></small></a>
+                        <a th:href="@{/dispensation}" class="flat-link"> <small>Detail <i
+                                    class="las la-arrow-right"></i></small></a>
                     </div>
                 </div>
             </div>
             <div class="col">
                 <div class="card h-60">
                     <div class="card-header text-center text-light" style="background-color: #FC4D4D;">
-                        <i class="las la-map-pin la-3x"></i><br />
+                        <i class="las la-map-pin la-2x"></i><br />
                         <span>FAKE LOCATOR</span>
                     </div>
                     <div class="card-body text-center">
@@ -117,18 +116,34 @@
             </div>
         </div>
         <form>
-            <div class="row py-3">
-                <div class="col-md-5">
-                    <h5>LOG PRESENSI</h5>
+            <div class="row gx-6">
+                <div class="col">
+                    <div class="pt-3 border">
+                        <h5>LOG PRESENSI</h5>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <input type="hidden" id="division-id" th:value="${division}" />
-                    <input id="search-name" type="text" class="form-control" name="name" placeholder="Cari nama..."
-                        autocomplete="off" aria-label="cari nama">
-                </div>
-                <div class="col-md-3">
-                    <input id="date-selection" type="text" class="form-control text-center" data-provide="datepicker"
-                        th:value="${dateDisplay}">
+                <div class="col">
+                    <div class="d-flex flex-row-reverse bd-highlight">
+                        <div class="py-2 bd-highlight text-end">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="las la-download"></i> Download
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="las la-file-pdf la-lg text-danger"></i> PDF</a></li>
+                                <li><a class="dropdown-item" th:href="@{/absence/download}"><i class="las la-file-excel la-lg text-success"></i> Microsot Excel</a></li>
+                            </ul>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <input id="date-selection" type="text" class="form-control form-control-sm text-center"
+                                data-provide="datepicker" th:value="${dateDisplay}">
+                        </div>
+                        <div class="p-2 flex-grow-1 bd-highlight">
+                            <input type="hidden" id="division-id" th:value="${division}" />
+                            <input id="search-name" type="text" class="form-control form-control-sm" name="name"
+                                placeholder="Cari nama..." autocomplete="off" aria-label="cari nama">
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </form>
@@ -140,7 +155,7 @@
                 </li>
                 <th:block th:each="map: ${divisions}">
                     <li class="nav-item">
-                        <a class="nav-link" th:classappend="${division == map.get('id') ? 'active':''}"
+                        <a class="nav-link " th:classappend="${division == map.get('id') ? 'active':''}"
                             th:href="@{/absence(date=${date}, division=${map.get('id')})}"
                             th:text="${map.get('code')}"></a>
                     </li>
@@ -149,16 +164,17 @@
         </div>
         <div class="row py-2">
             <div class="table-responsive">
-                <table class="table table-borderless bg-light">
+                <table class="table table-sm table-borderless bg-light">
                     <thead class="text-white" style="background-color: #0983E7;">
                         <tr>
                             <th rowspan="2" class="text-center align-middle" scope="col" th:text="#{no}"></th>
-                            <th rowspan="2" class="text-center align-middle" scope="col">Nama Pegawai</th>
+                            <th rowspan="2" class="col-md-3 text-center align-middle" scope="col">Nama Pegawai</th>
                             <th colspan="3" class="text-center" scope="col">Masuk</th>
                             <th colspan="3" class="text-center" scope="col">Pulang</th>
                             <th rowspan="2" class="text-center align-middle" scope="col">Durasi Kerja</th>
-                            <th rowspan="2" class="text-center align-middle" scope="col">Status</th>
-                            <th sec:authorize="hasAnyAuthority('ADMIN')" rowspan="2" class="text-center align-middle" scope="col">Fake Locator</th>
+                            <th rowspan="2" class="col-md-2 text-center align-middle" scope="col">Status</th>
+                            <th sec:authorize="hasAnyAuthority('ADMIN')" rowspan="2" class="text-center align-middle"
+                                scope="col">Fake Locator</th>
                         </tr>
                         <tr>
                             <th class="text-center" scope="col">Waktu</th>
@@ -173,26 +189,29 @@
                         <tr th:each="row: ${data}" th:if="${data.numberOfElements > 0}">
                             <td class="text-center" th:text="${rowStat.count + startIndex}" />
                             <td class="text-start">
-                                <a th:if="${row.fullName != null}" th:href="@{/absence/user(id=${row.userId})}"
-                                    class="flat-link" th:text="${row.fullName}"></a>
-                                <a th:unless="${row.fullName != null}" th:href="@{/absence/user(id=${row.userId})}"
-                                    class="flat-link" th:text="${row.email}"></a>
+                                <a th:if="${row.user.profile != null}" th:href="@{/absence/user(id=${row.user.id})}"
+                                    class="flat-link" th:text="${row.user.profile.fullName}"></a>
+                                <a th:unless="${row.user.profile != null}" th:href="@{/absence/user(id=${row.user.id})}"
+                                    class="flat-link" th:text="${row.user.email}"></a>
                             </td>
                             <td class="text-center"
-                                th:text="${row.clockInTime != null ?  #temporals.format(row.clockInTime, 'HH:mm:ss') : '-' }" />
+                                th:text="${row.id != null && row.dateTime != null ?  #temporals.format(row.dateTime, 'HH:mm:ss') : '-' }" />
                             <td class="text-center"
-                                th:text="${row.clockInIpAddress != null ? row.clockInIpAddress : '-'}" />
-                            <td class="text-center" th:text="${row.lateDisplay != null ? row.lateDisplay : '-'}">-</td>
+                                th:text="${row.id != null &&  row.ipAddress != null ? row.ipAddress : '-'}" />
+                            <td class="text-center" th:text="${row.id != null && row.lateDisplay != null ? row.lateDisplay : '-'}">-</td>
                             <td class="text-center"
-                                th:text="${row.clockOutTime != null ?  #temporals.format(row.clockOutTime, 'HH:mm:ss') : '-'}" />
+                                th:text="${row.id != null &&  row.outDateTime != null ?  #temporals.format(row.outDateTime, 'HH:mm:ss') : '-'}" />
                             <td class="text-center"
-                                th:text="${row.clockOutIpAddress != null ? row.clockOutIpAddress : '-'}" />
-                            <td class="text-center" th:text="${row.earlyDisplay != null ? row.earlyDisplay : '-'}">-</td>
-                            <td class="text-center"
-                                th:text="${row.workingDisplay != null ? row.workingDisplay : '-'}">-</td>
+                                th:text="${row.outIpAddress != null ? row.outIpAddress : '-'}" />
+                            <td class="text-center" th:text="${row.earlyDisplay != null ? row.earlyDisplay : '-'}">-
+                            </td>
+                            <td class="text-center" th:text="${row.workingDisplay != null ? row.workingDisplay : '-'}">-
+                            </td>
                             <td class="text-center" th:text="${row.status != null ? row.status : '-'}">Status</td>
-                            <td sec:authorize="hasAnyAuthority('ADMIN')" class="text-center text-danger" th:if="${row.isFakeLocator==true}">On</td>
-                            <td sec:authorize="hasAnyAuthority('ADMIN')" class="text-center" th:unless="${row.isFakeLocator==true}">-</td>
+                            <td sec:authorize="hasAnyAuthority('ADMIN')" class="text-center text-danger"
+                                th:if="${row.isFakeLocator==true}">On</td>
+                            <td sec:authorize="hasAnyAuthority('ADMIN')" class="text-center"
+                                th:unless="${row.isFakeLocator==true}">-</td>
 
                         </tr>
                         <tr th:unless="${data.numberOfElements > 0}">

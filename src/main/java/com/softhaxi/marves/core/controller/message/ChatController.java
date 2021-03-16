@@ -1,17 +1,14 @@
 package com.softhaxi.marves.core.controller.message;
 
-import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static java.util.Map.entry;
 
 import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.Profile;
@@ -20,29 +17,31 @@ import com.softhaxi.marves.core.domain.chatting.Chat;
 import com.softhaxi.marves.core.domain.chatting.ChatRoom;
 import com.softhaxi.marves.core.domain.chatting.ChatRoomMember;
 import com.softhaxi.marves.core.domain.chatting.ChatStatus;
+import com.softhaxi.marves.core.domain.exception.BusinessException;
 import com.softhaxi.marves.core.domain.messaging.MessageStatus;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.ChatRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.ProfileRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRepository;
-import com.softhaxi.marves.core.repository.chat.ChatRoomMemberRepository;
 import com.softhaxi.marves.core.repository.chat.ChatRoomRepository;
 import com.softhaxi.marves.core.repository.chat.ChatStatusRepository;
-import com.softhaxi.marves.core.service.message.MessageService;
+import com.softhaxi.marves.core.service.message.ChatService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,26 +56,16 @@ public class ChatController {
 
     @Autowired
     private ChatRoomRepository chatRoomRepo;
-
-    private ChatRoomMemberRepository chatRoomMemberRepo;
-
     @Autowired
     private ChatRepository chatRepo;
-
     @Autowired
     private ChatStatusRepository chatStatusRepo;
-
     @Autowired
     private UserRepository userRepo;
-
     @Autowired
     private ProfileRepository profileRepo;
-
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
-    @Autowired
-    private MessageService messageService;
+    private ChatService chatService;
 
     @GetMapping()
     public String index(Model model) {
@@ -99,10 +88,8 @@ public class ChatController {
         return "chat/index";
     }
 
-    @PostMapping()
-    public ResponseEntity<?> post(Model model, @RequestParam(name = "id", required = false) String id,
-        @RequestParam(name = "recipient", required = false) String recipient,
-        @RequestParam(name = "message") String message) {
+    @PostMapping("/send")
+    public ResponseEntity<?> send(@ModelAttribute ChatRequest request) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = null;
         if(principal != null) {
@@ -115,79 +102,30 @@ public class ChatController {
         } else {
             userId = principal.toString();
         }
-        User senderUser = userRepo.findById(UUID.fromString(userId)).orElse(new User().id(UUID.fromString(userId)));
-        
-        ChatRoom chatRoom = null;
-        User recipientUser = null;
-        if(id == null) {
-            if(recipient != null) {
-                recipientUser = userRepo.findById(UUID.fromString(recipient.trim())).orElseThrow();
-
-                chatRoom = chatRoomRepo.findOnePrivateBy2User(senderUser, recipientUser).orElse(null);
-                if(chatRoom == null) {
-                    chatRoom = new ChatRoom().name(String.format("%s|%s", senderUser.getEmail(), recipientUser.getEmail()));
-                    chatRoomRepo.save(chatRoom);
-                    
-                    chatRoomMemberRepo.saveAll(List.of(
-                        new ChatRoomMember(chatRoom, senderUser),
-                        new ChatRoomMember(chatRoom, recipientUser)
-                    ));
-                }
-            }
+        User user = userRepo.findById(UUID.fromString(userId)).orElse(new User().id(UUID.fromString(userId)));
+        if(request.getFile() != null && !request.getFile().isEmpty()) {
+            
+            request.setContentType(request.getFile().getContentType());
         } else {
-            chatRoom = chatRoomRepo.findOneByIdAndUser(UUID.fromString(id), senderUser).orElseThrow();
+            request.setContentType(MediaType.TEXT_PLAIN_VALUE);
         }
-        if(recipientUser == null) {
-            ChatRoomMember member = chatRoom.getMembers().stream()
-                .filter((item) -> !item.getUser().equals(senderUser))
-                .findFirst().orElse(null);
-            if(member != null) {
-                recipientUser = member.getUser();
-            }
-        }
-        Chat chat = new Chat()
-                        .chatRoom(chatRoom)
-                        .sender(senderUser)
-                        .content(message.trim())
-                        .dateTime(ZonedDateTime.now());
-        chatRepo.save(chat);
-        Collection<ChatStatus> statuses = new LinkedList<>();
-        if(id == null)
-            statuses.add(new ChatStatus(chat, recipientUser, false, false));
-        else {
-            chatRoom.getMembers().forEach((member) -> {
-                if(!member.getUser().equals(senderUser)) {
-                    statuses.add(new ChatStatus(chat, member.getUser(), false, false));
-                }
-            });
-        }
-        messagingTemplate.convertAndSendToUser(
-            String.format("%s.%s", chatRoom.getId().toString(), recipientUser.getEmail()), 
-            "/queue/message", chat.getId().toString());
+        request.setDateTime(new Date());
+        logger.debug("[send] Content type..." + request.getContentType());
 
-        messagingTemplate.convertAndSendToUser(
-            recipientUser.getEmail(), 
-            "/queue/message", String.format("%s.%s", chat.getChatRoom().getId().toString(), chat.getId().toString()));
-
-        if(recipientUser.getOneSignalId() != null && !recipientUser.getOneSignalId().isEmpty()) {
-            Map<String, Object> body = new HashMap<>(Map.ofEntries(
-                entry("headings", Map.of("en", "Administrator")),
-                entry("contents", Map.of("en", chat.getContent())),
-                entry("data", Map.of("deepLink", "core://marves.dev/chat", 
-                    "view", "detail", 
-                    "refId", chat.getChatRoom().getId().toString())),
-                entry("include_player_ids", Arrays.asList(recipientUser.getOneSignalId())),
-                entry("small_icon", "ic_stat_marves"),
-                entry("android_channel_id", "066ee9a7-090b-4a42-b084-0dcbbeb7f158"),
-                entry("android_accent_color", "FF19A472"),
-                entry("android_group", chat.getChatRoom().getId().toString())
-            ));
-            messageService.sendPushNotification(chat, statuses, body);
+        Chat chat;
+        try {
+            chat = chatService.send(user, request);
+        } catch (BusinessException e) {
+            return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.NOT_FOUND.value(), 
+                    HttpStatus.NOT_FOUND.getReasonPhrase(), 
+                    e.getMessage()),
+                    HttpStatus.NOT_FOUND
+            );
         }
-
         chat.setMyself(true);
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.CREATED.value(),
                 HttpStatus.CREATED.getReasonPhrase(),
                 chat
@@ -432,7 +370,7 @@ public class ChatController {
         }
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 chat

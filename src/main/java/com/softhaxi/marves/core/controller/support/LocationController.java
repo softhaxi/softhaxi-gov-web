@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.LocationLog;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.model.support.Location;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.logging.LocationLogRepository;
@@ -65,7 +65,7 @@ public class LocationController {
                 .longitude(locationLog.getLongitude()));
         }
 
-        return new ResponseEntity<>(new GeneralResponse(
+        return new ResponseEntity<>(new SuccessResponse(
             HttpStatus.OK.value(),
             HttpStatus.OK.getReasonPhrase(),
             data

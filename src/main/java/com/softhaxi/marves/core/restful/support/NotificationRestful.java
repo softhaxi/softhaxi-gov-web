@@ -2,8 +2,6 @@ package com.softhaxi.marves.core.restful.support;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -16,8 +14,8 @@ import com.softhaxi.marves.core.domain.messaging.Message;
 import com.softhaxi.marves.core.domain.messaging.MessageStatus;
 import com.softhaxi.marves.core.domain.messaging.Notification;
 import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;
@@ -121,7 +119,7 @@ public class NotificationRestful {
         // logger.debug("[index] Number of notification page..." +pagination.getTotalPages());
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 filtered
@@ -139,7 +137,7 @@ public class NotificationRestful {
     //     notificationRepo.save(notification);
 
     //     return new ResponseEntity<>(
-    //         new GeneralResponse(
+    //         new SuccessResponse(
     //             HttpStatus.CREATED.value(),
     //             HttpStatus.CREATED.getReasonPhrase(),
     //             notification
@@ -185,7 +183,7 @@ public class NotificationRestful {
         notification.setRead(true);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 notification
@@ -233,7 +231,7 @@ public class NotificationRestful {
             notificationStatusRepo.saveAll(statuses);
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 notifications

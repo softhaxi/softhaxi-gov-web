@@ -10,6 +10,9 @@
         integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <link rel="stylesheet"
         href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.0.0/magnific-popup.min.css"
+        integrity="sha512-nIm/JGUwrzblLex/meoxJSPdAKQOe2bLhnrZ81g5Jbh519z8GFJIWu87WAhBH+RAyGbM4+U3S2h+kL5JoV6/wA=="
+        crossorigin="anonymous" />
     <link th:href="@{/styles/app.css}" rel="stylesheet" />
     <style>
         body {
@@ -136,6 +139,26 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modal-file" tabindex="-1" aria-labelledby="modal-file" aria-hidden="true">
+        <form id="form-file" method="POST" th:action="@{/chat/send}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Kirim File</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div id="modal-body" class="modal-body text-sm">
+                        Apakah anda akan mengirimkan file?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-sm btn-success border-0">Kirim</button>
+                        <button type="button" class="btn btn-sm btn-secondary"
+                            data-bs-dismiss="modal">Batal</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
@@ -147,7 +170,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
         integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.0.0/jquery.magnific-popup.min.js"
+        integrity="sha512-+m6t3R87+6LdtYiCzRhC5+E0l4VQ9qIT1H9+t1wmHkMJvvUQNI5MKKb7b08WL4Kgp9K0IBgHDSLCRJk05cFUYg=="
+        crossorigin="anonymous"></script>
     <script th:src="@{/scripts/autocomplete.js}"></script>
+    <script th:src="@{/asset/vendor/fgemojipicker/fgEmojiPicker.js}"></script>
     <script th:inline="javascript">
         // var loading = false;
         // function showPreview() {
@@ -158,10 +185,21 @@
         /*<![CDATA[*/
         var email = /*[[${email}]]*/ 'email';
         /*]]>*/
+        var modalFileEl = document.getElementById('modal-file');
+        var modalFile = new bootstrap.Modal(modalFileEl);
 
         function showPreview(src) {
             $('#image-src').attr('src', src).attr('src');
             $('#image-preview').modal('show')
+        }
+
+        function showMagnificPopup(url) {
+            $.magnificPopup.open({
+                items: {
+                    src: url
+                },
+                type: 'image'
+            });
         }
 
         function socketConnect() {
@@ -236,6 +274,33 @@
                         // changeDetail(id);
                         getMessage(message.body.replace(/["']/g, ""));
                     });
+                    new FgEmojiPicker({
+                        dir: '/asset/vendor/fgemojipicker/',
+                        trigger: ['#emoji'],
+                        position: ['top', 'right'],
+                        preFetch: true,
+                        insertInto: document.getElementById('message'),
+                        emit(obj, triggerElement) {
+                            console.log(obj, triggerElement);
+                        }
+                    });
+                    // $('.message-image').magnificPopup({
+                    //     type: 'image'
+                    // });
+                    $('.profile-image').magnificPopup({
+                        type: 'image'
+                    });
+                    $('.btn-file').on('click', function(e) {
+                        $('#input-file').click();
+                    });
+                    $('#input-file').on('change', function(e) {
+                        // alert($(this).val());
+                        var filename = $(this).val().replace(/C:\\fakepath\\/i, '');
+                        var body = document.getElementById('modal-body');
+                        var name = $('#roomName').val();
+                        body.innerHTML = 'Kirim "' + filename + '" ke ' + name + '?';
+                        modalFile.show();
+                    });
                 },
                 error: function (xhr, status, error) {
                     alert(error);
@@ -273,15 +338,24 @@
                 message.focus();
                 return;
             }
+            var data = new FormData();
+            data.set('chatRoom', $('#roomId').val());
+            data.set('content', message.val());
 
             $.ajax({
                 type: "POST",
-                url: "/chat",
-                data: {
-                    id: id,
-                    recipient: recipient,
-                    message: message.val().trim()
-                },
+                url: "/chat/send",
+                enctype: 'multipart/form-data',
+                data: data,
+                // {
+                //     id: id,
+                //     recipient: recipient,
+                //     message: message.val().trim()
+                // },
+                processData: false,
+                contentType: false,
+                cache: false,
+                timeout: 600000,
                 success: function (response) {
                     // console.log(response.data);
                     var data = response.data;
@@ -329,6 +403,65 @@
                         }
                     });
                 }
+            });
+            $('#form-file').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var data = new FormData();
+
+                var fileEl = document.getElementById('input-file');
+                data.append('file', fileEl.files[0]);
+                data.set('chatRoom', $('#roomId').val());
+                $.ajax({
+                    type: "POST",
+                    enctype: 'multipart/form-data',
+                    url: url,
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    timeout: 600000,
+                    success: function (response) {
+                        console.log(response.data);
+                        var data = response.data;
+                        if(data.contentType.includes('image')) {
+                            var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
+                            '<div class="chat-container d-flex flex-row bd-highlight">' +
+                            '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                            '<div class="chat-sent">' +
+                            '<a onclick="showMagnificPopup(\'' + data.fileUrl + '\')" class="message-image">' +
+                                '<img src="' + data.fileUrl +' " style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;"/>' +
+                            '</a>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                            $(newMessage).appendTo($('.chats-message'));
+                        } else if(data.contentType == 'application/pdf') {
+                            var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
+                            '<div class="chat-container d-flex flex-row bd-highlight">' +
+                            '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                            '<div class="chat-sent">' +
+                            '<a href="' + data.fileUrl +'" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> ' + data.content + '</p>' +
+                            '</a>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                            $(newMessage).appendTo($('.chats-message'));
+                        }
+                        modalFile.hide();
+                        $("#input-file").val(null);
+                        $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, "fast");
+                        updateRooms($('#roomId').val(), false);
+                    },
+                    error: function (e) {
+                        console.log("ERROR : ", e);
+                    }
+                });
+            });
+            modalFileEl.addEventListener('hidden.bs.modal', function(e) {
+                $("#input-file").val(null);
             });
         })();
 

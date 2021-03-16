@@ -15,6 +15,18 @@ body {
     object-fit: cover;
 }
 
+.thumbnail-150 {
+    width: 150px; 
+    height: 150px;
+    object-fit: cover;
+}
+
+.thumbnail-120 {
+    width: 120px; 
+    height: 120px;
+    object-fit: cover;
+}
+
 .thumbnail-64 {
     width: 64px; 
     height: 64px;
@@ -46,3 +58,6 @@ a:active {
     color: #757575;
     text-decoration: none;
 } */
+
+/* table thead tr th { font-size: 0.9rem; }
+table tbody tr td { font-size: 0.8rem; } */

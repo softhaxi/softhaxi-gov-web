@@ -13,12 +13,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
+import com.softhaxi.marves.core.domain.request.CommentRequest;
+import com.softhaxi.marves.core.domain.request.TicketRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.domain.support.Ticket;
 import com.softhaxi.marves.core.domain.support.TicketComment;
-import com.softhaxi.marves.core.model.request.CommentRequest;
-import com.softhaxi.marves.core.model.request.TicketRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
 import com.softhaxi.marves.core.repository.support.TicketCommentRepository;
@@ -77,7 +77,7 @@ public class TicketRestful {
 
         if (status != null) {
             return new ResponseEntity<>(
-                    new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+                    new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
                             ticketRepo.findAllByUserAndStatusOrderByCreatedAt(user, status.toLowerCase())),
                     HttpStatus.OK);
         }
@@ -87,7 +87,7 @@ public class TicketRestful {
         // if(tickets.isEmpty()) tickets = closedTickets;
         // else tickets.addAll(closedTickets);
 
-        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+        return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
                 tickets), HttpStatus.OK);
 
     }
@@ -162,7 +162,7 @@ public class TicketRestful {
         );
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.CREATED.value(), 
                 HttpStatus.CREATED.getReasonPhrase(),
                 ticket), 
@@ -190,7 +190,7 @@ public class TicketRestful {
         ticket.setActivities(activities);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 ticket
@@ -218,7 +218,7 @@ public class TicketRestful {
         var comments = commentRepo.findAllByTicketOrderByCreatedAtDesc(ticket);
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 comments
@@ -271,7 +271,7 @@ public class TicketRestful {
         ticket.setActivities(activities);
         
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(), 
                 HttpStatus.OK.getReasonPhrase(),
                 ticket), 
@@ -321,7 +321,7 @@ public class TicketRestful {
         );  
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(), 
                 HttpStatus.OK.getReasonPhrase(),
                 ticket), 

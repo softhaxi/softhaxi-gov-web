@@ -12,8 +12,14 @@
                     <h6 class="ellipsis mb-0" th:text="${row.name}">Jason Doe</h6>
                     <small class="small font-weight-bold text-nowrap" style="font-size: 8pt;" th:text="${row.latestChat.dateTimeDisplay}">25 Dec</small>
                 </div>
-                <p class="fw-light mb-0 text-small ellipsis" th:text="${row.latestChat.content}">Lorem ipsum dolor sit amet, consectetur
+                <p th:if="${#strings.contains(row.latestChat.contentType, 'image')}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-image"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == 'application/pdf'}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-file-pdf"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == null || row.latestChat.contentType == 'text/plain'}" class="fw-light mb-0 text-small ellipsis" 
+                    th:text="${row.latestChat.content}">Lorem ipsum dolor sit amet, consectetur
                     adipisicing elit, sed do eiusmod tempor incididunt ut labore.</p>
+                
             </div>
         </div>
     </li>

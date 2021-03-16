@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.attendance.DailyAttendanceRepository;
 import com.softhaxi.marves.core.repository.attendance.DispensationRepository;
 import com.softhaxi.marves.core.repository.logging.ActivityLogRepository;
@@ -133,7 +133,7 @@ public class DashboardController {
             dates.add(date.format(formatter.withLocale(locale)));
         });
 
-        return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+        return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
                 Map.of("dates", dates, "wfo", wfo, "wfh", wfh, "dispensation", dispensation)), HttpStatus.OK);
     }
 }

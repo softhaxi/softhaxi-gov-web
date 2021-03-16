@@ -14,9 +14,9 @@ import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.ActivityLog;
 import com.softhaxi.marves.core.domain.logging.LocationLog;
 import com.softhaxi.marves.core.domain.logging.Session;
-import com.softhaxi.marves.core.model.request.LoginRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.LoginRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.access.UserRoleRepository;
 import com.softhaxi.marves.core.repository.account.ProfileRepository;
@@ -160,7 +160,7 @@ public class AuthenticationRestful {
             if (!user.getUsername().equalsIgnoreCase("MCORE.ADMIN")) {
                 if(request.getLatitude() != null && request.getLongitude() != null)
                     loggerService.saveAsyncLocationLog(new LocationLog().user(user).dateTime(ZonedDateTime.now())
-                    .isMockLocation(request.getMockLocation())
+                    .isMockLocation(request.isMockLocation())
                     .latitude(Double.parseDouble(request.getLatitude()))
                     .longitude(Double.parseDouble(request.getLongitude())));
                 loggerService.saveAsyncActivityLog(new ActivityLog().user(user).actionTime(ZonedDateTime.now())
@@ -186,7 +186,7 @@ public class AuthenticationRestful {
                 .oneSignalId(request.getOneSignalId());
             sessionRepo.save(session);
 
-            return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
+            return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(),
                     Map.of("type", session.getType(),
                         "accessToken", session.getAccessToken())),
                     HttpStatus.OK);
@@ -221,7 +221,7 @@ public class AuthenticationRestful {
                         .actionName("log.out").description("logout.from.mobile").uri("/user").deepLink("core://marves.dev/user")
                         .referenceId(user.getId().toString()).ipAddress(ipAddress));
 
-            return new ResponseEntity<>(new GeneralResponse(HttpStatus.OK.value(), 
+            return new ResponseEntity<>(new SuccessResponse(HttpStatus.OK.value(), 
                 HttpStatus.OK.getReasonPhrase(),
                     "logout.successful"),
                     HttpStatus.OK);

@@ -65,7 +65,7 @@ public class EmployeeDetail {
                     employees.add(employee);
                     
                     if(profile != null) {
-                        profile.setFullName(profileData.get("fullName") != null ? profileData.get("fullName").toString() : profile.getFirstName());
+                        profile.setFullName(profileData.get("name") != null ? profileData.get("name").toString() : profile.getFirstName() != null ? profile.getFullName() : "");
                         // profile.setPrimaryEmail(profileData.get("email") != null ? profileData.get("email").toString() : profile.getPrimaryEmail());
                         // user.setEmail(profileData.get("email") != null ? profileData.get("email").toString() : user.getEmail());
                         profiles.add(profile);

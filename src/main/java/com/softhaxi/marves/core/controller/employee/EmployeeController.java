@@ -2,7 +2,6 @@ package com.softhaxi.marves.core.controller.employee;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -10,11 +9,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.google.gson.Gson;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.employee.Employee;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.employee.EmployeeRepository;
 import com.softhaxi.marves.core.service.account.UserService;
@@ -36,7 +34,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author Raja Sihombing
@@ -132,7 +129,7 @@ public class EmployeeController {
             }
         }
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 data

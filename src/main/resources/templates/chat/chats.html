@@ -1,46 +1,74 @@
-<div class="mx-0" xmlns:th="http://www.thymeleaf.org" >
+<div class="mx-0" xmlns:th="http://www.thymeleaf.org">
     <div class="rooms-search p-3 border border-white" style="height: 3.5rem; background-color: #f1f1f1;">
-        <img th:if="${room.profilePicture != null}" th:src="${room.profilePicture}"
-                    alt="user" class="thumbnail-mini rounded-circle" th:onclick="showPreview([[${room.profilePicture}]]);">
+        <a th:if="${room.profilePicture != null}" th:href="${room.profilePicture}" class="profile-image">
+            <img th:src="${room.profilePicture}" alt="user" class="thumbnail-mini rounded-circle">
+        </a>
         <!-- <img th:unless="${room.profilePicture != null}" src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
                     alt="user" class="thumbnail-mini rounded-circle"> -->
         <span class="h5 fw-bold align-items-center" th:text="${room.name}"></span>
     </div>
     <div class="py-4 px-2 chats-message">
-        <div class="d-flex mb-1" th:each="row : ${data}" th:classappend="${!row.myself ? 'justify-content-start' : 'justify-content-end'}">
+        <div class="d-flex mb-1" th:each="row : ${data}"
+            th:classappend="${!row.myself ? 'justify-content-start' : 'justify-content-end'}">
             <!-- <div class="thumbnail">
             <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
                 class="rounded-circle user_img_msg">
         </div> -->
             <div class="chat-container d-flex flex-row bd-highlight">
-                <span class="chat-time px-1" th:if="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM, Today</span>
+                <span class="chat-time px-1" th:if="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM,
+                    Today</span>
                 <div th:classappend="${!row.myself ? 'chat-received' : 'chat-sent'}">
-                    <p class="text-wrap text-break mb-0" style="font-size: 10pt;" th:text="${row.content}">
-                    Hi, how are you samim? This should be good if i test using long message. How about you?
-                    Do we have same mind? I think shoud be better to check both longest and shortest</p></div>
-                <span class="chat-time px-1" th:unless="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM, Today</span>
+                    <p th:if="${row.contentType == null or row.contentType == 'text/plain'}"
+                        class="text-wrap text-break mb-0" style="font-size: 10pt;" th:text="${row.content}">
+                        Hi, how are you samim? This should be good if i test using long message. How about you?
+                        Do we have same mind? I think shoud be better to check both longest and shortest
+                    </p>
+                    <a th:if="${row.contentType != null && #strings.contains(row.contentType, 'image')}"
+                        th:onclick="showMagnificPopup([[${row.fileUrl}]])">
+                        <img th:src="${row.fileUrl}"
+                            style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;" />
+                    </a>
+                    <a th:if="${row.contentType == 'application/pdf'}"
+                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> [[${row.content}]]</p>
+                    </a>
+                    <!-- <span th:text="${row.contentType}"></span> -->
+                    <!-- <span th:text="${row.fileUrl}"></span> -->
+                </div>
+                <span class="chat-time px-1" th:unless="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM,
+                    Today</span>
 
             </div>
         </div>
     </div>
-    <div class="py-1 px-1" style="height: 3.5rem; background-color: #f5f5f5;">
+    <div class="px-1" style="height: 3.5rem; background-color: #f5f5f5;">
         <form class="row">
-            <input type="hidden" th:value="${room.id}" id="roomId"/>
-            <input type="hidden" th:value="${room.recipient}" id="recipientEmail"/>
+            <input type="hidden" th:value="${room.id}" id="roomId" />
+            <input type="hidden" th:value="${room.name}" id="roomName" />
+            <input type="hidden" th:value="${room.recipient}" id="recipientEmail" />
             <div class="col-md-12">
-                <div class="input-group">
-                    <div class="input-group-append">
-                        <button id="button-addon1" type="button" class="btn"> <i
+                <div class="d-flex flex-row bd-highlight align-middle">
+                    <div class="py-1 bd-highlight text-end btn-group btn-sm" role="group">
+                        <button id="emoji" type="button" class="btn"> <i
                                 class="las la-grin-alt la-2x text-muted"></i></button>
+                        <input type="file" id="input-file" accept="image/jpeg,image/gif,image/png,application/pdf"
+                            style="display: none;" />
+                        <button type="button" class="btn btn-file"> <i
+                                class="las la-paperclip la-2x text-muted"></i></button>
                     </div>
-                    <textarea type="text" class="form-control rounded-4 border-0 my-1"
-                        style="resize: none; height: 20px;" id="message" placeholder="Masukkan pesan anda..."
-                        rows="1"></textarea>
-                    <div class="input-group-append">
-                        <button id="button-addon2" type="button" class="btn btn-light text-muted"> <i
-                                class="la la-paper-plane la-2x" th:onclick="sendMessage([[${room.id}]], [[${room.recipient}]]);"></i></button>
+                    <div class="py-2 flex-grow-1 bd-highlight">
+                        <textarea type="text" class="form-control rounded-4 border-0"
+                            style="resize: none; height: 20px;" id="message" placeholder="Masukkan pesan anda..."
+                            rows="1" data-emojiable="true"></textarea>
                     </div>
+                    <div class="py-1 bd-highlight">
+                        <button id="button-addon2" type="button" class="btn text-muted"> <i
+                                class="la la-paper-plane la-2x"
+                                th:onclick="sendMessage([[${room.id}]], [[${room.recipient}]]);"></i></button>
+                    </div>
+
                 </div>
+
             </div>
         </form>
     </div>

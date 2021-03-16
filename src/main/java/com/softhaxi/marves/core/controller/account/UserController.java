@@ -11,9 +11,9 @@ import com.softhaxi.marves.core.domain.access.Role;
 import com.softhaxi.marves.core.domain.access.UserRole;
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
-import com.softhaxi.marves.core.model.request.UserRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.UserRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.access.RoleRepository;
 import com.softhaxi.marves.core.repository.access.UserRoleRepository;
 import com.softhaxi.marves.core.repository.account.UserRepository;
@@ -94,7 +94,7 @@ public class UserController {
                 data.add(userMap);
             }
             return new ResponseEntity<>(
-                new GeneralResponse(
+                new SuccessResponse(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
                     data

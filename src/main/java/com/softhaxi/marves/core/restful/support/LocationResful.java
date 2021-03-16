@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.logging.LocationLog;
-import com.softhaxi.marves.core.model.request.LocationRequest;
-import com.softhaxi.marves.core.model.response.ErrorResponse;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.request.LocationRequest;
+import com.softhaxi.marves.core.domain.response.ErrorResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.service.logging.LoggerService;
 
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class LocationResful {
             loggerService.saveAsyncLocationLog(location);
 
             return new ResponseEntity<>(
-                new GeneralResponse(
+                new SuccessResponse(
                     HttpStatus.CREATED.value(), 
                     HttpStatus.CREATED.getReasonPhrase(), 
                     location

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.softhaxi.marves.core.domain.account.User;
-import com.softhaxi.marves.core.model.response.GeneralResponse;
+import com.softhaxi.marves.core.domain.response.SuccessResponse;
 import com.softhaxi.marves.core.repository.employee.ScheduleRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class TaskResful {
             date = LocalDate.now();
 
         return new ResponseEntity<>(
-            new GeneralResponse(
+            new SuccessResponse(
                 HttpStatus.OK.value(), 
                 HttpStatus.OK.getReasonPhrase(), 
                 scheduleRepository.findAllByUserAndDate(user, date)

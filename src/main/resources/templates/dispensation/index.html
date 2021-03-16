@@ -25,9 +25,6 @@
             <div class="col-md-6">
                 <h5 class="align-text-bottom">HARI INI</h5>
             </div>
-            <div class="col-md-6 text-end">
-                <button class="btn btn-success"><i class="las la-download"></i> Download</button>
-            </div>
         </div>
         <div class="row row-cols-1 row-cols-md-5 g-5">
             <div class="col">
@@ -112,21 +109,34 @@
             </div>
         </div>
         <form>
-            <div class="row py-3">
-                <div class="col-md-5">
-                    <h5>LOG DISPENSASI</h5>
+            <div class="row gx-6">
+                <div class="col">
+                    <div class="pt-3 border">
+                        <h5>DISPENSASI</h5>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <input type="hidden" id="division-id" th:value="${division}" />
-                    <input id="search-name" type="text" class="form-control" name="name" placeholder="Cari nama..."
-                        autocomplete="off" aria-label="cari nama">
-                    <!-- <div class="dropdown dropdown-name" id="dropdown-name" style="position: absolute">
-                        <ul class="list-unstyled" id="list-name" aria-labelledby="dropdownMenuButton2"></ul>
-                    </div> -->
-                </div>
-                <div class="col-md-3">
-                    <input id="date-selection" type="text" class="form-control text-center" data-provide="datepicker"
-                        th:value="${dateDisplay}">
+                <div class="col">
+                    <div class="d-flex flex-row-reverse bd-highlight">
+                        <div class="py-2 bd-highlight text-end">
+                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="las la-download"></i> Download
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="las la-file-pdf la-lg text-danger"></i> PDF</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="las la-file-excel la-lg text-success"></i> Microsot Excel</a></li>
+                            </ul>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <input id="date-selection" type="text" class="form-control form-control-sm text-center"
+                                data-provide="datepicker" th:value="${dateDisplay}">
+                        </div>
+                        <div class="p-2 flex-grow-1 bd-highlight">
+                            <input type="hidden" id="division-id" th:value="${division}" />
+                            <input id="search-name" type="text" class="form-control form-control-sm" name="name"
+                                placeholder="Cari nama..." autocomplete="off" aria-label="cari nama">
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </form>
@@ -147,15 +157,15 @@
         </div>
         <div class="row py-2">
             <div class="table-responsive">
-                <table class="table table-borderless bg-light">
+                <table class="table table-sm table-borderless bg-light">
                     <thead class="text-white" style="background-color: #FC4D4D;">
                         <tr>
                             <th class="text-center align-middle" scope="col" th:text="#{no}"></th>
                             <!-- <td class="col-md-1 text-center align-middle" scope="col">Tanggal</td> -->
                             <td class="col-md-3 text-center align-middle" scope="col">Nama Pegawai</td>
                             <td class="col-md-2 text-center align-middle" scope="col">Unit Kerja</td>
-                            <td class="col-md-1 text-center align-middle" scope="col">Waktu Awal Dispensasi</td>
-                            <td class="col-md-1 text-center align-middle" scope="col">Waktu Akhir Dispensasi</td>
+                            <td class="col-md-1 text-center align-middle" scope="col">Mulai</td>
+                            <td class="col-md-1 text-center align-middle" scope="col">Selesai</td>
                             <td class="col-md-1 text-center align-middle" scope="col">Status</td>
                             <td class="col-md-1 text-center align-middle" scope="col">Keterangan</td>
                             <td class="col-md-3 text-center align-middle" scope="col">Lampiran</td>

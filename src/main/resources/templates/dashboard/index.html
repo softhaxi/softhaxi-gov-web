@@ -393,7 +393,8 @@
 
         function initMap() {
             map = L.map('map', {
-                zoomControl: false
+                zoomControl: false,
+                tap: false,
             }).setView([50.0875726, 14.4189987], 13);
             L.control.searchbar({ position: 'topleft' }).addTo(map);
             L.control.zoom({ position: 'topright' }).addTo(map);

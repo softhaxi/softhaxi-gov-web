@@ -19,7 +19,7 @@ import com.softhaxi.marves.core.domain.account.User;
 import com.softhaxi.marves.core.domain.master.SystemParameter;
 import com.softhaxi.marves.core.domain.messaging.Notification;
 import com.softhaxi.marves.core.domain.messaging.NotificationStatus;
-import com.softhaxi.marves.core.model.request.NotificationRequest;
+import com.softhaxi.marves.core.domain.request.NotificationRequest;
 import com.softhaxi.marves.core.repository.account.UserRepository;
 import com.softhaxi.marves.core.repository.master.SystemParameterRepository;
 import com.softhaxi.marves.core.repository.messaging.NotificationRepository;

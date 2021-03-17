@@ -16,6 +16,14 @@
                     class="fw-light mb-0 text-small ellipsis"><i class="las la-image"></i> [[${row.latestChat.content}]]</p>
                 <p th:if="${row.latestChat.contentType == 'application/pdf'}"
                     class="fw-light mb-0 text-small ellipsis"><i class="las la-file-pdf"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == 'application/zip' || row.latestChat.contentType == 'application/vnd.rar'}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-file-archive"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == 'application/msword'  || row.latestChat.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-file-word"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == 'application/vnd.ms-excel' || row.latestChat.contentType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-file-excel"></i> [[${row.latestChat.content}]]</p>
+                <p th:if="${row.latestChat.contentType == 'application/vnd.ms-powerpoint' || row.latestChat.contentType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'}"
+                    class="fw-light mb-0 text-small ellipsis"><i class="las la-file-powerpoint"></i> [[${row.latestChat.content}]]</p>
                 <p th:if="${row.latestChat.contentType == null || row.latestChat.contentType == 'text/plain'}" class="fw-light mb-0 text-small ellipsis" 
                     th:text="${row.latestChat.content}">Lorem ipsum dolor sit amet, consectetur
                     adipisicing elit, sed do eiusmod tempor incididunt ut labore.</p>

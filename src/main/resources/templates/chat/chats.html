@@ -19,7 +19,7 @@
                     Today</span>
                 <div th:classappend="${!row.myself ? 'chat-received' : 'chat-sent'}">
                     <p th:if="${row.contentType == null or row.contentType == 'text/plain'}"
-                        class="text-wrap text-break mb-0" style="font-size: 10pt;" th:text="${row.content}">
+                        class="text-wrap text-break mb-0 message" style="font-size: 10pt;" th:text="${row.content}">
                         Hi, how are you samim? This should be good if i test using long message. How about you?
                         Do we have same mind? I think shoud be better to check both longest and shortest
                     </p>
@@ -28,12 +28,31 @@
                         <img th:src="${row.fileUrl}"
                             style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;" />
                     </a>
-                    <a th:if="${row.contentType == 'application/pdf'}"
-                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
-                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> [[${row.content}]]</p>
+                    <a th:if="${row.contentType == 'application/pdf'}" th:href="@{${row.fileUrl}}" target="_blank"
+                        class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i
+                                class="las la-file-pdf la-lg text-danger"></i> [[${row.content}]]</p>
                     </a>
-                    <!-- <span th:text="${row.contentType}"></span> -->
-                    <!-- <span th:text="${row.fileUrl}"></span> -->
+                    <a th:if="${row.contentType == 'application/zip' || row.contentType == 'application/vnd.rar'}"
+                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i
+                                class="las la-file-archive la-lg text-dark"></i> [[${row.content}]]</p>
+                    </a>
+                    <a th:if="${row.contentType == 'application/msword' || row.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}"
+                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i
+                                class="las la-file-word la-lg text-primary"></i> [[${row.content}]]</p>
+                    </a>
+                    <a th:if="${row.contentType == 'application/vnd.ms-excel' || row.contentType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}"
+                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i
+                                class="las la-file-excel la-lg text-success"></i> [[${row.content}]]</p>
+                    </a>
+                    <a th:if="${row.contentType == 'application/vnd.ms-powerpoint' || row.contentType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'}"
+                        th:href="@{${row.fileUrl}}" target="_blank" class="flat-link text-primary">
+                        <p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i
+                                class="las la-file-powerpoint la-lg text-warning"></i> [[${row.content}]]</p>
+                    </a>
                 </div>
                 <span class="chat-time px-1" th:unless="${row.myself}" th:text="${row.dateTimeDisplay}">8:40 AM,
                     Today</span>
@@ -51,7 +70,10 @@
                     <div class="py-1 bd-highlight text-end btn-group btn-sm" role="group">
                         <button id="emoji" type="button" class="btn"> <i
                                 class="las la-grin-alt la-2x text-muted"></i></button>
-                        <input type="file" id="input-file" accept="image/jpeg,image/gif,image/png,application/pdf"
+                        <input type="file" id="input-file"
+                            accept="image/jpeg,image/gif,image/png,application/pdf,
+                        application/zip,application/vnd.rar,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+                        application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                             style="display: none;" />
                         <button type="button" class="btn btn-file"> <i
                                 class="las la-paperclip la-2x text-muted"></i></button>

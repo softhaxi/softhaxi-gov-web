@@ -152,8 +152,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-sm btn-success border-0">Kirim</button>
-                        <button type="button" class="btn btn-sm btn-secondary"
-                            data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
                     </div>
                 </div>
             </div>
@@ -173,6 +172,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.0.0/jquery.magnific-popup.min.js"
         integrity="sha512-+m6t3R87+6LdtYiCzRhC5+E0l4VQ9qIT1H9+t1wmHkMJvvUQNI5MKKb7b08WL4Kgp9K0IBgHDSLCRJk05cFUYg=="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-linkify/2.1.9/linkify.min.js"
+        integrity="sha512-kxj7VjlzsQgiku2vbRcZI0FJ0dXmPsiRLugiRxJrCROusKHaFfX/hGDD1/L/R0Y+xI8zlA2B5nm6USapz7nQbg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-linkify/2.1.9/linkify-jquery.min.js"
+        integrity="sha512-pPmL2lffs0/BuPtn6iwFP+VEZV539C9uBBY7JDqHUvlxXaxr/03pUaueCB7C9fUSa+D0xeyyz53alBdHAiTQSA=="
+        crossorigin="anonymous"></script>
+
     <script th:src="@{/scripts/autocomplete.js}"></script>
     <script th:src="@{/asset/vendor/fgemojipicker/fgEmojiPicker.js}"></script>
     <script th:inline="javascript">
@@ -187,6 +193,7 @@
         /*]]>*/
         var modalFileEl = document.getElementById('modal-file');
         var modalFile = new bootstrap.Modal(modalFileEl);
+        var selectedSubscription = null;
 
         function showPreview(src) {
             $('#image-src').attr('src', src).attr('src');
@@ -222,6 +229,12 @@
                 stompClient.disconnect();
             }
             console.log("Disconnected");
+        }
+
+        function linkifyMessage() {
+            $('.message').linkify({
+                target: '_blank'
+            });
         }
 
         function updateRooms(id, detail = true) {
@@ -269,7 +282,10 @@
                     } catch (e) {
                         console.log(e);
                     }
-                    stompClient.subscribe('/user/' + id + '.' + email + '/queue/message', function (message) {
+                    if(selectedSubscription != null) {
+                        selectedSubscription.unsubscribe();
+                    }
+                    selectedSubscription = stompClient.subscribe('/user/' + id + '.' + email + '/queue/message', function (message) {
                         // console.log(message);
                         // changeDetail(id);
                         getMessage(message.body.replace(/["']/g, ""));
@@ -290,17 +306,23 @@
                     $('.profile-image').magnificPopup({
                         type: 'image'
                     });
-                    $('.btn-file').on('click', function(e) {
+                    $('.btn-file').on('click', function (e) {
                         $('#input-file').click();
                     });
-                    $('#input-file').on('change', function(e) {
+                    $('#input-file').on('change', function (e) {
                         // alert($(this).val());
+                        var filesize = document.getElementById('input-file').files[0].size;
+                        if(filesize / (1024 * 1024) > 10) {
+                            alert('Ukuran file maksimum adalah 10MB');
+                            return;
+                        }
                         var filename = $(this).val().replace(/C:\\fakepath\\/i, '');
                         var body = document.getElementById('modal-body');
                         var name = $('#roomName').val();
                         body.innerHTML = 'Kirim "' + filename + '" ke ' + name + '?';
                         modalFile.show();
                     });
+                    linkifyMessage();
                 },
                 error: function (xhr, status, error) {
                     alert(error);
@@ -316,14 +338,43 @@
                     console.log(response.data);
                     var data = response.data;
                     var newMessage = '<div class="d-flex mb-1 justify-content-start">' +
-                        '<div class="chat-container d-flex flex-row bd-highlight">' +
-                        '<div class="chat-received">' +
-                        '<p class="text-wrap text-break mb-0" style="font-size: 10pt;">' + data.content + '</p></div>' +
-                        '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
-                        '</div></div>';
+                            '<div class="chat-container d-flex flex-row bd-highlight">' +
+                            '<div class="chat-received">';
+                    if (data.contentType.includes('image')) {
+                        newMessage += '<a onclick="showMagnificPopup(\'' + data.fileUrl + '\')" class="message-image">' +
+                            '<img src="' + data.fileUrl + ' " style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;"/>' +
+                            '</a>';
+                    } else if (data.contentType == 'application/pdf') {
+                        newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> ' + data.content + '</p>' +
+                            '</a>';
+                    } else if (data.contentType == 'application/zip' || data.contentType == 'application/vnd.rar') {
+                        newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-archive la-lg text-dark"></i> ' + data.content + '</p>' +
+                            '</a>' ;
+                    } else if (data.contentType == 'application/msword' || data.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                        newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-word la-lg text-primary"></i> ' + data.content + '</p>' +
+                            '</a>';
+                    } else if (data.contentType == 'application/vnd.ms-excel' || data.contentType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                        newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-excel la-lg text-sucess"></i> ' + data.content + '</p>' +
+                            '</a>';
+                    } else if (data.contentType == 'application/vnd.ms-powerpoint' || data.contentType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+                        newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                            '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-powerpoint la-lg text-warning"></i> ' + data.content + '</p>' +
+                            '</a>';
+                    } else {
+                        newMessage += '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;">' + data.content + '</p>';
+                    }
+                    newMessage += '</div>' +
+                            '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                            '</div>' +
+                            '</div>';
                     $(newMessage).appendTo($('.chats-message'));
                     $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, 1000);
                     updateRooms(id, false);
+                    linkifyMessage();
                 },
                 error: function (xhr, status, error) {
                     alert(error);
@@ -363,11 +414,12 @@
                         '<div class="chat-container d-flex flex-row bd-highlight">' +
                         '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
                         '<div class="chat-sent">' +
-                        '<p class="text-wrap text-break mb-0" style="font-size: 10pt;">' + data.content + '</p></div></div></div>';
+                        '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;">' + data.content + '</p></div></div></div>';
                     $(newMessage).appendTo($('.chats-message'));
                     message.val(null);
                     $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, "fast");
                     updateRooms(id, false);
+                    linkifyMessage();
                 },
                 error: function (xhr, status, error) {
                     alert(error);
@@ -404,7 +456,7 @@
                     });
                 }
             });
-            $('#form-file').on('submit', function(e) {
+            $('#form-file').on('submit', function (e) {
                 e.preventDefault();
                 var form = $(this);
                 var url = form.attr('action');
@@ -425,42 +477,51 @@
                     success: function (response) {
                         console.log(response.data);
                         var data = response.data;
-                        if(data.contentType.includes('image')) {
-                            var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
-                            '<div class="chat-container d-flex flex-row bd-highlight">' +
-                            '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
-                            '<div class="chat-sent">' +
-                            '<a onclick="showMagnificPopup(\'' + data.fileUrl + '\')" class="message-image">' +
-                                '<img src="' + data.fileUrl +' " style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;"/>' +
-                            '</a>' +
-                            '</div>' +
-                            '</div>' +
-                            '</div>';
-                            $(newMessage).appendTo($('.chats-message'));
-                        } else if(data.contentType == 'application/pdf') {
-                            var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
-                            '<div class="chat-container d-flex flex-row bd-highlight">' +
-                            '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
-                            '<div class="chat-sent">' +
-                            '<a href="' + data.fileUrl +'" target="_blank" class="flat-link text-primary">' +
-                            '<p class="text-wrap text-break mb-0" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> ' + data.content + '</p>' +
-                            '</a>' +
-                            '</div>' +
-                            '</div>' +
-                            '</div>';
-                            $(newMessage).appendTo($('.chats-message'));
+                        var newMessage = '<div class="d-flex mb-1 justify-content-end">' +
+                                '<div class="chat-container d-flex flex-row bd-highlight">' +
+                                '<span class="chat-time px-1">' + data.dateTimeDisplay + '</span>' +
+                                '<div class="chat-sent">';
+                        if (data.contentType.includes('image')) {
+                            newMessage += '<a onclick="showMagnificPopup(\'' + data.fileUrl + '\')" class="message-image">' +
+                                '<img src="' + data.fileUrl + ' " style="height: 240px; width: 240px; object-fit: cover; border-radius: 0.6rem;"/>' +
+                                '</a>';
+                        } else if (data.contentType == 'application/pdf') {
+                            newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                                '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-pdf la-lg text-danger"></i> ' + data.content + '</p>' +
+                                '</a>';
+                        } else if (data.contentType == 'application/zip' || data.contentType == 'application/vnd.rar') {
+                            newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                                '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-archive la-lg text-dark"></i> ' + data.content + '</p>' +
+                                '</a>';
+                        } else if (data.contentType == 'application/msword' || data.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                            newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                                '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-word la-lg text-primary"></i> ' + data.content + '</p>' +
+                                '</a>';
+                        } else if (data.contentType == 'application/vnd.ms-excel' || data.contentType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                            newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                                '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-excel la-lg text-success"></i> ' + data.content + '</p>' +
+                                '</a>';
+                        } else if (data.contentType == 'application/vnd.ms-powerpoint' || data.contentType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+                            newMessage += '<a href="' + data.fileUrl + '" target="_blank" class="flat-link text-primary">' +
+                                '<p class="text-wrap text-break mb-0 message" style="font-size: 10pt;"><i class="las la-file-powerpoint la-lg text-warning"></i> ' + data.content + '</p>' +
+                                '</a>';
                         }
+                        newMessage += '</div>' +
+                                '</div>' +
+                                '</div>';
+                        $(newMessage).appendTo($('.chats-message'));
                         modalFile.hide();
                         $("#input-file").val(null);
                         $('.chats-message').stop().animate({ scrollTop: $('.chats-message')[0].scrollHeight }, "fast");
                         updateRooms($('#roomId').val(), false);
+                        linkifyMessage();
                     },
                     error: function (e) {
                         console.log("ERROR : ", e);
                     }
                 });
             });
-            modalFileEl.addEventListener('hidden.bs.modal', function(e) {
+            modalFileEl.addEventListener('hidden.bs.modal', function (e) {
                 $("#input-file").val(null);
             });
         })();

@@ -147,7 +147,7 @@
         <div class="modal fade" id="modal-form" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form id="form-agenda" method="POST" th:action="@{/agenda}">
+                    <form id="form-agenda" method="POST" data-action="create" th:action="@{/agenda}">
                         <div class="modal-header p-0">
                             <span class="text-center py-2 fw-bold text-white"
                                 style="background-color: #8678D9; width: 100%;">
@@ -199,15 +199,15 @@
                                     Lokasi</label>
                                 <div class="row">
                                     <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                        <input type="radio" class="btn-check" name="category" id="btnradio-inoffice"
+                                        <input type="radio" class="btn-check" name="btn-category" id="btnradio-inoffice"
                                             autocomplete="off" checked>
                                         <label class="btn btn-location" for="btnradio-inoffice">Di Kantor</label>
 
-                                        <input type="radio" class="btn-check" name="category" id="btnradio-outoffice"
+                                        <input type="radio" class="btn-check" name="btn-category" id="btnradio-outoffice"
                                             autocomplete="off">
                                         <label class="btn btn-location" for="btnradio-outoffice">Luar Kantor</label>
 
-                                        <input type="radio" class="btn-check" name="category" id="btnradio-online"
+                                        <input type="radio" class="btn-check" name="btn-category" id="btnradio-online"
                                             autocomplete="off">
                                         <label class="btn btn-location" for="btnradio-online">Daring</label>
                                     </div>
@@ -231,7 +231,7 @@
                             <div class="mb-3">
                                 <label for="attachment" class="form-label"><i class="las la-paperclip la-lg"></i>
                                     Lampiran</label>
-                                <input class="form-control form-control-sm rounded-0" type="file" name="attachment"
+                                <input class="form-control form-control-sm rounded-0" type="file" id="attachment"
                                     aria-label="Pilih File" accept="image/jpeg,image/gif,image/png,application/pdf">
                             </div>
                         </div>
@@ -248,7 +248,8 @@
         <div class="modal fade" id="modal-edit" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form id="form-edit" method="POST" th:action="@{/agenda}">
+                    <form id="form-edit" method="POST" data-action="edit" th:action="@{/agenda}">
+                        <input type="hidden" id="id-edit"/>
                         <div class="modal-header p-0">
                             <span class="text-center py-2 fw-bold text-white"
                                 style="background-color: #8678D9; width: 100%;">
@@ -279,15 +280,15 @@
                                     Waktu</label>
                                 <div class="row">
                                     <div class="col-md-7">
-                                        <input type="hidden" id="startDate" />
-                                        <input type="hidden" id="endDate" />
+                                        <input type="hidden" id="startDate-edit" />
+                                        <input type="hidden" id="endDate-edit" />
                                         <input type="text" placeholder="01 Jan 2021 - 31 Des 2021"
                                             class="form-control border-0 rounded-0" id="dates-edit" name="dates-edit"
                                             style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
                                     </div>
                                     <div class="col">
-                                        <input type="hidden" id="startTime" />
-                                        <input type="hidden" id="endTime" />
+                                        <input type="hidden" id="startTime-edit" />
+                                        <input type="hidden" id="endTime-edit" />
                                         <input type="text" placeholder="08:00 - 09:00"
                                             class="form-control border-0 rounded-0" id="times-edit" name="times-edit"
                                             style="background-color: #F4F4F4;" autocomplete="off" readonly required/>
@@ -300,17 +301,17 @@
                                     Lokasi</label>
                                 <div class="row">
                                     <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                                        <input type="radio" class="btn-check" name="category-edit" id="edit-inoffice"
+                                        <input type="radio" class="btn-check" name="btn-category-edit" id="btn-edit-inoffice"
                                             autocomplete="off">
-                                        <label class="btn btn-location" for="edit-inoffice">Di Kantor</label>
+                                        <label class="btn btn-location" for="btn-edit-inoffice">Di Kantor</label>
 
-                                        <input type="radio" class="btn-check" name="category-edit" id="edit-outoffice"
+                                        <input type="radio" class="btn-check" name="btn-category-edit" id="btn-edit-outoffice"
                                             autocomplete="off">
-                                        <label class="btn btn-location" for="outoffice">Luar Kantor</label>
+                                        <label class="btn btn-location" for="btn-edit-outoffice">Luar Kantor</label>
 
-                                        <input type="radio" class="btn-check" name="category-edit" id="edit-online"
+                                        <input type="radio" class="btn-check" name="btn-category-edit" id="btn-edit-online"
                                             autocomplete="off">
-                                        <label class="btn btn-location" for="edit-online">Daring</label>
+                                        <label class="btn btn-location" for="btn-edit-online">Daring</label>
                                     </div>
                                 </div>
                                 <input type="text" placeholder="Lokasi atau id dari rapat daring"
@@ -318,7 +319,7 @@
                                     style="background-color: #F4F4F4;" autocomplete="off" required/>
                             </div>
                             <div class="mb-2">
-                                <label for="invitees" class="col-form-label"><i class="las la-users la-lg"></i>
+                                <label for="invitees-edit" class="col-form-label"><i class="las la-users la-lg"></i>
                                     Peserta:</label>
                                 <div class="form-control border-0 rounded-0" style="background-color: #F4F4F4">
                                     <div id="display-edit-invitees"></div>
@@ -332,17 +333,15 @@
                             <div class="mb-3">
                                 <label for="attachment" class="form-label"><i class="las la-paperclip la-lg"></i>
                                     Lampiran</label>
-                                <input class="form-control form-control-sm rounded-0" type="file" name="attachment-edit"
+                                <input class="form-control form-control-sm rounded-0" type="file" id="attachment-edit"
                                     aria-label="Pilih File" accept="image/jpeg,image/gif,image/png,application/pdf">
-                                <div id="current-attachment">
-                                    
-                                </div>
+                                <div id="current-attachment" class="mt-2"></div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <input id="btn-submit" type="submit" class="btn btn-sm btn-primary border-0"
+                            <input id="btn-edit-submit" type="submit" class="btn btn-sm btn-primary border-0"
                                 style="background-color: #8678D9;" value="Simpan">
-                            <button id="btn-cancel" type="reset" class="btn btn-sm btn-secondary"
+                            <button id="btn-edit-cancel" type="reset" class="btn btn-sm btn-secondary"
                                 data-bs-dismiss="modal">Batal</button>
                         </div>
                     </form>
@@ -456,25 +455,132 @@
                 success: function(response) {
                     console.log(response.data);
                     var data = response.data;
+                    $('#id-edit').val(data.id);
                     $('#title-edit').val(data.title);
                     $('#description-edit').val(data.description);
+                    var startDate = new Date(data.startDate);
+                    var endDate = new Date(data.endDate);
+                    $('#startDate-edit').val(moment(startDate));
+                    $('#endDate-edit').val(moment(endDate));
+                    if(data.startDate == data.endDate) {
+                        $('#dates-edit').val(moment(startDate).format('DD MMM YYYY'));
+                    } else {
+                        $('#dates-edit').val(moment(startDate).format('DD MMM YYYY') + ' - ' + moment(endDate).format('DD MMM YYYY'));
+                    }
+                    var startTime = new Date(data.startTime);
+                    var endTime = new Date(data.endTime);
+                    $('#times-edit').val(moment(startTime).format('HH:mm') + ' - ' + moment(endTime).format('HH:mm'));
+                    $('#startTime-edit').val(moment(startTime).format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+                    $('#endTime-edit').val(moment(endTime).format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+
+                    categoryBtn = document.getElementById('btn-edit-' + data.category.toLowerCase());
+                    // console.log(categoryBtn);
+                    categoryBtn.checked = true;
                     $('#location-edit').val(data.location);
                     var members = data.members;
                     for (var i = 0; i < members.length; i++) {
-                        console.log(members[i]);
+                        // console.log(members[i]);
                         var member = members[i];
                         $('#display-edit-invitees').append(
                             '<span id="' + member.id + '_display" class="badge bg-secondary m-1 display-invitee">' + member.email + ' <span class="text-white" onclick="deleteInvitee(\'' + member.id + '\')">x</span></span>');
                         $('#invitee-edit-values').append(
-                            '<input id="' + member.id + '_value" type="hidden" name="invitees[]" value="' + member.email + '"/>'
+                            '<input id="' + member.id + '_value" type="hidden" name="invitees-edit[]" value="' + member.email + '"/>'
                         );
                     }
+                    if(data.attachmentUrl != null && data.attachmentUrl != '') {
+                        $('#current-attachment').append(
+                            'Lampiran saat ini: &nbsp;<a href="' + data.attachmentUrl + '" target="_blank" class="flat-link text-primary">' + data.fileName + '</a>'
+                        );
+                    }
+                    closeQuickInfo();
                     formEdit.show();
                 },
                 error: function (xhr, status, error) {
                     alert('Koneksi ke server terkendala');
                 }
             });
+        }
+
+        function initDateRangePicker(triggerEl, startDateEl, endDateEl) {
+            $(triggerEl).daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    applyLabel: "Pilih",
+                    cancelLabel: "Hapus",
+                    fromLabel: "Dari",
+                    toLabel: "Sampai",
+                    customRangeLabel: "Custom",
+                    weekLabel: "W",
+                    daysOfWeek: [
+                        "Ming",
+                        "Sen",
+                        "Sel",
+                        "Rab",
+                        "Kam",
+                        "Jum",
+                        "Sab"
+                    ],
+                    monthNames: [
+                        "Januari",
+                        "Februari",
+                        "Maret",
+                        "April",
+                        "Mei",
+                        "Juni",
+                        "Juli",
+                        "Augustus",
+                        "September",
+                        "Oktober",
+                        "November",
+                        "Desember"
+                    ]
+                }
+            });
+            $(triggerEl).on('apply.daterangepicker', function (ev, picker) {
+                console.log(picker);
+                if (picker.startDate.format('DD MMM YYYY') == picker.endDate.format('DD MMM YYYY'))
+                    $(this).val(picker.startDate.format('DD MMM YYYY'));
+                else
+                    $(this).val(picker.startDate.format('DD MMM YYYY') + ' - ' + picker.endDate.format('DD MMM YYYY'));
+                $(startDateEl).val(picker.startDate);
+                $(endDateEl).val(picker.endDate);
+            });
+
+            // $(triggerEl).on('cancel.daterangepicker', function (ev, picker) {
+            //     $(this).val('');
+            // });
+        }
+
+        function initTimeRangePicker(triggerEl, startTimeEl, endTimeEl) {
+            $(triggerEl).daterangepicker({
+                autoUpdateInput: false,
+                timePicker: true,
+                timePicker24Hour: true,
+                timePickerIncrement: 1,
+                locale: {
+                    applyLabel: "Pilih",
+                    cancelLabel: "Hapus",
+                }
+            }).on('show.daterangepicker', function (ev, picker) {
+                picker.container.find(".calendar-table").hide();
+                picker.container.find('.drp-selected').hide();
+            });
+            $(triggerEl).on('apply.daterangepicker', function (ev, picker) {
+                console.log(picker);
+                var duration = moment.duration(picker.endDate.diff(picker.startDate));
+                var minutes = duration.asMinutes();
+                if (minutes < 15) {
+                    alert('Durasi minimal adalah 15 menit');
+                    return;
+                }
+                $(this).val(picker.startDate.format('HH:mm') + ' - ' + picker.endDate.format('HH:mm'));
+                $(startTimeEl).val(picker.startDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+                $(endTimeEl).val(picker.endDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
+            });
+
+            // $('input[id="times"]').on('cancel.daterangepicker', function (ev, picker) {
+            //     $(this).val('');
+            // });
         }
 
         (function () {
@@ -634,88 +740,11 @@
 
             loadInvitations();
 
-            $('#btn-create').click(function () {
-                $('#form-agenda').attr('data-action', $(this).data('form-action'));
-            });
+            // $('#btn-create').click(function () {
+            //     $('#form-agenda').attr('data-action', $(this).data('form-action'));
+            // });
 
-            formModalEl.addEventListener('shown.bs.modal', function (e) {
-                $('input[id="dates"]').daterangepicker({
-                    autoUpdateInput: false,
-                    locale: {
-                        applyLabel: "Pilih",
-                        cancelLabel: "Hapus",
-                        fromLabel: "Dari",
-                        toLabel: "Sampai",
-                        customRangeLabel: "Custom",
-                        weekLabel: "W",
-                        daysOfWeek: [
-                            "Ming",
-                            "Sen",
-                            "Sel",
-                            "Rab",
-                            "Kam",
-                            "Jum",
-                            "Sab"
-                        ],
-                        monthNames: [
-                            "Januari",
-                            "Februari",
-                            "Maret",
-                            "April",
-                            "Mei",
-                            "Juni",
-                            "Juli",
-                            "Augustus",
-                            "September",
-                            "Oktober",
-                            "November",
-                            "Desember"
-                        ]
-                    }
-                });
-                $('input[id="dates"]').on('apply.daterangepicker', function (ev, picker) {
-                    console.log(picker);
-                    if (picker.startDate.format('DD MMM YYYY') == picker.endDate.format('DD MMM YYYY'))
-                        $(this).val(picker.startDate.format('DD MMM YYYY'));
-                    else
-                        $(this).val(picker.startDate.format('DD MMM YYYY') + ' - ' + picker.endDate.format('DD MMM YYYY'));
-                    $('#startDate').val(picker.startDate);
-                    $('#endDate').val(picker.endDate);
-                });
-
-                $('input[id="dates"]').on('cancel.daterangepicker', function (ev, picker) {
-                    $(this).val('');
-                });
-
-                $('input[id="times"]').daterangepicker({
-                    autoUpdateInput: false,
-                    timePicker: true,
-                    timePicker24Hour: true,
-                    timePickerIncrement: 1,
-                    locale: {
-                        applyLabel: "Pilih",
-                        cancelLabel: "Hapus",
-                    }
-                }).on('show.daterangepicker', function (ev, picker) {
-                    picker.container.find(".calendar-table").hide();
-                    picker.container.find('.drp-selected').hide();
-                });
-                $('input[id="times"]').on('apply.daterangepicker', function (ev, picker) {
-                    console.log(picker);
-                    var duration = moment.duration(picker.endDate.diff(picker.startDate));
-                    var minutes = duration.asMinutes();
-                    if (minutes < 15) {
-                        alert('Durasi minimal adalah 15 menit');
-                        return;
-                    }
-                    $(this).val(picker.startDate.format('HH:mm') + ' - ' + picker.endDate.format('HH:mm'));
-                    $('#startTime').val(picker.startDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
-                    $('#endTime').val(picker.endDate.format("YYYY-MM-DDTHH:mm:ss.SSSZZ"));
-                });
-
-                $('input[id="times"]').on('cancel.daterangepicker', function (ev, picker) {
-                    $(this).val('');
-                });
+            formModalEl.addEventListener('shown.bs.modal', function (e) {;
                 invitees = new Autocomplete(document.getElementById('invitees'), {
                     data: [],
                     maximumItems: 5,
@@ -763,11 +792,15 @@
                         }
 
                         var url = form.action;
-                        var data = new FormData(form);
-                        data.delete('dates');
-                        data.delete('times');
-                        data.delete('invitees[]');
-                        data.delete('email');
+                        // var data = new FormData(form);
+                        // data.delete('dates');
+                        // data.delete('times');
+                        // data.delete('invitees[]');
+                        // data.delete('email');
+                        var data = new FormData();
+                        var fileEl = document.getElementById('attachment');
+                        if(fileEl.files[0] != undefined)
+                            data.append('attachment', fileEl.files[0]);
 
                         var action = $(form).data('action');
                         var title = $(form).find('#title').val().trim();
@@ -778,7 +811,7 @@
                         var startTime = $(form).find('#startTime').val().trim();
                         var endTime = $(form).find('#endTime').val().trim();
 
-                        var category = $(form).find('input[type="radio"]:checked')[0].id.split('-')[1];
+                        var category = $(form).find('input[type="radio"][name="btn-category"]:checked')[0].id.split('-')[1];
                         var location = $(form).find('#location').val().trim();
                         var invitees = $('input[name="invitees[]"]').map(function () { return $(this).val(); }).get();
 
@@ -811,7 +844,7 @@
                                 scheduler.clearAll();
                                 loadInvitations();
 
-                                showToast('Agenda berhasil ditambahkan', 'bg-success');
+                                showToast('Agenda berhasil disimpan', 'bg-success');
                             },
                             error: function (e) {
                                 console.log("ERROR : ", e);
@@ -866,8 +899,166 @@
                 $('#invitee-values').empty();
                 $('#btn-submit').prop('disabled', false);
                 $('#btn-cancel').prop('disabled', false);
-                $('input[name="title"]').rules('remove');
-                
+                $('#title').rules('remove');
+                $('#description').rules('remove');
+                $('#dates').rules('remove');
+                $('#times').rules('remove');
+                $('#locations').rules('remove');
+                invitees = null;
+            });
+
+            formEditEl.addEventListener('shown.bs.modal', function(e) {
+                invitees = new Autocomplete(document.getElementById('invitees-edit'), {
+                    data: [],
+                    maximumItems: 5,
+                    treshold: 1,
+                    onSelectItem: ({ label, value }) => {
+                        console.log("user selected:", label, value);
+                        $('#display-edit-invitees').append(
+                            '<span id="' + value + '_display" class="badge bg-secondary m-1 display-invitee">' + label + ' <span class="text-white" onclick="deleteInvitee(\'' + value + '\')">x</span></span>');
+                        $('#invitee-edit-values').append(
+                            '<input id="' + value + '_value" type="hidden" name="invitees-edit[]" value="' + label + '"/>'
+                        );
+                        $('#invitees-edit').val(null);
+                        invitees.setData([]);
+                    }
+                });
+                $('#invitees-edit').keyup(function (e) {
+                    if ($('#invitees-edit').val().length >= 1 && $('#invitees-edit').val() != "") {
+                        var selecteds = $('input[name="invitees-edit[]"]').map(function () { return $(this).val(); }).get();
+                        $.ajax({
+                            type: "GET",
+                            dataType: "json",
+                            url: "/employee/search/autocomplete",
+                            data: 'q=' + $('#invitees-edit').val() + '&excepts=' + selecteds.join(';'),
+                            success: function (response) {
+                                invitees.setData(response.data);
+                            }
+                        });
+                    }
+                });
+                $('#form-edit').validate({
+                    submitHandler: function (form) {
+                        // e.preventDefault();
+                        if (loading) {
+                            alert('Agenda baru sedang diproses');
+                            return;
+                        }
+                        // var form = $(this);
+                        var url = form.action;
+                        var data = new FormData();
+                        var fileEl = document.getElementById('attachment-edit');
+                        if(fileEl.files[0] != undefined)
+                            data.append('attachment', fileEl.files[0]);
+
+                        var action = $(form).data('action');
+                        var id = $(form).find('#id-edit').val().trim();
+                        var title = $(form).find('#title-edit').val().trim();
+
+                        var description = $(form).find('#description-edit').val().trim();
+                        var startDate = $(form).find('#startDate-edit').val().trim();
+                        var endDate = $(form).find('#endDate-edit').val().trim();
+                        var startTime = $(form).find('#startTime-edit').val().trim();
+                        var endTime = $(form).find('#endTime-edit').val().trim();
+
+                        var category = $(form).find('input[type="radio"][name="btn-category-edit"]:checked')[0].id.split('-')[2];
+                        console.log(category);
+                        var location = $(form).find('#location-edit').val().trim();
+                        var invitees = $('input[name="invitees-edit[]"]').map(function () { return $(this).val(); }).get();
+
+                        data.set('action', action);
+                        data.set('id', id);
+                        data.set('title', title);
+                        data.set('description', description);
+                        data.set('startDate', startDate);
+                        data.set('endDate', endDate);
+                        data.set('startTime', startTime);
+                        data.set('endTime', endTime);
+                        data.set('category', category);
+                        data.set('location', location.trim());
+                        data.set('invitee', invitees.join(';'));
+                        loading = true;
+                        $(this).find('#btn-submit').prop('disabled', true);
+                        $(this).find('#btn-cancel').prop('disabled', true);
+                        $.ajax({
+                            type: "POST",
+                            enctype: 'multipart/form-data',
+                            url: url,
+                            data: data,
+                            processData: false,
+                            contentType: false,
+                            cache: false,
+                            timeout: 600000,
+                            success: function (response) {
+                                console.log("SUCCESS : ", response.data);
+                                loading = false;
+                                formEdit.hide();
+                                scheduler.clearAll();
+                                loadInvitations();
+
+                                showToast('Agenda berhasil disimpan', 'bg-success');
+                            },
+                            error: function (e) {
+                                console.log("ERROR : ", e);
+                                $('#btn-submit').prop('disabled', false);
+                                $('#btn-cancel').prop('disabled', false);
+                                loading = false;
+                            }
+                        });
+                    }
+                });
+                $('#title-edit').rules('add', {
+                    required: true,
+                    minlength: 10,
+                    maxlength: 50,
+                    messages: {
+                        required: 'Silahkan isi judul/perihal agenda',
+                        minlength: 'Panjang judul/perihal agenda adalah minimal 10 karakter',
+                        maxlength: 'Panjang judul/perihal agenda adalah maksimum 50 karakter'
+                    }
+                });
+                $('#description-edit').rules('add', {
+                    required: true,
+                    minlength: 3,
+                    messages: {
+                        required: 'Silahkan isi deskripsi agenda',
+                        minlength: 'Panjang judul/perihal agenda adalah minimal 3 karakter',
+                    }
+                });
+                $('#dates-edit').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi tanggal agenda',
+                    }
+                });
+                $('#times-edit').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi waktu agenda',
+                    }
+                });
+                $('#location-edit').rules('add', {
+                    required: true,
+                    messages: {
+                        required: 'Silahkan isi lokasi agenda',
+                    }
+                });
+            });
+
+            formEditEl.addEventListener('hidden.bs.modal', function (e) {
+                loading = false;
+                $('#form-edit').trigger('reset');
+                $('#display-edit-invitees').empty();
+                $('#invitee-edit-values').empty();
+                $('#current-attachment').empty();
+                $('#invitee-values').empty();
+                $('#btn-edit-submit').prop('disabled', false);
+                $('#btn-edit-cancel').prop('disabled', false);
+                $('#title-edit').rules('remove');
+                $('#description-edit').rules('remove');
+                $('#dates-edit').rules('remove');
+                $('#times-edit').rules('remove');
+                $('#locations-edit').rules('remove');
                 invitees = null;
             });
 
@@ -916,6 +1107,11 @@
                 $('#form-delete').trigger('reset');
                 $('#form-delete').unbind('submit');
             });
+
+            initDateRangePicker('#dates', '#startDate', '#endDate');
+            initTimeRangePicker('#times', '#startTime', '#endTime');
+            initDateRangePicker('#dates-edit', '#startDate-edit', '#endDate-edit');
+            initTimeRangePicker('#times-edit', '#startTime-edit', '#endTime-edit');
         })();
 
     </script>

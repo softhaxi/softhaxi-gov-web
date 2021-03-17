@@ -83,8 +83,9 @@ public class AgendaController {
 
         Invitation invitation = null;
         try {
-            invitation = invitationService.save(user, request);
+            invitation = invitationService.save(user, request, true);
         } catch(Exception ex) {
+            logger.error("[action]Exception...", ex);
             if(ex.getMessage().equalsIgnoreCase("item.not.found")) {
                 return new ResponseEntity<>(
                     new ErrorResponse(HttpStatus.NOT_FOUND.value(), 

@@ -62,9 +62,9 @@
             </div>
         </div>
         <div class="row my-3">
-            <div class="col-md-7">
+            <div class="col-md-12">
                 <div class="card">
-                    <div class="card-body" style="height: 30rem;">
+                    <div class="card-body" style="height: 36rem;">
                         <div class="card-title">
                             <!-- <h6>MONITOR LOKASI</h6> -->
                             <div class="d-flex justify-content-between">
@@ -85,11 +85,11 @@
                             </div>
                         </div>
 
-                        <div id="map" class="rounded-bottom" style="height: 25.5rem;"></div>
+                        <div id="map" class="rounded-bottom" style="height: 32rem;"></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-5">
+            <!-- <div class="col-md-5">
                 <div class="card">
                     <div class="card-body" style="height: 30rem;">
                         <div class="card-title">
@@ -109,7 +109,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <div class="row my-3">
             <div class="col-md-12">
@@ -165,9 +165,9 @@
     <script th:src="@{/scripts/app.js}"></script>
     <script>
         var dailyCtx = document.getElementById("daily-chart").getContext("2d");
-        var monthlyCtx = document.getElementById("monthly-chart").getContext("2d");
+        // var monthlyCtx = document.getElementById("monthly-chart").getContext("2d");
         var dailyChart;
-        var monthlyChart;
+        // var monthlyChart;
         var map;
         var markerGroup;
         var clusters;
@@ -309,7 +309,7 @@
                 url: date == null ? '/dashboard/dailyStatistic' : '/dashboard/dailyStatistic?month=' + (date.getMonth() + 1) + "&year=" + date.getFullYear(),
                 method: 'GET',
                 success: function (response) {
-                    // console.log(response.data);
+                    console.log(response.data);
                     var data = {
                         labels: response.data['dates'],
                         datasets: [
@@ -345,51 +345,51 @@
             });
         }
 
-        function loadMonthlyStatistic(date) {
-            var data = {
-                labels: ["Datang Tepat Waktu", "Terlambat", "Pulang Tepat Waktu", "Pulang Cepat"],
-                datasets: [
-                    {
-                        //backgroundColor: "#FFC107",
-                        data: [700, 20, 100, 150],
-                        backgroundColor: ["#6C4FA1", "#9BBD57", "#5DC5F1", "#FF9356"]
-                    },
-                ]
-            };
-            if (monthlyChart == null) {
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'bar',
-                    data: data,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            xAxes: [{
-                                gridLines: {
-                                    display: false
-                                }
-                            }],
-                            yAxes: [{
-                                ticks: {
-                                    beginAtZero: true,
-                                    precision: 0,
-                                    callback: function (value) {
-                                        valuek = value;
-                                        return valuek;
-                                    }
-                                },
-                            }]
-                        },
-                        legend: {
-                            display: false,
-                        },
-                    }
-                });
-            } else {
-                monthlyChart.data = data;
-                monthlyChart.update();
-            }
-        }
+        // function loadMonthlyStatistic(date) {
+        //     var data = {
+        //         labels: ["Datang Tepat Waktu", "Terlambat", "Pulang Tepat Waktu", "Pulang Cepat"],
+        //         datasets: [
+        //             {
+        //                 //backgroundColor: "#FFC107",
+        //                 data: [700, 20, 100, 150],
+        //                 backgroundColor: ["#6C4FA1", "#9BBD57", "#5DC5F1", "#FF9356"]
+        //             },
+        //         ]
+        //     };
+        //     if (monthlyChart == null) {
+        //         monthlyChart = new Chart(monthlyCtx, {
+        //             type: 'bar',
+        //             data: data,
+        //             options: {
+        //                 responsive: true,
+        //                 maintainAspectRatio: false,
+        //                 scales: {
+        //                     xAxes: [{
+        //                         gridLines: {
+        //                             display: false
+        //                         }
+        //                     }],
+        //                     yAxes: [{
+        //                         ticks: {
+        //                             beginAtZero: true,
+        //                             precision: 0,
+        //                             callback: function (value) {
+        //                                 valuek = value;
+        //                                 return valuek;
+        //                             }
+        //                         },
+        //                     }]
+        //                 },
+        //                 legend: {
+        //                     display: false,
+        //                 },
+        //             }
+        //         });
+        //     } else {
+        //         monthlyChart.data = data;
+        //         monthlyChart.update();
+        //     }
+        // }
 
         function initMap() {
             map = L.map('map', {
@@ -502,19 +502,19 @@
             }).on('changeDate', function (e) {
                 loadDailyStatistic(e.date);
             });
-            $('#monthly-statistic').datepicker({
-                startView: 1,
-                minViewMode: 1,
-                language: 'id',
-                autoclose: true,
-                format: "MM yyyy",
+            // $('#monthly-statistic').datepicker({
+            //     startView: 1,
+            //     minViewMode: 1,
+            //     language: 'id',
+            //     autoclose: true,
+            //     format: "MM yyyy",
 
-            }).on('changeDate', function (e) {
-                loadMonthlyStatistic(e.date);
-            });
+            // }).on('changeDate', function (e) {
+            //     loadMonthlyStatistic(e.date);
+            // });
 
             loadDailyStatistic();
-            loadMonthlyStatistic();
+            // loadMonthlyStatistic();
             initMap();
 
         })();

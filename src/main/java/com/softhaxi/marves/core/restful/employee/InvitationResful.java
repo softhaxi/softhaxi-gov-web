@@ -168,7 +168,7 @@ public class InvitationResful {
 
         Invitation invitation = null;
         try {
-            invitation = invitationService.save(user, request);
+            invitation = invitationService.save(user, request, false);
         } catch(Exception ex) {
             logger.error("[action]... ", ex);
             if(ex instanceof BusinessException) {

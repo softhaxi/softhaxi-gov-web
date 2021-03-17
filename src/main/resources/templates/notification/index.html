@@ -149,9 +149,9 @@
                 method: 'GET',
                 success: function (response) {
                     $('#data-container').html(response);
-                    console.log($('#content-detail').linkify({
+                    $('#content-detail').linkify({
                         target: '_blank'
-                    }));
+                    });
                     document.getElementById("btn-back").style.display = "inline";
                 },
                 error: function (xhr, status, error) {
